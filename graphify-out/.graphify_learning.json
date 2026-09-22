@@ -1,0 +1,70 @@
+{
+  "generated_at": "2026-09-21T01:16:55.003092+00:00",
+  "nodes": {
+    "app_models_limittype_limittype": {
+      "code_fingerprint": "8e99f9dead9e78da3bb33fab5a930a01486960acfeb28260c30f73c74fd2b06b",
+      "label": "LimitType",
+      "last": "2026-09-05T23:46:52.897124+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-05T23:46:52.897124+00:00",
+          "outcome": "useful",
+          "q": "Determinar debilidades para gestionar tenants empresariales y comercializar productos de software como firma electronica, ISO, privacidad y ensenanza"
+        }
+      ],
+      "score": 0.706086018,
+      "source_file": "app/Models/LimitType.php",
+      "status": "tentative",
+      "uses": 1
+    },
+    "app_services_tenantentitlements_tenantentitlements": {
+      "code_fingerprint": "cb93f4eb2f6a3847cf2abbb3acc6d17a73b7224ecbdd63eeac74db8313cf4f9a",
+      "label": "TenantEntitlements",
+      "last": "2026-09-05T23:46:52.897124+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-05T23:46:52.897124+00:00",
+          "outcome": "useful",
+          "q": "Determinar debilidades para gestionar tenants empresariales y comercializar productos de software como firma electronica, ISO, privacidad y ensenanza"
+        }
+      ],
+      "score": 0.706086018,
+      "source_file": "app/Services/TenantEntitlements.php",
+      "status": "tentative",
+      "uses": 1
+    },
+    "app_services_tenantplansubscriber_tenantplansubscriber": {
+      "code_fingerprint": "be29ae460c8abecdbafb164d1a7847525b445fbea039b587f36bed7a376446e5",
+      "label": "TenantPlanSubscriber",
+      "last": "2026-09-05T23:46:52.897124+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-05T23:46:52.897124+00:00",
+          "outcome": "useful",
+          "q": "Determinar debilidades para gestionar tenants empresariales y comercializar productos de software como firma electronica, ISO, privacidad y ensenanza"
+        }
+      ],
+      "score": 0.706086018,
+      "source_file": "app/Services/TenantPlanSubscriber.php",
+      "status": "tentative",
+      "uses": 1
+    },
+    "database_seeders_tenantdatabaseseeder_tenantdatabaseseeder": {
+      "code_fingerprint": "337349cc03a1844dd3fa080e431c0c226fd0a2b35222b37a4a5aafe2b5f5488e",
+      "label": "TenantDatabaseSeeder",
+      "last": "2026-09-05T23:46:52.897124+00:00",
+      "provenance": [
+        {
+          "date": "2026-09-05T23:46:52.897124+00:00",
+          "outcome": "useful",
+          "q": "Determinar debilidades para gestionar tenants empresariales y comercializar productos de software como firma electronica, ISO, privacidad y ensenanza"
+        }
+      ],
+      "score": 0.706086018,
+      "source_file": "database/seeders/TenantDatabaseSeeder.php",
+      "status": "tentative",
+      "uses": 1
+    }
+  },
+  "version": 1
+}

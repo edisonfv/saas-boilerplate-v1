@@ -1,0 +1,111 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\TenantStatus;
+use App\Models\Tenant;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+
+/**
+ * What a tenant is currently entitled to, derived from central Subscription +
+ * SubscriptionModule rows and cached centrally. Invalidated by
+ * App\Listeners\InvalidateTenantEntitlementsCache whenever
+ * App\Events\SubscriptionModuleChanged fires.
+ */
+class TenantEntitlements
+{
+    /** @var array<string, bool> */
+    private array $accessByTenant = [];
+
+    /**
+     * @return Collection<int, string> module slugs currently active for the tenant
+     */
+    public function activeModules(Tenant $tenant): Collection
+    {
+        if (! $this->grantsAccess($tenant)) {
+            return collect();
+        }
+
+        return collect($this->snapshot($tenant)['modules']);
+    }
+
+    /**
+     * @return Collection<int, string> feature slugs enabled by the tenant's current plan
+     */
+    public function activeFeatures(Tenant $tenant): Collection
+    {
+        if (! $this->grantsAccess($tenant)) {
+            return collect();
+        }
+
+        return collect($this->snapshot($tenant)['features']);
+    }
+
+    /**
+     * @return array<string, int> limit key => value for the tenant's current plan
+     */
+    public function effectiveLimits(Tenant $tenant): array
+    {
+        if (! $this->grantsAccess($tenant)) {
+            return [];
+        }
+
+        return $this->snapshot($tenant)['limits'];
+    }
+
+    public function forget(Tenant $tenant): void
+    {
+        unset($this->accessByTenant[(string) $tenant->getTenantKey()]);
+
+        tenancy()->central(fn () => Cache::forget($this->cacheKey($tenant)));
+    }
+
+    private function grantsAccess(Tenant $tenant): bool
+    {
+        $tenantId = (string) $tenant->getTenantKey();
+
+        return $this->accessByTenant[$tenantId] ??= tenancy()->central(
+            fn () => $tenant->operationalStatus()->equals(TenantStatus::Active())
+                && ($tenant->subscription()->first()?->grantsAccessAt() ?? false),
+        );
+    }
+
+    /**
+     * @return array{modules: list<string>, features: list<string>, limits: array<string, int>}
+     */
+    private function snapshot(Tenant $tenant): array
+    {
+        return tenancy()->central(function () use ($tenant): array {
+            return Cache::remember($this->cacheKey($tenant), now()->addHour(), function () use ($tenant): array {
+                $now = now();
+                $subscription = $tenant->subscription()->with([
+                    'modules' => fn ($query) => $query
+                        ->where('starts_at', '<=', $now)
+                        ->where(fn ($endsAt) => $endsAt->whereNull('ends_at')->orWhere('ends_at', '>', $now))
+                        ->whereHas('module', fn ($module) => $module->where('is_active', true))
+                        ->with('module'),
+                    'plan.features' => fn ($query) => $query->where('is_active', true),
+                    'plan.limits' => fn ($query) => $query->where('is_active', true),
+                ])->first();
+
+                if ($subscription === null) {
+                    return ['modules' => [], 'features' => [], 'limits' => []];
+                }
+
+                return [
+                    'modules' => $subscription->modules->pluck('module.slug')->values()->all(),
+                    'features' => $subscription->plan->features->pluck('slug')->values()->all(),
+                    'limits' => $subscription->plan->limits
+                        ->mapWithKeys(fn ($limitType) => [$limitType->key => $limitType->pivot->value])
+                        ->all(),
+                ];
+            });
+        });
+    }
+
+    private function cacheKey(Tenant $tenant): string
+    {
+        return "tenant_entitlements:{$tenant->getTenantKey()}";
+    }
+}

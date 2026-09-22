@@ -1,0 +1,40 @@
+<?php
+
+namespace Modules\Central\Http\Requests;
+
+use App\Enums\Action;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UpdateModuleRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'slug' => ['required', 'string', 'max:255', 'alpha_dash', Rule::unique('modules', 'slug')->ignore($this->route('module'))],
+            'sellable_as_addon' => ['boolean'],
+
+            'prices' => ['array'],
+            'prices.*.enabled' => ['boolean'],
+            'prices.*.price' => ['nullable', 'numeric', 'min:0'],
+            'prices.*.currency' => ['nullable', 'string', 'size:3'],
+
+            'permissions' => ['array'],
+            'permissions.*' => ['string', Rule::in(Action::toValues())],
+        ];
+    }
+}

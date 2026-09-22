@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/* Tailwind v4 defaults `dark:` to the OS prefers-color-scheme media query.
+   This app toggles a `.dark` class on <html> instead (see useAppearance.ts),
+   so `dark:` utilities need to respond to that class, not just the OS. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+    --font-sans:
+        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+}
