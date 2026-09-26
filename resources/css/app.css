@@ -8,9 +8,226 @@
    so `dark:` utilities need to respond to that class, not just the OS. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
+/*
+ * Brand design tokens — the single place to re-skin the template.
+ *
+ * Pages never use raw Tailwind palettes (slate/gray/blue/indigo) for chrome:
+ *   - `ink-*`     neutral scale tinted from the brand Índigo (text, borders, surfaces)
+ *   - `primary-*` interactive scale built around Azul Nova (buttons, links, focus)
+ *   - `accent-*`  Ámbar Chispa — use sparingly (highlights, the logo spark)
+ *   - `brand-*`   the literal brand swatches, for logos and hero surfaces
+ * Status colors (emerald/amber/red) stay on Tailwind's defaults on purpose.
+ * `primary-600` (not 500) is the button fill so white text keeps AA contrast.
+ */
+@theme {
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        Manrope, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-brand-indigo: #1b2a6b;
+    --color-brand-blue: #2f80ed;
+    --color-brand-amber: #f5a524;
+    --color-brand-ice: #f1f4fb;
+    --color-brand-night: #121a42;
+
+    --color-ink-50: #f1f4fb;
+    --color-ink-100: #e5eaf5;
+    --color-ink-200: #d3daeb;
+    --color-ink-300: #b3bdd6;
+    --color-ink-400: #8591b3;
+    --color-ink-500: #5f6b8f;
+    --color-ink-600: #465277;
+    --color-ink-700: #333e62;
+    --color-ink-800: #212c52;
+    --color-ink-900: #161f48;
+    --color-ink-950: #0e1535;
+
+    --color-primary-50: #eef5fe;
+    --color-primary-100: #ddeafd;
+    --color-primary-200: #bcd7fa;
+    --color-primary-300: #8cbaf6;
+    --color-primary-400: #5b9bf2;
+    --color-primary-500: #2f80ed;
+    --color-primary-600: #1f6fdb;
+    --color-primary-700: #1a5cb8;
+    --color-primary-800: #174a93;
+    --color-primary-900: #173e77;
+    --color-primary-950: #12284d;
+
+    --color-accent-50: #fef8ec;
+    --color-accent-100: #fdedc9;
+    --color-accent-200: #fbd98e;
+    --color-accent-300: #f8c257;
+    --color-accent-400: #f6b13a;
+    --color-accent-500: #f5a524;
+    --color-accent-600: #d9820f;
+    --color-accent-700: #b45f10;
+    --color-accent-800: #924914;
+    --color-accent-900: #783d14;
+    --color-accent-950: #451e06;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Native controls (scrollbars, date pickers) follow the theme. */
+    html.dark {
+        color-scheme: dark;
+    }
+
+    body {
+        @apply bg-ink-50 text-ink-950 dark:bg-ink-950 dark:text-white;
+    }
+
+    h1,
+    h2,
+    h3 {
+        letter-spacing: -0.015em;
+    }
+
+    /* One consistent, brand-colored keyboard focus ring across the app. */
+    :focus-visible {
+        outline: 2px solid var(--color-primary-500);
+        outline-offset: 2px;
+    }
+
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+        outline: none;
+    }
+
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        cursor: pointer;
+    }
+
+    ::selection {
+        background-color: var(--color-primary-200);
+        color: var(--color-ink-950);
+    }
+}
+
+/*
+ * Main content area: full available width on a 12-column grid.
+ * Children span all 12 columns by default, so a page can simply render
+ * content; use `col-span-*` (e.g. `xl:col-span-8` + `xl:col-span-4`) on
+ * direct children to lay out columns. Living in the components layer means
+ * any `col-span-*` utility wins over the default span.
+ */
+@layer components {
+    .app-grid {
+        display: grid;
+        grid-template-columns: repeat(12, minmax(0, 1fr));
+        column-gap: 1.5rem;
+        row-gap: 1.5rem;
+        width: 100%;
+    }
+
+    .app-grid > * {
+        grid-column: 1 / -1;
+    }
+
+    /*
+     * Form primitives — every form field shares these so the look is
+     * re-skinned in one place. Width stays on the element (`w-full`,
+     * `sm:w-64`…) because utilities always win over this layer.
+     */
+    .form-label {
+        @apply mb-1.5 block text-sm font-semibold text-ink-800 dark:text-ink-200;
+    }
+
+    .form-control {
+        @apply rounded-lg border border-ink-200 bg-white px-3.5 py-2.5 text-sm text-ink-950 shadow-xs shadow-ink-950/[0.04] transition placeholder:text-ink-400 hover:border-ink-300 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/15 focus:outline-none disabled:cursor-not-allowed disabled:bg-ink-50 disabled:text-ink-500 dark:border-ink-700 dark:bg-ink-900 dark:text-white dark:placeholder:text-ink-500 dark:hover:border-ink-600 dark:disabled:bg-ink-800;
+    }
+
+    /* A field whose wrapper renders a `.form-error` is flagged in red. */
+    :where(*:has(> .form-error)) > .form-control {
+        @apply border-red-400 focus:border-red-500 focus:ring-red-500/15 dark:border-red-500/70;
+    }
+
+    .form-error {
+        @apply mt-1.5 text-xs font-medium text-red-600 dark:text-red-400;
+    }
+
+    .form-hint {
+        @apply mt-1.5 text-xs text-ink-500 dark:text-ink-400;
+    }
+
+    .form-check {
+        @apply size-4 shrink-0 rounded border-ink-300 accent-primary-600;
+    }
+}
+
+/* Letter-spaced uppercase caption — the "CUMPLIMIENTO · ISO/IEC 27001" motif. */
+@utility eyebrow {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+/* Horizontal tab bars and chip rows: scrollable, without a visible scrollbar. */
+@utility no-scrollbar {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/*
+ * @vuepic/vue-datepicker (components/DatePicker.vue) re-skinned with the
+ * design tokens. The app toggles `.dark` on <html>, so the dark palette is
+ * applied to the picker's light theme under that class.
+ */
+html .dp--theme-light {
+    --dp-font-family: inherit;
+    --dp-font-size: 0.875rem;
+    --dp-border-radius: 0.5rem;
+    --dp-cell-border-radius: 0.5rem;
+    --dp-input-padding: 9px 30px 9px 12px;
+    --dp-background-color: #fff;
+    --dp-text-color: var(--color-ink-950);
+    --dp-hover-color: var(--color-primary-50);
+    --dp-hover-text-color: var(--color-ink-950);
+    --dp-primary-color: var(--color-primary-600);
+    --dp-primary-disabled-color: var(--color-primary-300);
+    --dp-highlight-color: color-mix(
+        in srgb,
+        var(--color-primary-500) 12%,
+        transparent
+    );
+    --dp-border-color: var(--color-ink-200);
+    --dp-menu-border-color: var(--color-ink-200);
+    --dp-border-color-hover: var(--color-ink-300);
+    --dp-border-color-focus: var(--color-primary-500);
+    --dp-secondary-color: var(--color-ink-400);
+    --dp-icon-color: var(--color-ink-400);
+    --dp-range-between-dates-background-color: var(--color-primary-50);
+    --dp-range-between-border-color: var(--color-primary-50);
+}
+
+html.dark .dp--theme-light {
+    --dp-background-color: var(--color-ink-900);
+    --dp-text-color: #fff;
+    --dp-hover-color: var(--color-ink-800);
+    --dp-hover-text-color: #fff;
+    --dp-hover-icon-color: var(--color-ink-300);
+    --dp-primary-disabled-color: var(--color-primary-900);
+    --dp-border-color: var(--color-ink-700);
+    --dp-menu-border-color: var(--color-ink-700);
+    --dp-border-color-hover: var(--color-ink-600);
+    --dp-secondary-color: var(--color-ink-500);
+    --dp-icon-color: var(--color-ink-400);
+    --dp-disabled-color: var(--color-ink-800);
+    --dp-disabled-color-text: var(--color-ink-500);
+    --dp-scroll-bar-background: var(--color-ink-800);
+    --dp-scroll-bar-color: var(--color-ink-600);
+    --dp-tooltip-color: var(--color-ink-800);
+    --dp-range-between-dates-background-color: var(--color-ink-800);
+    --dp-range-between-dates-text-color: #fff;
+    --dp-range-between-border-color: var(--color-ink-800);
 }

@@ -21,6 +21,9 @@ return new class extends Migration
             $table->timestamp('applied_at')->nullable();
             $table->string('status');
             $table->timestamps();
+
+            $table->index(['status', 'effective_at']);
+            $table->index(['subscription_id', 'status']);
         });
     }
 

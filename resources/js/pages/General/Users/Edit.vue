@@ -2,6 +2,7 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { update } from '@/actions/Modules/General/Http/Controllers/UserController';
 import Card from '@/components/Card.vue';
+import FormActions from '@/components/FormActions.vue';
 import GeneralLayout from '@/layouts/GeneralLayout.vue';
 import tenant from '@/routes/tenant';
 
@@ -23,24 +24,25 @@ const props = defineProps<{
         <div class="space-y-6">
             <Link
                 :href="tenant.users.index().url"
-                class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                class="inline-flex items-center gap-2 text-sm font-medium text-ink-500 hover:text-ink-900 dark:text-ink-400 dark:hover:text-white"
             >
                 Volver a usuarios
             </Link>
 
             <div>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 class="text-xl font-semibold text-ink-900 dark:text-white">
                     {{ props.user.name }}
                 </h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p class="mt-1 text-sm text-ink-500 dark:text-ink-400">
                     {{ props.user.email }}
                 </p>
             </div>
 
             <Form
+                autocomplete="off"
                 :action="update(props.user.id).url"
                 method="patch"
-                #default="{ errors, processing }"
+                #default="{ errors, processing, isDirty }"
                 class="space-y-6"
             >
                 <Card title="Roles asignados">
@@ -48,7 +50,7 @@ const props = defineProps<{
                         <label
                             v-for="role in roles"
                             :key="role.id"
-                            class="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+                            class="flex items-center gap-2 text-sm text-ink-700 dark:text-ink-300"
                         >
                             <input
                                 type="checkbox"
@@ -57,7 +59,7 @@ const props = defineProps<{
                                 :checked="
                                     props.assigned_role_ids.includes(role.id)
                                 "
-                                class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                class="form-check"
                             />
                             {{ role.name }}
                         </label>
@@ -67,13 +69,13 @@ const props = defineProps<{
                     </p>
                 </Card>
 
-                <button
-                    type="submit"
-                    :disabled="processing"
-                    class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-700 disabled:opacity-50"
-                >
-                    {{ processing ? 'Guardando...' : 'Guardar cambios' }}
-                </button>
+                <FormActions
+                    :processing="processing"
+                    :is-dirty="isDirty"
+                    submit-label="Guardar cambios"
+                    processing-label="Guardando…"
+                    :cancel-href="tenant.users.index().url"
+                />
             </Form>
         </div>
     </GeneralLayout>

@@ -15,18 +15,16 @@ defineProps<{
     <CentralLayout title="Nuevo staff">
         <div class="space-y-6">
             <div>
-                <p
-                    class="text-xs font-semibold text-slate-500 uppercase dark:text-slate-400"
-                >
+                <p class="eyebrow text-primary-600 dark:text-primary-400">
                     Acceso central
                 </p>
                 <h2
-                    class="mt-1 text-xl font-semibold text-slate-950 dark:text-white"
+                    class="mt-2 text-2xl font-extrabold text-ink-950 dark:text-white"
                 >
                     Crear cuenta de staff
                 </h2>
                 <p
-                    class="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400"
+                    class="mt-2 max-w-2xl text-sm text-ink-600 dark:text-ink-400"
                 >
                     Asigna un rol central para separar soporte, billing, ventas
                     y administración total.
@@ -41,60 +39,42 @@ defineProps<{
                     class="grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2"
                 >
                     <div>
-                        <label
-                            for="name"
-                            class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
-                            Nombre
-                        </label>
+                        <label for="name" class="form-label"> Nombre </label>
                         <input
                             id="name"
                             type="text"
                             name="name"
                             required
                             autofocus
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            class="form-control w-full"
                         />
-                        <p v-if="errors.name" class="mt-1 text-sm text-red-600">
+                        <p v-if="errors.name" class="form-error">
                             {{ errors.name }}
                         </p>
                     </div>
 
                     <div>
-                        <label
-                            for="email"
-                            class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
-                            Email
-                        </label>
+                        <label for="email" class="form-label"> Email </label>
                         <input
                             id="email"
                             type="email"
                             name="email"
                             required
                             autocomplete="username"
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            class="form-control w-full"
                         />
-                        <p
-                            v-if="errors.email"
-                            class="mt-1 text-sm text-red-600"
-                        >
+                        <p v-if="errors.email" class="form-error">
                             {{ errors.email }}
                         </p>
                     </div>
 
                     <div class="sm:col-span-2">
-                        <label
-                            for="role"
-                            class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
-                            Rol
-                        </label>
+                        <label for="role" class="form-label"> Rol </label>
                         <select
                             id="role"
                             name="role"
                             required
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            class="form-control w-full"
                         >
                             <option value="" disabled selected>
                                 Selecciona un rol
@@ -107,16 +87,13 @@ defineProps<{
                                 {{ role }}
                             </option>
                         </select>
-                        <p v-if="errors.role" class="mt-1 text-sm text-red-600">
+                        <p v-if="errors.role" class="form-error">
                             {{ errors.role }}
                         </p>
                     </div>
 
                     <div>
-                        <label
-                            for="password"
-                            class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label for="password" class="form-label">
                             Contraseña
                         </label>
                         <input
@@ -125,21 +102,15 @@ defineProps<{
                             name="password"
                             required
                             autocomplete="new-password"
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            class="form-control w-full"
                         />
-                        <p
-                            v-if="errors.password"
-                            class="mt-1 text-sm text-red-600"
-                        >
+                        <p v-if="errors.password" class="form-error">
                             {{ errors.password }}
                         </p>
                     </div>
 
                     <div>
-                        <label
-                            for="password_confirmation"
-                            class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                        >
+                        <label for="password_confirmation" class="form-label">
                             Confirmar contraseña
                         </label>
                         <input
@@ -148,7 +119,7 @@ defineProps<{
                             name="password_confirmation"
                             required
                             autocomplete="new-password"
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                            class="form-control w-full"
                         />
                     </div>
 
@@ -156,7 +127,7 @@ defineProps<{
                         <button
                             type="submit"
                             :disabled="processing"
-                            class="rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                            class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary-600/20 transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {{ processing ? 'Creando...' : 'Crear cuenta' }}
                         </button>

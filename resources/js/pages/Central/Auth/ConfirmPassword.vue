@@ -18,12 +18,7 @@ import CentralAuthShell from '@/components/CentralAuthShell.vue';
             class="space-y-4"
         >
             <div>
-                <label
-                    for="password"
-                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                    Contraseña
-                </label>
+                <label for="password" class="form-label"> Contraseña </label>
                 <input
                     id="password"
                     type="password"
@@ -31,9 +26,9 @@ import CentralAuthShell from '@/components/CentralAuthShell.vue';
                     required
                     autofocus
                     autocomplete="current-password"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    class="form-control w-full"
                 />
-                <p v-if="errors.password" class="mt-1 text-sm text-red-600">
+                <p v-if="errors.password" class="form-error">
                     {{ errors.password }}
                 </p>
             </div>
@@ -41,7 +36,7 @@ import CentralAuthShell from '@/components/CentralAuthShell.vue';
             <button
                 type="submit"
                 :disabled="processing"
-                class="w-full rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                class="w-full rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary-600/20 transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
                 {{ processing ? 'Confirmando...' : 'Confirmar' }}
             </button>

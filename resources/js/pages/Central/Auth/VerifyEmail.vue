@@ -32,7 +32,7 @@ defineProps<{
             <button
                 type="submit"
                 :disabled="processing"
-                class="w-full rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                class="w-full rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary-600/20 transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
                 {{ processing ? 'Enviando...' : 'Reenviar enlace' }}
             </button>
@@ -42,7 +42,7 @@ defineProps<{
             :href="destroy().url"
             method="post"
             as="button"
-            class="mt-4 w-full rounded-lg px-4 py-2 text-center text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            class="mt-4 w-full rounded-lg px-4 py-2 text-center text-sm font-medium text-ink-600 hover:bg-ink-100 hover:text-ink-950 dark:text-ink-400 dark:hover:bg-ink-800 dark:hover:text-white"
         >
             Salir
         </Link>

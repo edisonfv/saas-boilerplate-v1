@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('key')->unique();
             $table->string('name');
             $table->string('unit')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

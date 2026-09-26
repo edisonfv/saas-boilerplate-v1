@@ -28,6 +28,8 @@ interface Tenant {
 interface Subscription {
     plan_name: string;
     billing_period_label: string;
+    price: string | null;
+    currency: string | null;
     status: string;
     status_label: string;
     trial_ends_at: string | null;
@@ -61,14 +63,14 @@ const isActive = computed(() => props.tenant.status === 'Active');
         <div class="space-y-6">
             <Link
                 :href="central.tenants.index().url"
-                class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+                class="inline-flex items-center gap-2 text-sm font-medium text-ink-500 hover:text-ink-950 dark:text-ink-400 dark:hover:text-white"
             >
                 <Icon name="arrow-left" />
                 Volver a tenants
             </Link>
 
             <section
-                class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900"
+                class="rounded-lg border border-ink-200 bg-white p-5 shadow-sm dark:border-ink-800 dark:bg-ink-900"
             >
                 <div
                     class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
@@ -76,7 +78,7 @@ const isActive = computed(() => props.tenant.status === 'Active');
                     <div>
                         <div class="flex flex-wrap items-center gap-2">
                             <h2
-                                class="text-xl font-semibold text-slate-950 dark:text-white"
+                                class="text-xl font-semibold text-ink-950 dark:text-white"
                             >
                                 {{ tenant.company_name ?? tenant.id }}
                             </h2>
@@ -91,15 +93,16 @@ const isActive = computed(() => props.tenant.status === 'Active');
                             >
                                 {{ subscription.status_label }}
                             </Badge>
-                            <Badge v-else>Sin suscripcion</Badge>
+                            <Badge v-else>Sin suscripción</Badge>
                         </div>
-                        <p class="mt-2 text-sm text-slate-500">
+                        <p class="mt-2 text-sm text-ink-500">
                             {{ tenant.domain ?? 'Sin dominio registrado' }}
                         </p>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
                         <Form
+                            autocomplete="off"
                             v-if="can.manage"
                             v-bind="toggleStatus.form(tenant.id)"
                             #default="{ processing }"
@@ -107,7 +110,7 @@ const isActive = computed(() => props.tenant.status === 'Active');
                             <button
                                 type="submit"
                                 :disabled="processing"
-                                class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-slate-300 px-3.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+                                class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-ink-300 px-3.5 text-sm font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-50 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
                             >
                                 <Icon name="power" class="size-4.5" />
                                 {{ isActive ? 'Suspender' : 'Reactivar' }}
@@ -115,13 +118,11 @@ const isActive = computed(() => props.tenant.status === 'Active');
                         </Form>
 
                         <div
-                            class="rounded-lg border border-slate-200 px-4 py-3 text-sm dark:border-slate-800"
+                            class="rounded-lg border border-ink-200 px-4 py-3 text-sm dark:border-ink-800"
                         >
-                            <p class="text-slate-500 dark:text-slate-400">
-                                Creado
-                            </p>
+                            <p class="text-ink-500 dark:text-ink-400">Creado</p>
                             <p
-                                class="mt-1 font-semibold text-slate-950 dark:text-white"
+                                class="mt-1 font-semibold text-ink-950 dark:text-white"
                             >
                                 {{ tenant.created_at }}
                             </p>
@@ -132,7 +133,7 @@ const isActive = computed(() => props.tenant.status === 'Active');
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <StatCard
-                    label="Modulos activos"
+                    label="Módulos activos"
                     :value="entitlements?.modules.length ?? 0"
                     icon="cube"
                     helper="Segun entitlements"
@@ -144,7 +145,7 @@ const isActive = computed(() => props.tenant.status === 'Active');
                     helper="Habilitadas por plan"
                 />
                 <StatCard
-                    label="Limites"
+                    label="Límites"
                     :value="
                         entitlements
                             ? Object.keys(entitlements.limits).length
@@ -159,51 +160,47 @@ const isActive = computed(() => props.tenant.status === 'Active');
                 <Card title="Empresa">
                     <dl class="space-y-3 text-sm">
                         <div class="flex items-start justify-between gap-4">
-                            <dt class="text-slate-500 dark:text-slate-400">
-                                ID
-                            </dt>
+                            <dt class="text-ink-500 dark:text-ink-400">ID</dt>
                             <dd
-                                class="text-right font-medium text-slate-950 dark:text-white"
+                                class="text-right font-medium text-ink-950 dark:text-white"
                             >
                                 {{ tenant.id }}
                             </dd>
                         </div>
                         <div class="flex items-start justify-between gap-4">
-                            <dt class="text-slate-500 dark:text-slate-400">
-                                Razon social
+                            <dt class="text-ink-500 dark:text-ink-400">
+                                Razón social
                             </dt>
                             <dd
-                                class="text-right font-medium text-slate-950 dark:text-white"
+                                class="text-right font-medium text-ink-950 dark:text-white"
                             >
                                 {{ tenant.legal_name ?? 'Sin registrar' }}
                             </dd>
                         </div>
                         <div class="flex items-start justify-between gap-4">
-                            <dt class="text-slate-500 dark:text-slate-400">
-                                Identificacion fiscal
+                            <dt class="text-ink-500 dark:text-ink-400">
+                                Identificación fiscal
                             </dt>
                             <dd
-                                class="text-right font-medium text-slate-950 dark:text-white"
+                                class="text-right font-medium text-ink-950 dark:text-white"
                             >
                                 {{ tenant.tax_identifier ?? 'Sin registrar' }}
                             </dd>
                         </div>
                         <div class="flex items-start justify-between gap-4">
-                            <dt class="text-slate-500 dark:text-slate-400">
-                                Pais
-                            </dt>
+                            <dt class="text-ink-500 dark:text-ink-400">País</dt>
                             <dd
-                                class="text-right font-medium text-slate-950 dark:text-white"
+                                class="text-right font-medium text-ink-950 dark:text-white"
                             >
                                 {{ tenant.country_code ?? 'Sin registrar' }}
                             </dd>
                         </div>
                         <div class="flex items-start justify-between gap-4">
-                            <dt class="text-slate-500 dark:text-slate-400">
+                            <dt class="text-ink-500 dark:text-ink-400">
                                 Zona horaria
                             </dt>
                             <dd
-                                class="text-right font-medium text-slate-950 dark:text-white"
+                                class="text-right font-medium text-ink-950 dark:text-white"
                             >
                                 {{ tenant.timezone }}
                             </dd>
@@ -214,11 +211,11 @@ const isActive = computed(() => props.tenant.status === 'Active');
                 <Card title="Contacto">
                     <dl class="space-y-3 text-sm">
                         <div class="flex items-start justify-between gap-4">
-                            <dt class="text-slate-500 dark:text-slate-400">
+                            <dt class="text-ink-500 dark:text-ink-400">
                                 Owner
                             </dt>
                             <dd
-                                class="text-right font-medium text-slate-950 dark:text-white"
+                                class="text-right font-medium text-ink-950 dark:text-white"
                             >
                                 {{
                                     tenant.primary_contact_name ??
@@ -227,11 +224,11 @@ const isActive = computed(() => props.tenant.status === 'Active');
                             </dd>
                         </div>
                         <div class="flex items-start justify-between gap-4">
-                            <dt class="text-slate-500 dark:text-slate-400">
+                            <dt class="text-ink-500 dark:text-ink-400">
                                 Email
                             </dt>
                             <dd
-                                class="text-right font-medium text-slate-950 dark:text-white"
+                                class="text-right font-medium text-ink-950 dark:text-white"
                             >
                                 {{
                                     tenant.primary_contact_email ??
@@ -240,11 +237,11 @@ const isActive = computed(() => props.tenant.status === 'Active');
                             </dd>
                         </div>
                         <div class="flex items-start justify-between gap-4">
-                            <dt class="text-slate-500 dark:text-slate-400">
+                            <dt class="text-ink-500 dark:text-ink-400">
                                 Dominio
                             </dt>
                             <dd
-                                class="text-right font-medium text-slate-950 dark:text-white"
+                                class="text-right font-medium text-ink-950 dark:text-white"
                             >
                                 {{ tenant.domain ?? 'Sin dominio' }}
                             </dd>
@@ -252,33 +249,47 @@ const isActive = computed(() => props.tenant.status === 'Active');
                     </dl>
                 </Card>
 
-                <Card title="Suscripcion">
+                <Card title="Suscripción">
                     <template v-if="subscription">
                         <dl class="space-y-3 text-sm">
                             <div class="flex items-start justify-between gap-4">
-                                <dt class="text-slate-500 dark:text-slate-400">
+                                <dt class="text-ink-500 dark:text-ink-400">
                                     Plan
                                 </dt>
                                 <dd
-                                    class="text-right font-medium text-slate-950 dark:text-white"
+                                    class="text-right font-medium text-ink-950 dark:text-white"
                                 >
                                     {{ subscription.plan_name }}
                                 </dd>
                             </div>
                             <div class="flex items-start justify-between gap-4">
-                                <dt class="text-slate-500 dark:text-slate-400">
+                                <dt class="text-ink-500 dark:text-ink-400">
                                     Periodo
                                 </dt>
                                 <dd
-                                    class="text-right font-medium text-slate-950 dark:text-white"
+                                    class="text-right font-medium text-ink-950 dark:text-white"
                                 >
                                     {{ subscription.billing_period_label }}
                                 </dd>
                             </div>
                             <div
+                                v-if="subscription.price !== null"
+                                class="flex items-start justify-between gap-4"
+                            >
+                                <dt class="text-ink-500 dark:text-ink-400">
+                                    Precio contratado
+                                </dt>
+                                <dd
+                                    class="text-right font-medium text-ink-950 dark:text-white"
+                                >
+                                    {{ subscription.price }}
+                                    {{ subscription.currency }}
+                                </dd>
+                            </div>
+                            <div
                                 class="flex items-center justify-between gap-4"
                             >
-                                <dt class="text-slate-500 dark:text-slate-400">
+                                <dt class="text-ink-500 dark:text-ink-400">
                                     Estado
                                 </dt>
                                 <dd>
@@ -297,21 +308,21 @@ const isActive = computed(() => props.tenant.status === 'Active');
                                 v-if="subscription.trial_ends_at"
                                 class="flex items-start justify-between gap-4"
                             >
-                                <dt class="text-slate-500 dark:text-slate-400">
+                                <dt class="text-ink-500 dark:text-ink-400">
                                     Trial hasta
                                 </dt>
                                 <dd
-                                    class="text-right font-medium text-slate-950 dark:text-white"
+                                    class="text-right font-medium text-ink-950 dark:text-white"
                                 >
                                     {{ subscription.trial_ends_at }}
                                 </dd>
                             </div>
                             <div class="flex items-start justify-between gap-4">
-                                <dt class="text-slate-500 dark:text-slate-400">
+                                <dt class="text-ink-500 dark:text-ink-400">
                                     Periodo actual
                                 </dt>
                                 <dd
-                                    class="text-right font-medium text-slate-950 dark:text-white"
+                                    class="text-right font-medium text-ink-950 dark:text-white"
                                 >
                                     {{ subscription.current_period_start }} -
                                     {{ subscription.current_period_end }}
@@ -319,8 +330,8 @@ const isActive = computed(() => props.tenant.status === 'Active');
                             </div>
                         </dl>
                     </template>
-                    <p v-else class="text-sm text-slate-400">
-                        Este tenant no tiene ninguna suscripcion todavia.
+                    <p v-else class="text-sm text-ink-400">
+                        Este tenant no tiene ninguna suscripción todavia.
                     </p>
                 </Card>
             </div>
@@ -330,9 +341,9 @@ const isActive = computed(() => props.tenant.status === 'Active');
                     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
                         <div>
                             <p
-                                class="mb-2 text-xs font-semibold text-slate-500 uppercase dark:text-slate-400"
+                                class="mb-2 text-xs font-semibold text-ink-500 uppercase dark:text-ink-400"
                             >
-                                Modulos
+                                Módulos
                             </p>
                             <div class="flex flex-wrap gap-2">
                                 <Badge
@@ -344,7 +355,7 @@ const isActive = computed(() => props.tenant.status === 'Active');
                                 </Badge>
                                 <span
                                     v-if="entitlements.modules.length === 0"
-                                    class="text-sm text-slate-400"
+                                    class="text-sm text-ink-400"
                                 >
                                     Ninguno
                                 </span>
@@ -353,7 +364,7 @@ const isActive = computed(() => props.tenant.status === 'Active');
 
                         <div>
                             <p
-                                class="mb-2 text-xs font-semibold text-slate-500 uppercase dark:text-slate-400"
+                                class="mb-2 text-xs font-semibold text-ink-500 uppercase dark:text-ink-400"
                             >
                                 Features
                             </p>
@@ -366,7 +377,7 @@ const isActive = computed(() => props.tenant.status === 'Active');
                                 </Badge>
                                 <span
                                     v-if="entitlements.features.length === 0"
-                                    class="text-sm text-slate-400"
+                                    class="text-sm text-ink-400"
                                 >
                                     Ninguna
                                 </span>
@@ -375,9 +386,9 @@ const isActive = computed(() => props.tenant.status === 'Active');
 
                         <div>
                             <p
-                                class="mb-2 text-xs font-semibold text-slate-500 uppercase dark:text-slate-400"
+                                class="mb-2 text-xs font-semibold text-ink-500 uppercase dark:text-ink-400"
                             >
-                                Limites
+                                Límites
                             </p>
                             <ul class="space-y-2">
                                 <li
@@ -386,12 +397,12 @@ const isActive = computed(() => props.tenant.status === 'Active');
                                     class="flex justify-between gap-4 text-sm"
                                 >
                                     <span
-                                        class="text-slate-700 dark:text-slate-300"
+                                        class="text-ink-700 dark:text-ink-300"
                                     >
                                         {{ key }}
                                     </span>
                                     <span
-                                        class="font-medium text-slate-950 dark:text-white"
+                                        class="font-medium text-ink-950 dark:text-white"
                                     >
                                         {{ value }}
                                     </span>
@@ -400,8 +411,8 @@ const isActive = computed(() => props.tenant.status === 'Active');
                         </div>
                     </div>
                 </template>
-                <p v-else class="text-sm text-slate-400">
-                    Sin entitlements porque no hay suscripcion activa.
+                <p v-else class="text-sm text-ink-400">
+                    Sin entitlements porque no hay suscripción activa.
                 </p>
             </Card>
         </div>

@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * What a tenant is currently entitled to, derived from central Subscription +
- * SubscriptionModule rows and cached centrally. Invalidated by
+ * SubscriptionModule rows and the features/limits frozen on the subscription
+ * when it was contracted (never the live Plan), and cached centrally. Invalidated by
  * App\Listeners\InvalidateTenantEntitlementsCache whenever
  * App\Events\SubscriptionModuleChanged fires.
  */
@@ -85,8 +86,8 @@ class TenantEntitlements
                         ->where(fn ($endsAt) => $endsAt->whereNull('ends_at')->orWhere('ends_at', '>', $now))
                         ->whereHas('module', fn ($module) => $module->where('is_active', true))
                         ->with('module'),
-                    'plan.features' => fn ($query) => $query->where('is_active', true),
-                    'plan.limits' => fn ($query) => $query->where('is_active', true),
+                    'features' => fn ($query) => $query->where('is_active', true),
+                    'limits' => fn ($query) => $query->where('is_active', true),
                 ])->first();
 
                 if ($subscription === null) {
@@ -94,9 +95,9 @@ class TenantEntitlements
                 }
 
                 return [
-                    'modules' => $subscription->modules->pluck('module.slug')->values()->all(),
-                    'features' => $subscription->plan->features->pluck('slug')->values()->all(),
-                    'limits' => $subscription->plan->limits
+                    'modules' => $subscription->modules->pluck('module.slug')->unique()->values()->all(),
+                    'features' => $subscription->features->pluck('slug')->values()->all(),
+                    'limits' => $subscription->limits
                         ->mapWithKeys(fn ($limitType) => [$limitType->key => $limitType->pivot->value])
                         ->all(),
                 ];

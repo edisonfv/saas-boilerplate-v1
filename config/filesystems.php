@@ -38,6 +38,17 @@ return [
             'report' => false,
         ],
 
+        // Private polymorphic attachments (App\Services\Attachments\AttachmentStore).
+        // Deliberately NOT listed in config('tenancy.filesystem.disks'), so
+        // uploads from tenant workspaces land in the central location.
+        'attachments' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/attachments'),
+            'serve' => false,
+            'throw' => false,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

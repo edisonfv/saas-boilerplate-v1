@@ -24,6 +24,8 @@ class SubscriptionFactory extends Factory
             'tenant_id' => 'tenant-'.fake()->unique()->bothify('????-####'),
             'plan_id' => Plan::factory(),
             'billing_period' => BillingPeriod::Monthly(),
+            'price' => fake()->randomFloat(2, 10, 200),
+            'currency' => 'USD',
             'status' => SubscriptionStatus::Active(),
             'trial_ends_at' => null,
             'current_period_start' => now(),

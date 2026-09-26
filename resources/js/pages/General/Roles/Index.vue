@@ -52,11 +52,11 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
             >
                 <div>
                     <h2
-                        class="text-xl font-semibold text-gray-900 dark:text-white"
+                        class="text-xl font-semibold text-ink-900 dark:text-white"
                     >
                         Roles
                     </h2>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <p class="mt-1 text-sm text-ink-500 dark:text-ink-400">
                         Crea roles combinando los permisos disponibles ({{
                             stats.totalPermissions
                         }}) y asígnalos a tus usuarios.
@@ -65,7 +65,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                 <Link
                     v-if="can.create"
                     :href="tenant.roles.create().url"
-                    class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-700"
+                    class="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary-600 px-3.5 text-sm font-medium text-white shadow-sm transition hover:bg-primary-700"
                 >
                     Nuevo rol
                 </Link>
@@ -75,7 +75,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                 <div
                     class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
                 >
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                    <p class="text-sm text-ink-500 dark:text-ink-400">
                         El rol owner está protegido y no puede editarse ni
                         eliminarse.
                     </p>
@@ -83,7 +83,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                         v-model="search"
                         type="search"
                         placeholder="Buscar por nombre..."
-                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:w-64 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                        class="form-control w-full sm:w-64"
                     />
                 </div>
 
@@ -91,7 +91,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                     <table class="w-full min-w-[560px] text-left text-sm">
                         <thead>
                             <tr
-                                class="border-y border-gray-200 bg-gray-50 text-xs font-semibold text-gray-500 uppercase dark:border-gray-800 dark:bg-gray-950/50 dark:text-gray-400"
+                                class="border-y border-ink-200 bg-ink-50 text-xs font-semibold text-ink-500 uppercase dark:border-ink-800 dark:bg-ink-950/50 dark:text-ink-400"
                             >
                                 <th class="px-4 py-3">
                                     <button
@@ -113,13 +113,13 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                             </tr>
                         </thead>
                         <tbody
-                            class="divide-y divide-gray-100 dark:divide-gray-800"
+                            class="divide-y divide-ink-100 dark:divide-ink-800"
                         >
                             <tr v-for="role in props.roles.data" :key="role.id">
                                 <td class="px-4 py-4">
                                     <div class="flex items-center gap-2">
                                         <span
-                                            class="font-medium text-gray-900 dark:text-white"
+                                            class="font-medium text-ink-900 dark:text-white"
                                             >{{ role.name }}</span
                                         >
                                         <Badge
@@ -130,12 +130,12 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                                     </div>
                                 </td>
                                 <td
-                                    class="px-4 py-4 text-right font-medium text-gray-900 dark:text-white"
+                                    class="px-4 py-4 text-right font-medium text-ink-900 dark:text-white"
                                 >
                                     {{ role.permissions_count }}
                                 </td>
                                 <td
-                                    class="px-4 py-4 text-right font-medium text-gray-900 dark:text-white"
+                                    class="px-4 py-4 text-right font-medium text-ink-900 dark:text-white"
                                 >
                                     {{ role.users_count }}
                                 </td>
@@ -150,11 +150,12 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                                             :href="
                                                 tenant.roles.edit(role.id).url
                                             "
-                                            class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                                            class="text-ink-500 hover:text-ink-900 dark:text-ink-400 dark:hover:text-white"
                                         >
                                             Editar
                                         </Link>
                                         <Form
+                                            autocomplete="off"
                                             v-if="
                                                 can.delete &&
                                                 !role.is_protected &&
@@ -166,7 +167,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                                             <button
                                                 type="submit"
                                                 :disabled="processing"
-                                                class="text-gray-500 hover:text-red-600 disabled:opacity-50 dark:text-gray-400 dark:hover:text-red-400"
+                                                class="text-ink-500 hover:text-red-600 disabled:opacity-50 dark:text-ink-400 dark:hover:text-red-400"
                                             >
                                                 Eliminar
                                             </button>
@@ -177,7 +178,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                             <tr v-if="props.roles.data.length === 0">
                                 <td
                                     colspan="4"
-                                    class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
+                                    class="px-4 py-10 text-center text-sm text-ink-500 dark:text-ink-400"
                                 >
                                     No hay roles que coincidan con la búsqueda.
                                 </td>

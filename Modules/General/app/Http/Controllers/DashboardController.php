@@ -27,7 +27,6 @@ class DashboardController extends Controller
         });
 
         return Inertia::render('General/Dashboard', [
-            'tenant' => ['id' => $tenant->getTenantKey()],
             'subscription' => $subscription,
             'entitlements' => $subscription ? [
                 'modules' => $entitlements->activeModules($tenant)->values(),

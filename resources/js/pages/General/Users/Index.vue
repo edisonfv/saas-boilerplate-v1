@@ -44,10 +44,10 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
     <GeneralLayout title="Usuarios">
         <div class="space-y-6">
             <div>
-                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 class="text-xl font-semibold text-ink-900 dark:text-white">
                     Usuarios
                 </h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                <p class="mt-1 text-sm text-ink-500 dark:text-ink-400">
                     {{ stats.total }} usuarios, {{ stats.owners }} con rol
                     owner.
                 </p>
@@ -59,7 +59,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                         v-model="search"
                         type="search"
                         placeholder="Buscar por nombre..."
-                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:ring-indigo-500 sm:w-64 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                        class="form-control w-full sm:w-64"
                     />
                 </div>
 
@@ -67,7 +67,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                     <table class="w-full min-w-[560px] text-left text-sm">
                         <thead>
                             <tr
-                                class="border-y border-gray-200 bg-gray-50 text-xs font-semibold text-gray-500 uppercase dark:border-gray-800 dark:bg-gray-950/50 dark:text-gray-400"
+                                class="border-y border-ink-200 bg-ink-50 text-xs font-semibold text-ink-500 uppercase dark:border-ink-800 dark:bg-ink-950/50 dark:text-ink-400"
                             >
                                 <th class="px-4 py-3">
                                     <button
@@ -102,16 +102,16 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                             </tr>
                         </thead>
                         <tbody
-                            class="divide-y divide-gray-100 dark:divide-gray-800"
+                            class="divide-y divide-ink-100 dark:divide-ink-800"
                         >
                             <tr v-for="user in props.users.data" :key="user.id">
                                 <td
-                                    class="px-4 py-4 font-medium text-gray-900 dark:text-white"
+                                    class="px-4 py-4 font-medium text-ink-900 dark:text-white"
                                 >
                                     {{ user.name }}
                                 </td>
                                 <td
-                                    class="px-4 py-4 text-gray-700 dark:text-gray-300"
+                                    class="px-4 py-4 text-ink-700 dark:text-ink-300"
                                 >
                                     {{ user.email }}
                                 </td>
@@ -125,7 +125,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                                         >
                                         <span
                                             v-if="user.roles.length === 0"
-                                            class="text-gray-400"
+                                            class="text-ink-400"
                                             >Sin rol</span
                                         >
                                     </div>
@@ -134,7 +134,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                                     <Link
                                         v-if="can.update"
                                         :href="tenant.users.edit(user.id).url"
-                                        class="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                                        class="text-ink-500 hover:text-ink-900 dark:text-ink-400 dark:hover:text-white"
                                     >
                                         Editar
                                     </Link>
@@ -143,7 +143,7 @@ const { search, toggleSort, sortIndicator } = useListingFilters(
                             <tr v-if="props.users.data.length === 0">
                                 <td
                                     colspan="4"
-                                    class="px-4 py-10 text-center text-sm text-gray-500 dark:text-gray-400"
+                                    class="px-4 py-10 text-center text-sm text-ink-500 dark:text-ink-400"
                                 >
                                     No hay usuarios que coincidan con la
                                     búsqueda.

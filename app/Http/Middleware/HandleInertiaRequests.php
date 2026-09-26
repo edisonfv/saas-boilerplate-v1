@@ -2,7 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Tenant;
+use App\Services\TenantEntitlements;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -40,6 +43,15 @@ class HandleInertiaRequests extends Middleware
         // that applies to the domain this request is on.
         $user = tenant() ? $request->user('web') : $request->user('central');
 
+        $tenant = tenant();
+
+        // Controllers flash a `status` key (e.g. "plan-created") the classic
+        // way; forward it as Inertia flash data so the layouts can toast it
+        // (see resources/js/lib/flash.ts) without it being stored in history.
+        if ($request->session()->has('status')) {
+            Inertia::flash('status', $request->session()->get('status'));
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -47,6 +59,16 @@ class HandleInertiaRequests extends Middleware
                 'user' => $user,
                 'permissions' => $user?->getAllPermissions()->pluck('name') ?? [],
             ],
+            // Lets the tenant navigation hide items of modules the tenant
+            // hasn't contracted (their routes 403 via "tenant.module").
+            'tenant' => $tenant instanceof Tenant ? [
+                'id' => $tenant->getTenantKey(),
+                'name' => $tenant->company_name ?? $tenant->getTenantKey(),
+                'modules' => app(TenantEntitlements::class)->activeModules($tenant)->values(),
+            ] : null,
+            // Dates are rendered in the app timezone (support hours, SLAs,
+            // bookings are all defined in it).
+            'timezone' => config('app.timezone'),
         ];
     }
 }

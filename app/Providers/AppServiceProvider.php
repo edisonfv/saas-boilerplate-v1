@@ -3,6 +3,9 @@
 namespace App\Providers;
 
 use App\Models\CentralUser;
+use App\Models\SupportTicket;
+use App\Models\SupportTicketMessage;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -11,6 +14,7 @@ use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -34,7 +38,25 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->configureMorphMap();
         $this->configureAuthNotifications();
+    }
+
+    /**
+     * Polymorphic "*_type" columns store these stable aliases instead of
+     * class names, so renaming or moving a model never breaks stored rows.
+     * Enforced: morphing a model that isn't listed here throws, so every new
+     * polymorphic participant (e.g. a model using HasAttachments, or anything
+     * assigned Spatie roles) must be registered below.
+     */
+    protected function configureMorphMap(): void
+    {
+        Relation::enforceMorphMap([
+            'central_user' => CentralUser::class,
+            'user' => User::class,
+            'support_ticket' => SupportTicket::class,
+            'support_ticket_message' => SupportTicketMessage::class,
+        ]);
     }
 
     /**
