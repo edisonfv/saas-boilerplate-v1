@@ -11,15 +11,13 @@ withDefaults(
 
 <template>
     <div
-        class="rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+        class="rounded-xl border border-ink-200 bg-white shadow-sm shadow-ink-950/[0.03] dark:border-ink-800 dark:bg-ink-900"
     >
         <div
             v-if="title"
-            class="border-b border-slate-200 px-5 py-4 dark:border-slate-800"
+            class="border-b border-ink-200 px-5 py-4 dark:border-ink-800"
         >
-            <h2
-                class="text-sm font-semibold tracking-wide text-slate-950 dark:text-white"
-            >
+            <h2 class="text-sm font-bold text-ink-950 dark:text-white">
                 {{ title }}
             </h2>
         </div>

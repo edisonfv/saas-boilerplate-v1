@@ -175,6 +175,17 @@ Vue components must have a single root element.
 
 ## Project-Specific Conventions
 
+### Laravel first (check the framework before building anything)
+
+Laravel already ships most of the infrastructure a SaaS needs. **Before writing custom code for a cross-cutting concern, search the version-specific docs (`search-docs` tool) and use the framework feature.** Only build something custom when Laravel (or an already-installed package) genuinely doesn't cover it, and say why in the class docblock.
+
+- **Polymorphism for shared entities.** Anything that can belong to several models (attachments, comments, notes, tags, activity/audit, likes, addresses…) is a polymorphic relation (`morphTo` / `morphMany` / `morphToMany`, `uuidMorphs()` in migrations), exposed through a reusable `Has…` trait in `App\Models\Concerns` plus a contract in `App\Models\Contracts` — never a per-feature table like `ticket_attachments`.
+    - **Attachments are already polymorphic:** use `App\Models\Attachment` (central `attachments` table) by adding `implements App\Models\Contracts\Attachable` + `use App\Models\Concerns\HasAttachments` to the model, storing files with `App\Services\Attachments\AttachmentStore`, and mapping the model to its guarding entity in `App\Policies\AttachmentPolicy::guardedEntity()`.
+    - **The morph map is enforced** (`Relation::enforceMorphMap()` in `AppServiceProvider::configureMorphMap()`): every model that takes part in a polymorphic relation — including models that receive Spatie roles/permissions — must be registered there with a snake_case alias, or Eloquent throws `ClassMorphViolationException`. Never store class names in `*_type` columns; when adding an alias for a model that already has rows, ship a migration that converts the stored values (central and `database/migrations/tenant/` when tenant tables are involved).
+- **Authorization = Policies + Gates.** Per-record access checks live in a Policy (`php artisan make:policy`, auto-discovered) and are applied on routes with `->can('ability', 'param')` or `Gate::authorize()`, not with ad-hoc `abort_unless()` helpers in controllers. Use `Response::denyAsNotFound()` when existence must not leak (cross-tenant ids). Spatie permissions answer "may use this feature"; policies answer "may touch *this* record". Mirror a policy's rule for listings with a local scope (e.g. `SupportTicket::visibleTo()`).
+- **Use the built-in building blocks** instead of re-implementing them: Form Requests (validation + `authorize`), route model binding with `scopeBindings()` for nested resources, Eloquent casts and local scopes, Notifications (mail/database, `ShouldQueue`), queued jobs, events/listeners, the scheduler (`routes/console.php`), `Storage` disks, signed/temporary URLs (`URL::temporarySignedRoute`, `signed` middleware), rate limiting (`throttle`), `Str`/`Number`/`Arr` helpers, and model factories/states in tests.
+- **Generate with Artisan** (`make:model`, `make:policy`, `make:migration`, `make:request`, `make:notification`, `make:test --pest`…) so files follow Laravel's structure, then adapt them to the project's conventions.
+
 ### Model IDs
 
 - Domain models in both the central app and tenant app use UUID primary keys. New first-party Eloquent models should use `uuid('id')->primary()` in migrations and the shared `App\Models\Concerns\UsesUuidPrimaryKey` trait on the model.

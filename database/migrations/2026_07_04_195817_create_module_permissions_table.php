@@ -15,6 +15,7 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('module_id')->constrained()->cascadeOnDelete();
             $table->string('slug')->unique();
+            $table->string('label')->nullable();
             $table->timestamps();
         });
     }

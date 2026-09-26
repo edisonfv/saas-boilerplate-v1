@@ -12,17 +12,24 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
  * A tenant's current commercial state (lives centrally). One row per tenant —
- * history/scheduled changes belong in a future SubscriptionChange model, not here.
+ * scheduled/applied plan changes live in SubscriptionChange.
+ *
+ * The contracted terms (price, features, limits) are frozen here when the
+ * tenant subscribes or changes plan, so editing a Plan never alters what an
+ * existing tenant contracted. Entitlements read these, never the live plan.
  *
  * @property string $id
  * @property string $tenant_id
  * @property string $plan_id
  * @property BillingPeriod $billing_period
+ * @property string|null $price
+ * @property string|null $currency
  * @property SubscriptionStatus $status
  * @property Carbon|null $trial_ends_at
  * @property Carbon|null $current_period_start
@@ -31,7 +38,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['tenant_id', 'plan_id', 'billing_period', 'status', 'trial_ends_at', 'current_period_start', 'current_period_end', 'cancel_at_period_end'])]
+#[Fillable(['tenant_id', 'plan_id', 'billing_period', 'price', 'currency', 'status', 'trial_ends_at', 'current_period_start', 'current_period_end', 'cancel_at_period_end'])]
 class Subscription extends Model
 {
     /** @use HasFactory<SubscriptionFactory> */
@@ -70,6 +77,28 @@ class Subscription extends Model
     public function modules(): HasMany
     {
         return $this->hasMany(SubscriptionModule::class);
+    }
+
+    /**
+     * Features contracted with the plan, frozen at subscribe/plan-change time.
+     *
+     * @return BelongsToMany<Feature, $this>
+     */
+    public function features(): BelongsToMany
+    {
+        return $this->belongsToMany(Feature::class, 'subscription_feature');
+    }
+
+    /**
+     * Limits contracted with the plan, frozen at subscribe/plan-change time.
+     *
+     * @return BelongsToMany<LimitType, $this, SubscriptionLimitPivot, 'pivot'>
+     */
+    public function limits(): BelongsToMany
+    {
+        return $this->belongsToMany(LimitType::class, 'subscription_limit')
+            ->using(SubscriptionLimitPivot::class)
+            ->withPivot('value');
     }
 
     /**

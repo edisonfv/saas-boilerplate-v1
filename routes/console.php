@@ -12,3 +12,8 @@ Schedule::command('subscriptions:apply-scheduled-changes')
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('support:close-resolved')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Central\Http\Controllers\AttachmentController;
 use Modules\Central\Http\Controllers\Auth\AuthenticatedSessionController;
 use Modules\Central\Http\Controllers\Auth\ConfirmablePasswordController;
 use Modules\Central\Http\Controllers\Auth\EmailVerificationNotificationController;
@@ -18,6 +19,11 @@ use Modules\Central\Http\Controllers\PlanController;
 use Modules\Central\Http\Controllers\ProfileController;
 use Modules\Central\Http\Controllers\RoleController;
 use Modules\Central\Http\Controllers\StaffController;
+use Modules\Central\Http\Controllers\Support\AppointmentController as SupportAppointmentController;
+use Modules\Central\Http\Controllers\Support\ReportController as SupportReportController;
+use Modules\Central\Http\Controllers\Support\ScheduleController as SupportScheduleController;
+use Modules\Central\Http\Controllers\Support\TicketActionController as SupportTicketActionController;
+use Modules\Central\Http\Controllers\Support\TicketController as SupportTicketController;
 use Modules\Central\Http\Controllers\TenantController;
 
 // Central is the routing exception: these routes resolve only on the central
@@ -101,6 +107,12 @@ Route::prefix('central')->name('central.')->group(function () {
         Route::middleware('verified:central.verification.notice')->group(function () {
             Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
+            // Polymorphic files of any central entity; AttachmentPolicy
+            // delegates to the policy of the entity they're attached to.
+            Route::get('/attachments/{attachment}', [AttachmentController::class, 'show'])
+                ->can('view', 'attachment')
+                ->name('attachments.show');
+
             Route::middleware('permission:central.plans.create')->group(function () {
                 Route::get('/plans/create', [PlanController::class, 'create'])->name('plans.create');
                 Route::post('/plans', [PlanController::class, 'store'])->name('plans.store');
@@ -174,6 +186,59 @@ Route::prefix('central')->name('central.')->group(function () {
 
             Route::middleware('permission:central.tenants.update')->group(function () {
                 Route::patch('/tenants/{tenant}/toggle-status', [TenantController::class, 'toggleStatus'])->name('tenants.toggle-status');
+            });
+
+            // Support desk ---------------------------------------------------
+            Route::prefix('support')->name('support.')->group(function () {
+                Route::middleware('permission:central.support-tickets.create')->group(function () {
+                    Route::get('/tickets/create', [SupportTicketController::class, 'create'])->name('tickets.create');
+                    Route::post('/tickets', [SupportTicketController::class, 'store'])->name('tickets.store');
+                });
+
+                Route::middleware('permission:central.support-tickets.view')->group(function () {
+                    Route::get('/tickets', [SupportTicketController::class, 'index'])->name('tickets.index');
+                    Route::get('/tickets/{ticket}', [SupportTicketController::class, 'show'])->name('tickets.show');
+                });
+
+                Route::middleware('permission:central.support-tickets.update')->group(function () {
+                    Route::post('/tickets/{ticket}/messages', [SupportTicketActionController::class, 'reply'])->name('tickets.reply');
+                    Route::patch('/tickets/{ticket}/status', [SupportTicketActionController::class, 'status'])->name('tickets.status');
+                    Route::patch('/tickets/{ticket}/priority', [SupportTicketActionController::class, 'priority'])->name('tickets.priority');
+                    Route::patch('/tickets/{ticket}/tenant', [SupportTicketActionController::class, 'linkTenant'])->name('tickets.tenant');
+                    Route::post('/tickets/{ticket}/time-entries', [SupportTicketActionController::class, 'logTime'])->name('tickets.time-entries.store');
+                    Route::post('/tickets/{ticket}/appointments', [SupportAppointmentController::class, 'store'])->name('tickets.appointments.store');
+                    Route::patch('/appointments/{appointment}', [SupportAppointmentController::class, 'update'])->name('appointments.update');
+                    Route::patch('/appointments/{appointment}/finish', [SupportAppointmentController::class, 'finish'])->name('appointments.finish');
+                    Route::delete('/appointments/{appointment}', [SupportAppointmentController::class, 'destroy'])->name('appointments.destroy');
+                });
+
+                Route::middleware('permission:central.support-tickets.assign')->group(function () {
+                    Route::patch('/tickets/{ticket}/assignee', [SupportTicketActionController::class, 'assign'])->name('tickets.assignee');
+                });
+
+                Route::middleware('permission:central.support-tickets.billing')->group(function () {
+                    Route::patch('/tickets/{ticket}/billing', [SupportTicketActionController::class, 'billing'])->name('tickets.billing');
+                    Route::post('/reports/invoiced', [SupportReportController::class, 'markInvoiced'])->name('reports.invoiced');
+                });
+
+                Route::middleware('permission:central.support-schedule.view')->group(function () {
+                    Route::get('/schedule', [SupportScheduleController::class, 'index'])->name('schedule.index');
+                });
+
+                Route::middleware('permission:central.support-schedule.update')->group(function () {
+                    Route::put('/settings', [SupportScheduleController::class, 'updateSettings'])->name('settings.update');
+                    Route::put('/business-hours', [SupportScheduleController::class, 'updateBusinessHours'])->name('business-hours.update');
+                    Route::post('/attendance-types', [SupportScheduleController::class, 'storeAttendanceType'])->name('attendance-types.store');
+                    Route::patch('/attendance-types/{attendanceType}', [SupportScheduleController::class, 'updateAttendanceType'])->name('attendance-types.update');
+                    Route::post('/technicians', [SupportScheduleController::class, 'storeTechnician'])->name('technicians.store');
+                    Route::patch('/technicians/{technician}', [SupportScheduleController::class, 'updateTechnician'])->name('technicians.update');
+                    Route::post('/blackouts', [SupportScheduleController::class, 'storeBlackout'])->name('blackouts.store');
+                    Route::delete('/blackouts/{blackout}', [SupportScheduleController::class, 'destroyBlackout'])->name('blackouts.destroy');
+                });
+
+                Route::middleware('permission:central.support-reports.view')->group(function () {
+                    Route::get('/reports', [SupportReportController::class, 'index'])->name('reports.index');
+                });
             });
         });
     });

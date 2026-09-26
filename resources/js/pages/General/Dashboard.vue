@@ -21,31 +21,28 @@ interface Entitlements {
 }
 
 defineProps<{
-    tenant: { id: string };
     subscription: Subscription | null;
     entitlements: Entitlements | null;
 }>();
 </script>
 
 <template>
-    <Head title="Mi Dashboard" />
+    <Head title="Dashboard" />
 
-    <GeneralLayout title="Mi Dashboard" :tenant-id="tenant.id">
+    <GeneralLayout title="Dashboard">
         <template v-if="subscription">
             <Card class="mb-6">
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                        <p class="text-sm text-ink-500 dark:text-ink-400">
                             Plan actual
                         </p>
                         <p
-                            class="text-2xl font-semibold text-gray-900 dark:text-white"
+                            class="text-2xl font-semibold text-ink-900 dark:text-white"
                         >
                             {{ subscription.plan_name }}
                         </p>
-                        <p
-                            class="mt-1 text-sm text-gray-500 dark:text-gray-400"
-                        >
+                        <p class="mt-1 text-sm text-ink-500 dark:text-ink-400">
                             Facturación
                             {{
                                 subscription.billing_period_label.toLowerCase()
@@ -74,7 +71,7 @@ defineProps<{
                         >
                         <span
                             v-if="!entitlements?.modules.length"
-                            class="text-sm text-gray-400"
+                            class="text-sm text-ink-400"
                             >Ninguno</span
                         >
                     </div>
@@ -90,7 +87,7 @@ defineProps<{
                         >
                         <span
                             v-if="!entitlements?.features.length"
-                            class="text-sm text-gray-400"
+                            class="text-sm text-ink-400"
                             >Ninguna</span
                         >
                     </div>
@@ -103,11 +100,11 @@ defineProps<{
                             :key="key"
                             class="flex justify-between text-sm"
                         >
-                            <span class="text-gray-700 dark:text-gray-300">{{
+                            <span class="text-ink-700 dark:text-ink-300">{{
                                 key
                             }}</span>
                             <span
-                                class="font-medium text-gray-900 dark:text-white"
+                                class="font-medium text-ink-900 dark:text-white"
                                 >{{ value }}</span
                             >
                         </li>
@@ -117,7 +114,7 @@ defineProps<{
         </template>
 
         <Card v-else>
-            <p class="text-sm text-gray-500 dark:text-gray-400">
+            <p class="text-sm text-ink-500 dark:text-ink-400">
                 Este tenant no tiene ninguna suscripción activa todavía.
             </p>
         </Card>

@@ -25,18 +25,16 @@ const authUser = computed(
     <CentralLayout title="Perfil">
         <div class="space-y-6">
             <div>
-                <p
-                    class="text-xs font-semibold text-slate-500 uppercase dark:text-slate-400"
-                >
+                <p class="eyebrow text-primary-600 dark:text-primary-400">
                     Cuenta central
                 </p>
                 <h2
-                    class="mt-1 text-xl font-semibold text-slate-950 dark:text-white"
+                    class="mt-2 text-2xl font-extrabold text-ink-950 dark:text-white"
                 >
                     Perfil y seguridad
                 </h2>
                 <p
-                    class="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400"
+                    class="mt-2 max-w-2xl text-sm text-ink-600 dark:text-ink-400"
                 >
                     Administra tus datos de staff, credenciales y cierre de
                     cuenta.
@@ -46,14 +44,8 @@ const authUser = computed(
             <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
                 <div class="space-y-6 xl:col-span-2">
                     <Card title="Datos de perfil">
-                        <p
-                            v-if="status === 'profile-updated'"
-                            class="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                        >
-                            Perfil actualizado.
-                        </p>
-
                         <Form
+                            autocomplete="off"
                             v-bind="updateProfile.form()"
                             #default="{
                                 errors,
@@ -63,10 +55,7 @@ const authUser = computed(
                             class="grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-2"
                         >
                             <div>
-                                <label
-                                    for="name"
-                                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                                >
+                                <label for="name" class="form-label">
                                     Nombre
                                 </label>
                                 <input
@@ -75,21 +64,15 @@ const authUser = computed(
                                     name="name"
                                     required
                                     :value="authUser?.name"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                    class="form-control w-full"
                                 />
-                                <p
-                                    v-if="errors.name"
-                                    class="mt-1 text-sm text-red-600"
-                                >
+                                <p v-if="errors.name" class="form-error">
                                     {{ errors.name }}
                                 </p>
                             </div>
 
                             <div>
-                                <label
-                                    for="email"
-                                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                                >
+                                <label for="email" class="form-label">
                                     Email
                                 </label>
                                 <input
@@ -98,12 +81,9 @@ const authUser = computed(
                                     name="email"
                                     required
                                     :value="authUser?.email"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                    class="form-control w-full"
                                 />
-                                <p
-                                    v-if="errors.email"
-                                    class="mt-1 text-sm text-red-600"
-                                >
+                                <p v-if="errors.email" class="form-error">
                                     {{ errors.email }}
                                 </p>
                             </div>
@@ -112,7 +92,7 @@ const authUser = computed(
                                 <button
                                     type="submit"
                                     :disabled="processing"
-                                    class="rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                                    class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary-600/20 transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {{
                                         processing ? 'Guardando...' : 'Guardar'
@@ -130,14 +110,8 @@ const authUser = computed(
                     </Card>
 
                     <Card title="Cambiar contraseña">
-                        <p
-                            v-if="status === 'password-updated'"
-                            class="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300"
-                        >
-                            Contraseña actualizada.
-                        </p>
-
                         <Form
+                            autocomplete="off"
                             v-bind="updatePassword.form()"
                             #default="{ errors, processing }"
                             reset-on-success
@@ -146,7 +120,7 @@ const authUser = computed(
                             <div class="sm:col-span-2">
                                 <label
                                     for="current_password"
-                                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                                    class="form-label"
                                 >
                                     Contraseña actual
                                 </label>
@@ -156,21 +130,18 @@ const authUser = computed(
                                     name="current_password"
                                     required
                                     autocomplete="current-password"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                    class="form-control w-full"
                                 />
                                 <p
                                     v-if="errors.current_password"
-                                    class="mt-1 text-sm text-red-600"
+                                    class="form-error"
                                 >
                                     {{ errors.current_password }}
                                 </p>
                             </div>
 
                             <div>
-                                <label
-                                    for="password"
-                                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                                >
+                                <label for="password" class="form-label">
                                     Nueva contraseña
                                 </label>
                                 <input
@@ -179,12 +150,9 @@ const authUser = computed(
                                     name="password"
                                     required
                                     autocomplete="new-password"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                    class="form-control w-full"
                                 />
-                                <p
-                                    v-if="errors.password"
-                                    class="mt-1 text-sm text-red-600"
-                                >
+                                <p v-if="errors.password" class="form-error">
                                     {{ errors.password }}
                                 </p>
                             </div>
@@ -192,7 +160,7 @@ const authUser = computed(
                             <div>
                                 <label
                                     for="password_confirmation"
-                                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
+                                    class="form-label"
                                 >
                                     Confirmar nueva contraseña
                                 </label>
@@ -202,7 +170,7 @@ const authUser = computed(
                                     name="password_confirmation"
                                     required
                                     autocomplete="new-password"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                    class="form-control w-full"
                                 />
                             </div>
 
@@ -210,7 +178,7 @@ const authUser = computed(
                                 <button
                                     type="submit"
                                     :disabled="processing"
-                                    class="rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                                    class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary-600/20 transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {{
                                         processing
@@ -224,21 +192,19 @@ const authUser = computed(
                 </div>
 
                 <Card title="Eliminar cuenta">
-                    <p class="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                    <p class="mb-4 text-sm text-ink-500 dark:text-ink-400">
                         Esta acción elimina tu acceso central. Se pedirá tu
                         contraseña para confirmar.
                     </p>
 
                     <Form
+                        autocomplete="off"
                         v-bind="destroyProfile.form()"
                         #default="{ errors, processing }"
                         class="space-y-4"
                     >
                         <div>
-                            <label
-                                for="delete_password"
-                                class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                            >
+                            <label for="delete_password" class="form-label">
                                 Contraseña
                             </label>
                             <input
@@ -247,12 +213,9 @@ const authUser = computed(
                                 name="password"
                                 required
                                 autocomplete="current-password"
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-red-500 focus:ring-red-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                class="form-control w-full focus:border-red-500 focus:ring-red-500/15"
                             />
-                            <p
-                                v-if="errors.password"
-                                class="mt-1 text-sm text-red-600"
-                            >
+                            <p v-if="errors.password" class="form-error">
                                 {{ errors.password }}
                             </p>
                         </div>

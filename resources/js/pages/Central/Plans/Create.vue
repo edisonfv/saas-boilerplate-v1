@@ -2,6 +2,7 @@
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { store } from '@/actions/Modules/Central/Http/Controllers/PlanController';
 import Card from '@/components/Card.vue';
+import FormActions from '@/components/FormActions.vue';
 import Icon from '@/components/Icon.vue';
 import CentralLayout from '@/layouts/CentralLayout.vue';
 import central from '@/routes/central';
@@ -26,25 +27,23 @@ defineProps<{
         <div class="space-y-6">
             <Link
                 :href="central.plans.index().url"
-                class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-950 dark:text-slate-400 dark:hover:text-white"
+                class="inline-flex items-center gap-2 text-sm font-medium text-ink-500 hover:text-ink-950 dark:text-ink-400 dark:hover:text-white"
             >
                 <Icon name="arrow-left" />
                 Volver a planes
             </Link>
 
             <div>
-                <p
-                    class="text-xs font-semibold text-slate-500 uppercase dark:text-slate-400"
-                >
+                <p class="eyebrow text-primary-600 dark:text-primary-400">
                     Catálogo central
                 </p>
                 <h2
-                    class="mt-1 text-xl font-semibold text-slate-950 dark:text-white"
+                    class="mt-2 text-2xl font-extrabold text-ink-950 dark:text-white"
                 >
                     Crear plan
                 </h2>
                 <p
-                    class="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400"
+                    class="mt-2 max-w-2xl text-sm text-ink-600 dark:text-ink-400"
                 >
                     Define el nombre, precios por periodo, módulos, features y
                     límites que incluye este plan.
@@ -52,9 +51,10 @@ defineProps<{
             </div>
 
             <Form
+                autocomplete="off"
                 :action="store().url"
                 method="post"
-                #default="{ errors, processing }"
+                #default="{ errors, processing, isDirty }"
                 class="space-y-6"
             >
                 <Card title="Datos generales">
@@ -62,10 +62,7 @@ defineProps<{
                         class="grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2"
                     >
                         <div>
-                            <label
-                                for="name"
-                                class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                            >
+                            <label for="name" class="form-label">
                                 Nombre
                             </label>
                             <input
@@ -74,43 +71,29 @@ defineProps<{
                                 name="name"
                                 required
                                 autofocus
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                class="form-control w-full"
                             />
-                            <p
-                                v-if="errors.name"
-                                class="mt-1 text-sm text-red-600"
-                            >
+                            <p v-if="errors.name" class="form-error">
                                 {{ errors.name }}
                             </p>
                         </div>
 
                         <div>
-                            <label
-                                for="slug"
-                                class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                            >
-                                Slug
-                            </label>
+                            <label for="slug" class="form-label"> Slug </label>
                             <input
                                 id="slug"
                                 type="text"
                                 name="slug"
                                 required
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                class="form-control w-full"
                             />
-                            <p
-                                v-if="errors.slug"
-                                class="mt-1 text-sm text-red-600"
-                            >
+                            <p v-if="errors.slug" class="form-error">
                                 {{ errors.slug }}
                             </p>
                         </div>
 
                         <div>
-                            <label
-                                for="trial_days"
-                                class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                            >
+                            <label for="trial_days" class="form-label">
                                 Días de trial (opcional)
                             </label>
                             <input
@@ -118,12 +101,9 @@ defineProps<{
                                 type="number"
                                 name="trial_days"
                                 min="0"
-                                class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                class="form-control w-full"
                             />
-                            <p
-                                v-if="errors.trial_days"
-                                class="mt-1 text-sm text-red-600"
-                            >
+                            <p v-if="errors.trial_days" class="form-error">
                                 {{ errors.trial_days }}
                             </p>
                         </div>
@@ -135,16 +115,16 @@ defineProps<{
                         <div
                             v-for="(label, period) in billingPeriods"
                             :key="period"
-                            class="flex flex-col gap-3 rounded-lg border border-slate-200 p-3 sm:flex-row sm:items-center dark:border-slate-800"
+                            class="flex flex-col gap-3 rounded-lg border border-ink-200 p-3 sm:flex-row sm:items-center dark:border-ink-800"
                         >
                             <label
-                                class="flex w-40 shrink-0 items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300"
+                                class="flex w-40 shrink-0 items-center gap-2 text-sm font-medium text-ink-700 dark:text-ink-300"
                             >
                                 <input
                                     type="checkbox"
                                     :name="`prices[${period}][enabled]`"
                                     value="1"
-                                    class="rounded border-slate-300 text-slate-950 focus:ring-slate-500"
+                                    class="form-check"
                                 />
                                 {{ label }}
                             </label>
@@ -154,7 +134,7 @@ defineProps<{
                                 min="0"
                                 :name="`prices[${period}][price]`"
                                 placeholder="Precio"
-                                class="w-full max-w-32 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                class="form-control w-full max-w-32"
                             />
                             <input
                                 type="text"
@@ -162,7 +142,7 @@ defineProps<{
                                 value="USD"
                                 maxlength="3"
                                 placeholder="USD"
-                                class="w-full max-w-20 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 uppercase focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                class="form-control w-full max-w-20 uppercase"
                             />
                         </div>
                     </div>
@@ -174,19 +154,19 @@ defineProps<{
                             <label
                                 v-for="module in modules"
                                 :key="module.id"
-                                class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
+                                class="flex items-center gap-2 text-sm text-ink-700 dark:text-ink-300"
                             >
                                 <input
                                     type="checkbox"
                                     name="modules[]"
                                     :value="module.id"
-                                    class="rounded border-slate-300 text-slate-950 focus:ring-slate-500"
+                                    class="form-check"
                                 />
                                 {{ module.name }}
                             </label>
                             <p
                                 v-if="modules.length === 0"
-                                class="text-sm text-slate-400"
+                                class="text-sm text-ink-400"
                             >
                                 No hay módulos creados todavía.
                             </p>
@@ -198,19 +178,19 @@ defineProps<{
                             <label
                                 v-for="feature in features"
                                 :key="feature.id"
-                                class="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
+                                class="flex items-center gap-2 text-sm text-ink-700 dark:text-ink-300"
                             >
                                 <input
                                     type="checkbox"
                                     name="features[]"
                                     :value="feature.id"
-                                    class="rounded border-slate-300 text-slate-950 focus:ring-slate-500"
+                                    class="form-check"
                                 />
                                 {{ feature.name }}
                             </label>
                             <p
                                 v-if="features.length === 0"
-                                class="text-sm text-slate-400"
+                                class="text-sm text-ink-400"
                             >
                                 No hay features creadas todavía.
                             </p>
@@ -225,12 +205,12 @@ defineProps<{
                             >
                                 <label
                                     :for="`limit-${limitType.id}`"
-                                    class="mb-1 block text-sm text-slate-700 dark:text-slate-300"
+                                    class="mb-1 block text-sm text-ink-700 dark:text-ink-300"
                                 >
                                     {{ limitType.name }}
                                     <span
                                         v-if="limitType.unit"
-                                        class="text-slate-400"
+                                        class="text-ink-400"
                                         >({{ limitType.unit }})</span
                                     >
                                 </label>
@@ -239,12 +219,12 @@ defineProps<{
                                     type="number"
                                     min="0"
                                     :name="`limits[${limitType.id}]`"
-                                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                                    class="form-control w-full"
                                 />
                             </div>
                             <p
                                 v-if="limitTypes.length === 0"
-                                class="text-sm text-slate-400"
+                                class="text-sm text-ink-400"
                             >
                                 No hay tipos de límite creados todavía.
                             </p>
@@ -252,13 +232,13 @@ defineProps<{
                     </Card>
                 </div>
 
-                <button
-                    type="submit"
-                    :disabled="processing"
-                    class="rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
-                >
-                    {{ processing ? 'Creando...' : 'Crear plan' }}
-                </button>
+                <FormActions
+                    :processing="processing"
+                    :is-dirty="isDirty"
+                    submit-label="Crear plan"
+                    processing-label="Creando…"
+                    :cancel-href="central.plans.index().url"
+                />
             </Form>
         </div>
     </CentralLayout>

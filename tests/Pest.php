@@ -1,6 +1,18 @@
 <?php
 
+use App\Enums\BillingPeriod;
+use App\Models\CentralUser;
+use App\Models\Plan;
+use App\Models\SupportTechnician;
+use App\Models\Tenant;
+use App\Models\User;
+use App\Services\TenantPlanSubscriber;
+use Database\Seeders\CatalogSeeder;
+use Database\Seeders\CentralAclSeeder;
+use Database\Seeders\GeneralModuleSeeder;
+use Database\Seeders\SupportModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
 /*
@@ -47,4 +59,93 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/*
+|--------------------------------------------------------------------------
+| Support module helpers
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Seeds the Support module + example catalog (Pro bundles Support with
+ * 4 included hours, 2 simultaneous appointments and a 4h/24h SLA) and
+ * freezes time on a Monday morning inside business hours.
+ */
+function seedSupport(): void
+{
+    Carbon::setTestNow('2026-09-28 09:00:00');
+
+    test()->seed(GeneralModuleSeeder::class);
+    test()->seed(SupportModuleSeeder::class);
+    test()->seed(CatalogSeeder::class);
+    test()->seed(CentralAclSeeder::class);
+}
+
+/**
+ * A tenant with a domain, subscribed to the given plan ("pro" includes Support).
+ *
+ * @return array{0: Tenant, 1: string}
+ */
+function supportTenant(string $planSlug = 'pro'): array
+{
+    $tenant = Tenant::create(['id' => 'tenant-'.uniqid(), 'company_name' => 'Acme S.A.']);
+    $domain = $tenant->id.'.support-test.local';
+    $tenant->createDomain($domain);
+
+    app(TenantPlanSubscriber::class)->subscribe(
+        $tenant,
+        Plan::where('slug', $planSlug)->sole(),
+        BillingPeriod::Monthly(),
+    );
+
+    return [$tenant, $domain];
+}
+
+/**
+ * A tenant user; "owner" gets every permission of the tenant's modules
+ * (including tenant.support-tickets.view-all).
+ *
+ * @param  list<string>  $permissions
+ */
+function supportTenantUser(Tenant $tenant, ?string $role = 'owner', array $permissions = []): User
+{
+    return $tenant->run(function () use ($role, $permissions) {
+        $user = User::factory()->create();
+
+        if ($role !== null) {
+            $user->assignRole($role);
+        }
+
+        if ($permissions !== []) {
+            $user->givePermissionTo($permissions);
+        }
+
+        return $user;
+    });
+}
+
+function supportStaff(string $role = 'super-admin'): CentralUser
+{
+    $staff = CentralUser::factory()->create();
+    $staff->assignRole($role);
+
+    return $staff;
+}
+
+/**
+ * A technician on shift Mon–Fri 08:00–20:00.
+ */
+function supportTechnician(int $capacity = 1, ?CentralUser $user = null): SupportTechnician
+{
+    $technician = SupportTechnician::create([
+        'central_user_id' => ($user ?? supportStaff('support'))->id,
+        'capacity' => $capacity,
+    ]);
+
+    foreach (range(1, 5) as $weekday) {
+        $technician->shifts()->create(['weekday' => $weekday, 'starts_at' => '08:00', 'ends_at' => '20:00']);
+    }
+
+    return $technician;
 }

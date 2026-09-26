@@ -6,7 +6,7 @@ import central from '@/routes/central';
 </script>
 
 <template>
-    <Head title="Central login" />
+    <Head title="Iniciar sesión" />
 
     <CentralAuthShell
         title="Iniciar sesión"
@@ -19,12 +19,7 @@ import central from '@/routes/central';
             class="space-y-4"
         >
             <div>
-                <label
-                    for="email"
-                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                    Email
-                </label>
+                <label for="email" class="form-label"> Email </label>
                 <input
                     id="email"
                     type="email"
@@ -32,48 +27,39 @@ import central from '@/routes/central';
                     required
                     autofocus
                     autocomplete="username"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    class="form-control w-full"
                 />
-                <p v-if="errors.email" class="mt-1 text-sm text-red-600">
+                <p v-if="errors.email" class="form-error">
                     {{ errors.email }}
                 </p>
             </div>
 
             <div>
-                <label
-                    for="password"
-                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                    Contraseña
-                </label>
+                <label for="password" class="form-label"> Contraseña </label>
                 <input
                     id="password"
                     type="password"
                     name="password"
                     required
                     autocomplete="current-password"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    class="form-control w-full"
                 />
-                <p v-if="errors.password" class="mt-1 text-sm text-red-600">
+                <p v-if="errors.password" class="form-error">
                     {{ errors.password }}
                 </p>
             </div>
 
             <div class="flex items-center justify-between gap-4">
                 <label
-                    class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400"
+                    class="flex items-center gap-2 text-sm text-ink-600 dark:text-ink-400"
                 >
-                    <input
-                        type="checkbox"
-                        name="remember"
-                        class="rounded border-slate-300 text-slate-950 focus:ring-slate-500"
-                    />
+                    <input type="checkbox" name="remember" class="form-check" />
                     Recordarme
                 </label>
 
                 <Link
                     :href="central.password.request().url"
-                    class="text-sm font-medium text-slate-700 hover:text-slate-950 dark:text-slate-300 dark:hover:text-white"
+                    class="text-sm font-medium text-ink-700 hover:text-ink-950 dark:text-ink-300 dark:hover:text-white"
                 >
                     ¿Olvidaste tu contraseña?
                 </Link>
@@ -82,7 +68,7 @@ import central from '@/routes/central';
             <button
                 type="submit"
                 :disabled="processing"
-                class="w-full rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                class="w-full rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary-600/20 transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
                 {{ processing ? 'Ingresando...' : 'Ingresar' }}
             </button>

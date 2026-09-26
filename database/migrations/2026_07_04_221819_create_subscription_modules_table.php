@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('subscription_modules', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('subscription_id')->constrained()->cascadeOnDelete();
-            $table->foreignUuid('module_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('module_id')->constrained()->restrictOnDelete();
             $table->string('source');
+            $table->decimal('unit_price', 10, 2)->nullable();
+            $table->string('currency', 3)->nullable();
             $table->timestamp('starts_at');
             $table->timestamp('ends_at')->nullable();
             $table->timestamps();
+
+            $table->index(['subscription_id', 'source', 'ends_at']);
         });
     }
 

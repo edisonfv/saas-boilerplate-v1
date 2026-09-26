@@ -102,6 +102,8 @@ class TenantController extends Controller
             'subscription' => $subscription ? [
                 'plan_name' => $subscription->plan->name,
                 'billing_period_label' => $subscription->billing_period->label,
+                'price' => $subscription->price,
+                'currency' => $subscription->currency,
                 'status' => $subscription->status->value,
                 'status_label' => $subscription->status->label,
                 'trial_ends_at' => $subscription->trial_ends_at,

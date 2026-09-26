@@ -25,12 +25,7 @@ const props = defineProps<{
             <input type="hidden" name="token" :value="props.token" />
 
             <div>
-                <label
-                    for="email"
-                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                    Email
-                </label>
+                <label for="email" class="form-label"> Email </label>
                 <input
                     id="email"
                     type="email"
@@ -39,18 +34,15 @@ const props = defineProps<{
                     required
                     autofocus
                     autocomplete="username"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    class="form-control w-full"
                 />
-                <p v-if="errors.email" class="mt-1 text-sm text-red-600">
+                <p v-if="errors.email" class="form-error">
                     {{ errors.email }}
                 </p>
             </div>
 
             <div>
-                <label
-                    for="password"
-                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
+                <label for="password" class="form-label">
                     Nueva contraseña
                 </label>
                 <input
@@ -59,18 +51,15 @@ const props = defineProps<{
                     name="password"
                     required
                     autocomplete="new-password"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    class="form-control w-full"
                 />
-                <p v-if="errors.password" class="mt-1 text-sm text-red-600">
+                <p v-if="errors.password" class="form-error">
                     {{ errors.password }}
                 </p>
             </div>
 
             <div>
-                <label
-                    for="password_confirmation"
-                    class="mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
+                <label for="password_confirmation" class="form-label">
                     Confirmar contraseña
                 </label>
                 <input
@@ -79,14 +68,14 @@ const props = defineProps<{
                     name="password_confirmation"
                     required
                     autocomplete="new-password"
-                    class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 focus:border-slate-500 focus:ring-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
+                    class="form-control w-full"
                 />
             </div>
 
             <button
                 type="submit"
                 :disabled="processing"
-                class="w-full rounded-lg bg-slate-950 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                class="w-full rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm shadow-primary-600/20 transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
                 {{ processing ? 'Guardando...' : 'Restablecer contraseña' }}
             </button>

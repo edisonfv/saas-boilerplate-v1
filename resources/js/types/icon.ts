@@ -27,4 +27,11 @@ export type IconName =
     | 'monitor'
     | 'pencil'
     | 'power'
-    | 'globe';
+    | 'globe'
+    | 'chevron-right'
+    | 'exclamation-triangle'
+    | 'information-circle'
+    | 'paperclip'
+    | 'calendar'
+    | 'star'
+    | 'chat';

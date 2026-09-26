@@ -49,6 +49,22 @@ final class CentralPermissions
                 'label' => 'Roles',
                 'actions' => [Action::View(), Action::Create(), Action::Update(), Action::Delete()],
             ],
+            'support-tickets' => [
+                'label' => 'Tickets de soporte',
+                'actions' => [Action::View(), Action::Create(), Action::Update()],
+                'special' => [
+                    'assign' => 'Asignar tickets de soporte',
+                    'billing' => 'Gestionar facturación de soporte',
+                ],
+            ],
+            'support-schedule' => [
+                'label' => 'Agenda y configuración de soporte',
+                'actions' => [Action::View(), Action::Update()],
+            ],
+            'support-reports' => [
+                'label' => 'Reportes de soporte',
+                'actions' => [Action::View()],
+            ],
             // Reservados: sin ruta/controlador todavía (no hay feature de
             // suscripciones ni billing construida), pero se sincronizan igual
             // para que el catálogo quede completo desde ya.

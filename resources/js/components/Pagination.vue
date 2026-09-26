@@ -18,11 +18,11 @@ defineProps<{
 <template>
     <div
         v-if="links.length > 3"
-        class="flex flex-col items-center justify-between gap-3 border-t border-slate-200 pt-4 sm:flex-row dark:border-slate-800"
+        class="flex flex-col items-center justify-between gap-3 border-t border-ink-200 pt-4 sm:flex-row dark:border-ink-800"
     >
         <p
             v-if="total !== undefined"
-            class="text-sm text-slate-500 dark:text-slate-400"
+            class="text-sm text-ink-500 dark:text-ink-400"
         >
             Mostrando {{ from }}–{{ to }} de {{ total }}
         </p>
@@ -31,7 +31,7 @@ defineProps<{
             <template v-for="(link, index) in links" :key="index">
                 <span
                     v-if="!link.url"
-                    class="rounded-lg px-3 py-1.5 text-sm text-slate-300 dark:text-slate-700"
+                    class="rounded-lg px-3 py-1.5 text-sm text-ink-300 dark:text-ink-700"
                     v-html="link.label"
                 />
                 <Link
@@ -41,8 +41,8 @@ defineProps<{
                     :class="[
                         'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
                         link.active
-                            ? 'bg-blue-600 text-white'
-                            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
+                            ? 'bg-primary-600 text-white'
+                            : 'text-ink-600 hover:bg-ink-100 dark:text-ink-300 dark:hover:bg-ink-800',
                     ]"
                 >
                     <span v-html="link.label" />

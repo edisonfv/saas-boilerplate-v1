@@ -8,12 +8,20 @@ use App\Models\Feature;
 use App\Models\LimitType;
 use App\Models\Module;
 use App\Models\Plan;
+use App\Services\Support\SupportLimits;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class CatalogSeeder extends Seeder
 {
     use WithoutModelEvents;
+
+    private const PRO_SUPPORT_LIMITS = [
+        SupportLimits::IncludedHours => 4,
+        SupportLimits::MaxActiveAppointments => 2,
+        SupportLimits::FirstResponseHours => 4,
+        SupportLimits::ResolutionHours => 24,
+    ];
 
     /**
      * Seed an example catalog: modules, features, limits, permissions and plans.
@@ -67,5 +75,19 @@ class CatalogSeeder extends Seeder
             $users->id => ['value' => 50],
             $storage->id => ['value' => 100],
         ]);
+
+        // Example: Pro bundles the Support module (see SupportModuleSeeder)
+        // with 4 included hours per cycle and a 4h/24h business-hours SLA.
+        $support = Module::where('slug', SupportLimits::ModuleSlug)->first();
+
+        if ($support !== null) {
+            $pro->modules()->attach($support->id);
+            $pro->limits()->attach(
+                LimitType::whereIn('key', array_keys(self::PRO_SUPPORT_LIMITS))
+                    ->pluck('id', 'key')
+                    ->mapWithKeys(fn (string $id, string $key) => [$id => ['value' => self::PRO_SUPPORT_LIMITS[$key]]])
+                    ->all()
+            );
+        }
     }
 }

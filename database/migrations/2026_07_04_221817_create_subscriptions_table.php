@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreign('tenant_id')->references('id')->on('tenants')->cascadeOnDelete();
             $table->foreignUuid('plan_id')->constrained();
             $table->string('billing_period');
+            $table->decimal('price', 10, 2)->nullable();
+            $table->string('currency', 3)->nullable();
             $table->string('status');
             $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('current_period_start')->nullable();

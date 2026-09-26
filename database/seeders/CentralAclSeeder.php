@@ -3,12 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\CentralUser;
+use App\Models\Permission;
+use App\Models\Role;
 use App\Services\CentralPermissionSyncer;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Permission;
-use App\Models\Role;
 
 class CentralAclSeeder extends Seeder
 {
@@ -28,7 +28,11 @@ class CentralAclSeeder extends Seeder
         $byName = fn (array $names) => Permission::where('guard_name', 'central')->whereIn('name', $names)->get();
 
         Role::firstOrCreate(['name' => 'support', 'guard_name' => 'central'])
-            ->syncPermissions($byName(['central.tenants.view', 'central.tenants.impersonate']));
+            ->syncPermissions($byName([
+                'central.tenants.view', 'central.tenants.impersonate',
+                'central.support-tickets.view', 'central.support-tickets.create', 'central.support-tickets.update',
+                'central.support-tickets.assign', 'central.support-schedule.view', 'central.support-reports.view',
+            ]));
 
         Role::firstOrCreate(['name' => 'billing', 'guard_name' => 'central'])
             ->syncPermissions($byName([
@@ -36,6 +40,7 @@ class CentralAclSeeder extends Seeder
                 'central.subscriptions.view',
                 'central.billing.view',
                 'central.tenants.view', 'central.tenants.create', 'central.tenants.update',
+                'central.support-tickets.view', 'central.support-tickets.billing', 'central.support-reports.view',
             ]));
 
         Role::firstOrCreate(['name' => 'sales', 'guard_name' => 'central'])
