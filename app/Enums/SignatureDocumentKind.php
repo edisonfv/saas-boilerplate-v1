@@ -30,6 +30,7 @@ final class SignatureDocumentKind extends Enum
         $company = [self::RucCopy(), self::Appointment(), self::CompanyConstitution()];
 
         return match (true) {
+            $applicantType->equals(SignatureApplicantType::NaturalPersonWithRuc()) => [...$identity, self::RucCopy()],
             $applicantType->equals(SignatureApplicantType::LegalRepresentative()) => [...$identity, ...$company],
             $applicantType->equals(SignatureApplicantType::CompanyMember()) => [
                 ...$identity,

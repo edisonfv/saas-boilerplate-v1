@@ -216,6 +216,11 @@ class SignatureRequestManager
             $values = array_merge($values, ['company_name' => null, 'company_ruc' => null, 'position' => null]);
         }
 
+        // "Persona natural" (without RUC) doesn't enable invoicing: never send a RUC for it.
+        if (! $type->enablesInvoicing()) {
+            $values['personal_ruc'] = null;
+        }
+
         if (! $type->requiresLegalRepresentative()) {
             $values = array_merge($values, [
                 'legal_representative_first_names' => null,

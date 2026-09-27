@@ -97,6 +97,13 @@ export async function preparePhoto(file: File): Promise<File> {
 export interface SignatureFormOptions {
     products: SignatureProduct[];
     applicantTypes: Record<string, string>;
+    applicantTypeCards: {
+        value: string;
+        label: string;
+        description: string;
+        /** Whether this type enables electronic invoicing (SRI). */
+        invoicing: boolean;
+    }[];
     documentTypes: Record<string, string>;
     genders: Record<string, string>;
     documentKinds: DocumentKindOption[];

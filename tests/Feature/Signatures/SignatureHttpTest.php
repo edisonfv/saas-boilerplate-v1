@@ -8,6 +8,7 @@ use App\Models\SignatureRequest;
 use App\Models\SignatureStorefront;
 use App\Services\Signatures\SignatureWallet;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -84,6 +85,43 @@ test('an invalid cédula and missing documents are rejected', function () {
         ->assertSessionHasErrors(['document_number', 'documents.IdFront', 'documents.Selfie']);
 });
 
+test('a natural person with RUC needs their RUC (cédula + 001) and its copy', function () {
+    [$tenant, $domain] = signatureTenant();
+    $owner = supportTenantUser($tenant);
+
+    $this->actingAs($owner)
+        ->post("http://{$domain}/firmas-electronicas/solicitudes", [
+            ...signatureApplicant(['applicant_type' => 'NaturalPersonWithRuc', 'personal_ruc' => '0999999999001']),
+            'documents' => signatureDocuments(),
+        ])
+        ->assertSessionHasErrors([
+            'personal_ruc' => 'El RUC personal debe ser tu número de cédula seguido de 001.',
+            'documents.RucCopy',
+        ]);
+
+    $this->actingAs($owner)
+        ->post("http://{$domain}/firmas-electronicas/solicitudes", [
+            ...signatureApplicant(['applicant_type' => 'NaturalPersonWithRuc', 'personal_ruc' => '1710034065001']),
+            'documents' => [...signatureDocuments(), 'RucCopy' => UploadedFile::fake()->create('ruc.pdf', 120, 'application/pdf')],
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($tenant->run(fn () => SignatureRequest::with('documents')->sole()->missingDocuments()))->toBe([]);
+});
+
+test('a natural person without RUC never keeps one', function () {
+    [$tenant, $domain] = signatureTenant();
+
+    $this->actingAs(supportTenantUser($tenant))
+        ->post("http://{$domain}/firmas-electronicas/solicitudes", [
+            ...signatureApplicant(['personal_ruc' => '1710034065001']),
+            'documents' => signatureDocuments(),
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($tenant->run(fn () => SignatureRequest::sole()->personal_ruc))->toBeNull();
+});
+
 test('a legal representative needs company data and documents', function () {
     [$tenant, $domain] = signatureTenant();
 
@@ -127,7 +165,7 @@ test('the root of a tenant subdomain is its public signatures website', function
             ->where('storefront.company_name', 'Acme S.A.')
             ->where('storefront.whatsapp_url', 'https://wa.me/593991234567?text=Hola%2C%20quiero%20mi%20firma')
             ->where('products', fn ($products) => collect($products)->firstWhere('id', signatureProduct()->id)['price'] === '29.90')
-            ->has('requirements', 3));
+            ->has('requirements', 4));
 
     $this->get("http://{$domain}/firmas")->assertRedirect('/');
 });

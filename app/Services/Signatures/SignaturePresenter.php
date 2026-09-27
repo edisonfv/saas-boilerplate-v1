@@ -193,6 +193,19 @@ class SignaturePresenter
                 'retail_price' => $prices[$product->id] ?? $product->suggested_retail_price,
             ])->values(),
             'applicantTypes' => SignatureApplicantType::toArray(),
+            'applicantTypeCards' => collect(SignatureApplicantType::cases())
+                ->map(fn (SignatureApplicantType $type) => [
+                    'value' => $type->value,
+                    'label' => $type->label,
+                    'description' => match (true) {
+                        $type->equals(SignatureApplicantType::NaturalPersonWithRuc()) => 'A tu nombre, con tu RUC personal.',
+                        $type->equals(SignatureApplicantType::LegalRepresentative()) => 'A nombre de tu empresa. La usa el representante legal.',
+                        $type->equals(SignatureApplicantType::CompanyMember()) => 'Para empleados o miembros que firman a nombre de la empresa.',
+                        default => 'A tu nombre, como persona.',
+                    },
+                    'invoicing' => $type->enablesInvoicing(),
+                ])
+                ->values(),
             'documentTypes' => IdentityDocumentType::toArray(),
             'genders' => Gender::toArray(),
             'documentKinds' => collect(SignatureDocumentKind::cases())

@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import Card from '@/components/Card.vue';
 import FormActions from '@/components/FormActions.vue';
+import Icon from '@/components/Icon.vue';
 import DocumentCapture from '@/components/signatures/DocumentCapture.vue';
 import { money } from '@/lib/signatures';
 import type { SignatureFormOptions } from '@/lib/signatures';
@@ -115,7 +116,15 @@ const selectedProduct = computed(() =>
         (product) => product.id === form.signature_product_id,
     ),
 );
-const requiresCompany = computed(() => form.applicant_type !== 'NaturalPerson');
+const requiresCompany = computed(
+    () =>
+        !['NaturalPerson', 'NaturalPersonWithRuc'].includes(
+            form.applicant_type,
+        ),
+);
+const requiresPersonalRuc = computed(
+    () => form.applicant_type === 'NaturalPersonWithRuc',
+);
 const requiresLegalRepresentative = computed(
     () => form.applicant_type === 'CompanyMember',
 );
@@ -126,7 +135,7 @@ const requiredKinds = computed(
 const optionalKinds = computed(() =>
     requiresCompany.value
         ? ['AppointmentAcceptance', 'Additional']
-        : ['RucCopy', 'Additional'],
+        : ['Additional'],
 );
 const documentSlots = computed(() =>
     props.options.documentKinds.filter(
@@ -276,7 +285,76 @@ function submit() {
                 wizard ? 'lg:col-span-8 lg:col-start-3' : 'xl:col-span-8',
             ]"
         >
-            <Card v-show="shows(1)" title="Firma electrónica">
+            <Card v-show="shows(1)" title="¿Qué tipo de firma necesitas?">
+                <div
+                    class="grid gap-3 sm:grid-cols-2"
+                    role="radiogroup"
+                    aria-label="Tipo de firma"
+                >
+                    <label
+                        v-for="type in options.applicantTypeCards"
+                        :key="type.value"
+                        :class="[
+                            'flex cursor-pointer flex-col rounded-xl border p-4 text-center transition',
+                            form.applicant_type === type.value
+                                ? 'border-primary-500 bg-primary-50/60 ring-2 ring-primary-500 dark:bg-primary-500/10'
+                                : 'border-ink-200 hover:border-primary-300 dark:border-ink-700',
+                        ]"
+                    >
+                        <input
+                            v-model="form.applicant_type"
+                            type="radio"
+                            name="applicant_type"
+                            :value="type.value"
+                            class="sr-only"
+                        />
+                        <span
+                            class="text-base font-extrabold text-ink-950 dark:text-white"
+                            >{{ type.label }}</span
+                        >
+                        <span class="mt-1 text-sm text-ink-500">{{
+                            type.description
+                        }}</span>
+                        <span
+                            class="mx-auto my-3 h-0.5 w-full rounded-full bg-gradient-to-r from-primary-700 to-primary-400"
+                        />
+                        <span class="text-sm text-ink-700 dark:text-ink-200"
+                            >Sirve para firmar documentos</span
+                        >
+                        <span
+                            v-if="type.invoicing"
+                            class="mt-1 text-sm text-ink-700 dark:text-ink-200"
+                            >Sirve para facturación electrónica</span
+                        >
+                        <span
+                            v-else
+                            class="mx-auto mt-1.5 rounded-full bg-ink-100 px-2.5 py-0.5 text-xs font-semibold text-ink-600 dark:bg-ink-800 dark:text-ink-300"
+                            >Sin facturación electrónica</span
+                        >
+                        <span
+                            :class="[
+                                'mx-auto mt-4 inline-flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-bold',
+                                form.applicant_type === type.value
+                                    ? 'bg-primary-600 text-white'
+                                    : 'border border-ink-300 text-ink-800 dark:border-ink-600 dark:text-ink-200',
+                            ]"
+                        >
+                            <Icon
+                                v-if="form.applicant_type === type.value"
+                                name="check-circle"
+                                class="size-4"
+                            />
+                            {{
+                                form.applicant_type === type.value
+                                    ? 'Seleccionado'
+                                    : 'Seleccionar'
+                            }}
+                        </span>
+                    </label>
+                </div>
+            </Card>
+
+            <Card v-show="shows(1)" title="Elige la vigencia de tu firma">
                 <div class="grid gap-3 sm:grid-cols-2">
                     <label
                         v-for="product in options.products"
@@ -316,26 +394,11 @@ function submit() {
                     {{ errorFor('signature_product_id') }}
                 </p>
 
-                <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                <div
+                    v-if="showSalePrice"
+                    class="mt-5 grid gap-4 sm:grid-cols-2"
+                >
                     <div>
-                        <label for="applicant_type" :class="ui.label"
-                            >Tipo de solicitante</label
-                        >
-                        <select
-                            id="applicant_type"
-                            v-model="form.applicant_type"
-                            :class="ui.input"
-                        >
-                            <option
-                                v-for="(label, value) in options.applicantTypes"
-                                :key="value"
-                                :value="value"
-                            >
-                                {{ label }}
-                            </option>
-                        </select>
-                    </div>
-                    <div v-if="showSalePrice">
                         <label for="sale_price" :class="ui.label"
                             >Precio de venta al cliente (USD)</label
                         >
@@ -491,18 +554,26 @@ function submit() {
                             :class="ui.input"
                         />
                     </div>
-                    <div class="sm:col-span-3">
+                    <div v-if="requiresPersonalRuc" class="sm:col-span-3">
                         <label for="personal_ruc" :class="ui.label"
-                            >RUC personal (opcional)</label
+                            >RUC personal</label
                         >
                         <input
                             id="personal_ruc"
                             v-model="form.personal_ruc"
                             inputmode="numeric"
+                            maxlength="13"
+                            required
+                            :placeholder="
+                                isCedula && form.document_number
+                                    ? `${form.document_number}001`
+                                    : undefined
+                            "
                             :class="ui.input"
                         />
                         <p :class="ui.help">
-                            Necesario para facturación electrónica.
+                            Tu número de cédula seguido de 001. Habilita la
+                            facturación electrónica.
                         </p>
                         <p v-if="errorFor('personal_ruc')" :class="ui.error">
                             {{ errorFor('personal_ruc') }}

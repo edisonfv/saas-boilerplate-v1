@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref } from 'vue';
 import Icon from '@/components/Icon.vue';
 import CameraDialog from '@/components/signatures/CameraDialog.vue';
+import DocumentIllustration from '@/components/signatures/DocumentIllustration.vue';
 import { preparePhoto } from '@/lib/signatures';
 import type { DocumentKindOption } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
@@ -30,6 +31,16 @@ const hints: Record<string, string> = {
         'Cédula completa sobre una superficie plana, con buena luz y sin reflejos.',
     IdBack: 'El reverso completo, con el código dactilar legible.',
     Selfie: 'Sostén tu cédula junto a tu rostro, sin gafas ni gorra.',
+    RucCopy: 'Certificado del RUC en PDF, descargado del portal del SRI.',
+    Appointment:
+        'Nombramiento del representante legal, inscrito en el Registro Mercantil (PDF).',
+    AppointmentAcceptance: 'Aceptación del nombramiento (PDF), si la tienes.',
+    CompanyConstitution: 'Escritura de constitución de la empresa (PDF).',
+    LegalRepresentativeId:
+        'Cédula del representante legal, ambos lados en un solo PDF.',
+    LegalRepresentativeAuthorization:
+        'Carta firmada por el representante legal autorizando tu firma (PDF).',
+    Additional: 'Cualquier documento que ayude a validar tu solicitud.',
 };
 
 const processing = ref(false);
@@ -148,8 +159,13 @@ onBeforeUnmount(() => setPreview(null));
                 : 'border-ink-200 dark:border-ink-700',
         ]"
     >
-        <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
+        <div class="flex items-start gap-3">
+            <DocumentIllustration
+                :kind="document.kind"
+                :label="document.label"
+                class="w-20 shrink-0 sm:w-24"
+            />
+            <div class="min-w-0 flex-1">
                 <p class="font-semibold text-ink-950 dark:text-white">
                     {{ document.label }}
                     <span

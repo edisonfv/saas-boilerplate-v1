@@ -55,7 +55,15 @@ abstract class SignatureApplicationRequest extends FormRequest
                 ? ['required', 'digits:10', $this->cedulaChecksum()]
                 : ['required', 'string', 'alpha_num', 'max:20'],
             'fingerprint_code' => [Rule::requiredIf($isCedula), 'nullable', 'string', 'alpha_num', 'between:6,10'],
-            'personal_ruc' => ['nullable', 'digits:13'],
+            // A natural person's RUC is their cédula followed by "001".
+            'personal_ruc' => [
+                Rule::requiredIf($this->applicantType()?->requiresPersonalRuc() ?? false),
+                'nullable',
+                'digits:13',
+                ...($isCedula && $this->filled('document_number')
+                    ? [Rule::in([$this->input('document_number').'001'])]
+                    : []),
+            ],
             'gender' => ['required', 'string', Rule::in(Gender::toValues())],
             'birth_date' => ['required', 'date', 'before:today'],
             'nationality' => ['required', 'string', 'max:60'],
@@ -74,6 +82,16 @@ abstract class SignatureApplicationRequest extends FormRequest
             'legal_representative_document_number' => [Rule::requiredIf($requiresLegalRepresentative), 'nullable', 'string', 'alpha_num', 'max:20'],
             'documents' => ['nullable', 'array'],
             ...$this->documentRules(),
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'personal_ruc.in' => 'El RUC personal debe ser tu número de cédula seguido de 001.',
         ];
     }
 

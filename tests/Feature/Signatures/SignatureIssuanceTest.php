@@ -1,13 +1,16 @@
 <?php
 
+use App\Enums\SignatureRequestSource;
 use App\Enums\SignatureRequestStatus;
 use App\Exceptions\SignatureQuotaExceeded;
 use App\Models\SignatureProviderRequest;
 use App\Models\SignatureRequest;
 use App\Services\Signatures\SignatureIssuance;
 use App\Services\Signatures\SignatureProviderException;
+use App\Services\Signatures\SignatureRequestManager;
 use App\Services\Signatures\SignatureWallet;
 use Illuminate\Http\Client\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
@@ -58,6 +61,25 @@ test('submitting a draft consumes quota and sends the application to Uanataca', 
         && $request['vigenciafirma'] === '1 año'
         && base64_decode($request['f_selfie'], true) !== false
         && ! isset($request['apikey']));
+});
+
+test('a natural person with RUC is sent as a natural person with its RUC and RUC copy', function () {
+    Http::fake(['uanataca.test/*' => Http::response(['result' => true, 'token' => 'TKN-RUC'])]);
+
+    [$tenant] = signatureTenant('Credit', creditLimit: 100);
+    $draft = $tenant->run(fn () => app(SignatureRequestManager::class)->create(
+        signatureProduct(),
+        signatureApplicant(['applicant_type' => 'NaturalPersonWithRuc', 'personal_ruc' => '1710034065001']),
+        [...signatureDocuments(), 'RucCopy' => UploadedFile::fake()->createWithContent('ruc.pdf', '%PDF-1.4 certificado RUC')],
+        SignatureRequestSource::Workspace(),
+    ));
+
+    submitDraft($tenant, $draft);
+
+    Http::assertSent(fn (Request $request) => $request['tipo_solicitud'] === '1'
+        && $request['ruc_personal'] === '1710034065001'
+        && isset($request['f_copiaruc'])
+        && ! isset($request['empresa']));
 });
 
 test('without a bearer token the legacy apikey and uid go in the body', function () {

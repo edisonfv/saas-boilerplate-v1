@@ -19,6 +19,7 @@ const props = defineProps<
 const options = computed<SignatureFormOptions>(() => ({
     products: props.products,
     applicantTypes: props.applicantTypes,
+    applicantTypeCards: props.applicantTypeCards,
     documentTypes: props.documentTypes,
     genders: props.genders,
     documentKinds: props.documentKinds,
