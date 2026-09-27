@@ -186,6 +186,7 @@ Route::prefix('central')->name('central.')->group(function () {
 
             Route::middleware('permission:central.tenants.update')->group(function () {
                 Route::patch('/tenants/{tenant}/toggle-status', [TenantController::class, 'toggleStatus'])->name('tenants.toggle-status');
+                Route::patch('/tenants/{tenant}/renew', [TenantController::class, 'renewSubscription'])->name('tenants.renew');
             });
 
             // Support desk ---------------------------------------------------

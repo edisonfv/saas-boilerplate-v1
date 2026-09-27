@@ -15,7 +15,10 @@
  *   - `ink-*`     neutral scale tinted from the brand Índigo (text, borders, surfaces)
  *   - `primary-*` interactive scale built around Azul Nova (buttons, links, focus)
  *   - `accent-*`  Ámbar Chispa — use sparingly (highlights, the logo spark)
- *   - `brand-*`   the literal brand swatches, for logos and hero surfaces
+ *   - `brand-*`   the literal brand swatches, for logos and hero surfaces.
+ *                 The panel chrome tells staff where they are at a glance:
+ *                 `brand-night` (indigo) = central console, `brand-ocean`
+ *                 (petrol blue, cyan accents) = tenant workspace.
  * Status colors (emerald/amber/red) stay on Tailwind's defaults on purpose.
  * `primary-600` (not 500) is the button fill so white text keeps AA contrast.
  */
@@ -29,6 +32,7 @@
     --color-brand-amber: #f5a524;
     --color-brand-ice: #f1f4fb;
     --color-brand-night: #121a42;
+    --color-brand-ocean: #06304a;
 
     --color-ink-50: #f1f4fb;
     --color-ink-100: #e5eaf5;

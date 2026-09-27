@@ -8,25 +8,38 @@ import { brand } from '@/lib/brand';
  * Split-screen guest layout shared by the central console and tenant
  * workspaces: a brand panel (desktop only) next to the form card.
  */
-defineProps<{
-    title: string;
-    description: string;
-    /** Who this door is for, e.g. "Consola central" or a tenant's company. */
-    context: string;
-}>();
+withDefaults(
+    defineProps<{
+        title: string;
+        description: string;
+        /** Who this door is for, e.g. "Consola central" or a tenant's company. */
+        context: string;
+        /** Tenant doors use the workspace blue, like the tenant sidebar. */
+        variant?: 'central' | 'tenant';
+    }>(),
+    { variant: 'central' },
+);
 </script>
 
 <template>
     <div class="flex min-h-screen bg-ink-50 dark:bg-ink-950">
         <aside
-            class="relative hidden w-[44%] max-w-2xl flex-col justify-between overflow-hidden bg-brand-night p-12 text-white lg:flex"
+            :class="[
+                'relative hidden w-[44%] max-w-2xl flex-col justify-between overflow-hidden p-12 text-white lg:flex',
+                variant === 'tenant' ? 'bg-brand-ocean' : 'bg-brand-night',
+            ]"
         >
             <AppLogoMark
                 tone="light"
                 class="pointer-events-none absolute -right-24 -bottom-24 size-[30rem] opacity-[0.06]"
             />
             <div
-                class="pointer-events-none absolute -top-32 -left-32 size-96 rounded-full bg-primary-500/20 blur-3xl"
+                :class="[
+                    'pointer-events-none absolute -top-32 -left-32 size-96 rounded-full blur-3xl',
+                    variant === 'tenant'
+                        ? 'bg-cyan-400/20'
+                        : 'bg-primary-500/20',
+                ]"
             />
 
             <AppLogo
@@ -37,7 +50,16 @@ defineProps<{
             />
 
             <div class="relative max-w-md">
-                <p class="eyebrow text-accent-400">{{ context }}</p>
+                <p
+                    :class="[
+                        'eyebrow',
+                        variant === 'tenant'
+                            ? 'text-cyan-300'
+                            : 'text-accent-400',
+                    ]"
+                >
+                    {{ context }}
+                </p>
                 <p
                     class="mt-4 text-4xl leading-tight font-extrabold tracking-tight"
                 >

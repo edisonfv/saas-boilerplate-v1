@@ -62,6 +62,7 @@ const sections: NavigationSection[] = [
 <template>
     <AppShell
         :title="title"
+        variant="tenant"
         :sections="sections"
         :home-href="tenant.dashboard().url"
         :logout-href="destroy().url"

@@ -14,6 +14,7 @@ use App\Services\Support\SupportUsage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +29,9 @@ class ReportController extends Controller
     {
         $tenantIds = SupportTicket::query()->whereNotNull('tenant_id')->distinct()->pluck('tenant_id');
 
-        $billing = Tenant::query()->whereIn('id', $tenantIds)->orderBy('company_name')->get()
+        // Usage is computed for every tenant so the "to collect" total covers
+        // all of them; only the rows are paginated.
+        $billingRows = Tenant::query()->whereIn('id', $tenantIds)->orderBy('company_name')->get()
             ->map(function (Tenant $tenant) use ($usage): array {
                 $summary = $usage->forTenant($tenant);
 
@@ -48,13 +51,24 @@ class ReportController extends Controller
             })
             ->values();
 
+        $billingPage = LengthAwarePaginator::resolveCurrentPage('billing_page');
+        $billing = new LengthAwarePaginator(
+            $billingRows->forPage($billingPage, 15)->values(),
+            $billingRows->count(),
+            15,
+            $billingPage,
+            ['path' => $request->url(), 'pageName' => 'billing_page'],
+        );
+        $billing->withQueryString();
+
         $pendingTickets = SupportTicket::query()
             ->where('billing_status', TicketBillingStatus::Pending()->value)
             ->with('tenant')
             ->withSum(['timeEntries as billable_minutes' => fn ($query) => $query->where('is_billable', true)], 'minutes')
             ->orderBy('created_at')
-            ->get()
-            ->map(fn (SupportTicket $ticket) => [
+            ->paginate(15, pageName: 'pending_page')
+            ->withQueryString()
+            ->through(fn (SupportTicket $ticket) => [
                 'id' => $ticket->id,
                 'code' => $ticket->code(),
                 'subject' => $ticket->subject,
@@ -67,8 +81,10 @@ class ReportController extends Controller
         $agents = CentralUser::query()
             ->whereIn('id', SupportTicket::query()->whereNotNull('resolved_by')->distinct()->select('resolved_by'))
             ->orderBy('name')
-            ->get(['id', 'name'])
-            ->map(function (CentralUser $agent): array {
+            ->select(['id', 'name'])
+            ->paginate(15, pageName: 'agents_page')
+            ->withQueryString()
+            ->through(function (CentralUser $agent): array {
                 $ratings = SupportRating::query()->where('central_user_id', $agent->id);
                 $resolved = SupportTicket::query()->where('resolved_by', $agent->id);
 
@@ -84,6 +100,7 @@ class ReportController extends Controller
 
         return Inertia::render('Central/Support/Reports/Index', [
             'billing' => $billing,
+            'totalDue' => round((float) $billingRows->sum('amount_due'), 2),
             'pendingTickets' => $pendingTickets,
             'agents' => $agents,
             'overall' => [
