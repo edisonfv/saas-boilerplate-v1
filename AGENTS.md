@@ -211,6 +211,13 @@ Laravel already ships most of the infrastructure a SaaS needs. **Before writing 
 - Frontend: `resources/js/composables/useListingFilters.ts` drives the search box (debounced) and sortable column headers via `router.get(..., { only: [...] })`; `resources/js/components/Pagination.vue` renders the `links` array. Any page needing an extra filter beyond search/sort (e.g. a status `<select>`) passes an `extraParams` callback into `useListingFilters` so it's merged into the same request instead of round-tripping separately.
 - Any StatCard/aggregate shown alongside a paginated table must be computed via a dedicated whole-table query (a `stats` prop from the controller), never via client-side iteration over the paginated page — that only reflects the current page.
 
+### Seeders
+
+- Every seeder must be idempotent: running it again (e.g. `php artisan db:seed --class=...` on an existing central or tenant database, after adding a permission, module or catalog item) must never duplicate rows, fail on unique constraints, or overwrite data the users changed.
+- Match records on their natural/unique key with `firstOrCreate()` (create once, keep later user edits), `updateOrCreate()` (only for platform-owned definitions that must track the code, e.g. permission labels), or `upsert()` for bulk rows; guard optional example data with `exists()`/`doesntExist()`. Never use bare `create()`/`insert()` in a seeder, and never truncate or delete existing rows.
+- Attach relations with `syncWithoutDetaching()` (or `firstOrCreate()` on the pivot), never `attach()`, so re-running doesn't duplicate pivot rows.
+- Cover it with a test that runs the seeder twice and asserts the row counts don't change.
+
 ### Graphify
 
 - If `graphify-out/graph.json` exists, before answering questions about the code use `graphify query "<pregunta>"`.

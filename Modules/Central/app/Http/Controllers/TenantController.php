@@ -13,6 +13,7 @@ use App\Models\SignatureProviderRequest;
 use App\Models\Tenant;
 use App\Services\TenantEntitlements;
 use App\Services\TenantPresenter;
+use App\Services\TenantPlanSubscriber;
 use App\Services\TenantProvisioner;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -136,6 +137,7 @@ class TenantController extends Controller
                 'trial_ends_at' => $subscription->trial_ends_at,
                 'current_period_start' => $subscription->current_period_start,
                 'current_period_end' => $subscription->current_period_end,
+                'grants_access' => $subscription->grantsAccessAt(),
             ] : null,
             'entitlements' => $subscription ? [
                 'modules' => $entitlements->activeModules($tenant)->values(),
@@ -225,5 +227,17 @@ class TenantController extends Controller
         return back()->with('status', $tenant->operationalStatus()->equals(TenantStatus::Active())
             ? 'tenant-activated'
             : 'tenant-suspended');
+    }
+
+    /**
+     * Starts the tenant's next billing period, unlocking a lapsed workspace.
+     */
+    public function renewSubscription(Tenant $tenant, TenantPlanSubscriber $subscriber): RedirectResponse
+    {
+        $subscription = $tenant->subscription()->firstOrFail();
+
+        $subscriber->renew($subscription);
+
+        return back()->with('status', 'subscription-renewed');
     }
 }

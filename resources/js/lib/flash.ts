@@ -58,6 +58,10 @@ const messages: Record<string, FlashMessage> = {
     },
     'tenant-activated': { tone: 'success', message: 'Tenant reactivado.' },
     'tenant-suspended': { tone: 'warning', message: 'Tenant suspendido.' },
+    'subscription-renewed': {
+        tone: 'success',
+        message: 'Suscripción renovada. El espacio del tenant está habilitado.',
+    },
     'role-created': { tone: 'success', message: 'Rol creado correctamente.' },
     'role-updated': { tone: 'success', message: 'Cambios del rol guardados.' },
     'role-deleted': { tone: 'success', message: 'Rol eliminado.' },

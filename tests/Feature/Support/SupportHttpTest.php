@@ -145,7 +145,13 @@ test('the reports page summarizes billing and satisfaction', function () {
     $this->actingAs(supportStaff(), 'central')
         ->get(route('central.support.reports.index'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Central/Support/Reports/Index')->has('overall'));
+        ->assertInertia(fn (Assert $page) => $page->component('Central/Support/Reports/Index')
+            ->has('overall')
+            ->has('totalDue')
+            ->has('billing.data')
+            ->has('billing.links')
+            ->has('pendingTickets.data')
+            ->has('agents.data'));
 });
 
 // --- Tenant workspace ------------------------------------------------------

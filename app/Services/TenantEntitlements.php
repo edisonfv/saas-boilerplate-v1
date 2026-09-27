@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\SubscriptionStatus;
 use App\Enums\TenantStatus;
 use App\Models\Tenant;
 use Illuminate\Support\Collection;
@@ -53,6 +54,27 @@ class TenantEntitlements
         }
 
         return $this->snapshot($tenant)['limits'];
+    }
+
+    /**
+     * Modules the tenant contracted, even when its billing period lapsed.
+     * Only for surfaces that must keep working while the tenant renews (the
+     * public signatures website keeps taking orders, which motivates the
+     * renewal). A suspended tenant or a cancelled subscription gets none.
+     *
+     * @return Collection<int, string>
+     */
+    public function contractedModules(Tenant $tenant): Collection
+    {
+        $isContracted = tenancy()->central(function () use ($tenant): bool {
+            $subscription = $tenant->subscription()->first();
+
+            return $tenant->operationalStatus()->equals(TenantStatus::Active())
+                && $subscription !== null
+                && ! $subscription->status->equals(SubscriptionStatus::Cancelled());
+        });
+
+        return $isContracted ? collect($this->snapshot($tenant)['modules']) : collect();
     }
 
     public function forget(Tenant $tenant): void

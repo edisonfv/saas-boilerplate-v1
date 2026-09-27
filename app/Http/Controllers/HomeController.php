@@ -14,7 +14,9 @@ use Modules\Signatures\Http\Controllers\StorefrontController;
  * "/" of every domain. The route can't be split per domain (tenant routes
  * must not register "/", see routes/tenant.php), so it dispatches here:
  * the platform welcome page on central domains, the tenant's public
- * signatures website when it has that module, or its login otherwise.
+ * signatures website when it contracted that module (even with a lapsed
+ * subscription, see TenantEntitlements::contractedModules()), or its login
+ * otherwise.
  */
 class HomeController extends Controller
 {
@@ -28,7 +30,7 @@ class HomeController extends Controller
             return Inertia::render('Welcome');
         }
 
-        if ($entitlements->activeModules($tenant)->contains(config('signatures.module_slug', 'signatures'))) {
+        if ($entitlements->contractedModules($tenant)->contains(config('signatures.module_slug', 'signatures'))) {
             return app()->call([app(StorefrontController::class), 'show']);
         }
 

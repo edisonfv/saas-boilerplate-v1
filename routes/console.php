@@ -18,6 +18,11 @@ Schedule::command('support:close-resolved')
     ->withoutOverlapping()
     ->onOneServer();
 
+Schedule::command('subscriptions:expire-lapsed')
+    ->hourly()
+    ->withoutOverlapping()
+    ->onOneServer();
+
 Schedule::command('signatures:replay-webhooks')
     ->everyFifteenMinutes()
     ->withoutOverlapping()

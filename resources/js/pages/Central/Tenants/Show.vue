@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { toggleStatus } from '@/actions/Modules/Central/Http/Controllers/TenantController';
+import {
+    renewSubscription,
+    toggleStatus,
+} from '@/actions/Modules/Central/Http/Controllers/TenantController';
 import Badge from '@/components/Badge.vue';
 import Card from '@/components/Card.vue';
 import TenantHeader from '@/components/central/TenantHeader.vue';
@@ -36,6 +39,7 @@ interface Subscription {
     trial_ends_at: string | null;
     current_period_start: string | null;
     current_period_end: string | null;
+    grants_access: boolean;
 }
 
 interface Entitlements {
@@ -291,6 +295,29 @@ const isActive = computed(() => props.tenant.status === 'Active');
                                 </dd>
                             </div>
                         </dl>
+
+                        <div
+                            v-if="!subscription.grants_access"
+                            class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                        >
+                            La suscripción está vencida: el espacio del tenant
+                            está inhabilitado hasta que se renueve.
+                        </div>
+
+                        <Form
+                            v-if="can.manage"
+                            v-bind="renewSubscription.form(tenant.id)"
+                            #default="{ processing }"
+                            class="mt-4"
+                        >
+                            <button
+                                type="submit"
+                                :disabled="processing"
+                                class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 disabled:opacity-50"
+                            >
+                                Renovar periodo
+                            </button>
+                        </Form>
                     </template>
                     <p v-else class="text-sm text-ink-400">
                         Este tenant no tiene ninguna suscripción todavia.

@@ -45,6 +45,13 @@ const sections: NavigationSection[] = [
                 module: 'signatures',
             },
             {
+                name: 'Liquidación',
+                href: tenant.signatures.settlement.index().url,
+                icon: 'chart',
+                permission: 'tenant.signature-requests.settlement',
+                module: 'signatures',
+            },
+            {
                 name: 'Sitio web',
                 href: tenant.signatures.storefront.edit().url,
                 icon: 'globe',
@@ -88,6 +95,7 @@ const sections: NavigationSection[] = [
 <template>
     <AppShell
         :title="title"
+        variant="tenant"
         :sections="sections"
         :home-href="tenant.dashboard().url"
         :logout-href="destroy().url"
