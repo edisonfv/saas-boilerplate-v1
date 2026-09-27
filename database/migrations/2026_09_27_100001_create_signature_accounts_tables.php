@@ -34,7 +34,8 @@ return new class extends Migration
             $table->integer('available_units')->default(0);
             $table->timestamps();
 
-            $table->unique(['signature_account_id', 'signature_product_id']);
+            // Explicit name: the generated one exceeds MySQL's 64-character limit.
+            $table->unique(['signature_account_id', 'signature_product_id'], 'signature_balances_account_product_unique');
         });
 
         Schema::create('signature_ledger_entries', function (Blueprint $table) {
