@@ -20,13 +20,70 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $whatsapp
  * @property string|null $whatsapp_message
  * @property array<string, string|float|int|null>|null $prices
+ * @property list<array{title: string, text: string}>|null $uses
+ * @property list<array{title: string, text: string}>|null $steps
+ * @property list<array{question: string, answer: string}>|null $faqs
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['headline', 'description', 'contact_email', 'contact_phone', 'whatsapp', 'whatsapp_message', 'prices'])]
+#[Fillable(['headline', 'description', 'contact_email', 'contact_phone', 'whatsapp', 'whatsapp_message', 'prices', 'uses', 'steps', 'faqs'])]
 class SignatureStorefront extends Model
 {
     public const DefaultWhatsappMessage = 'Hola, quiero información para obtener mi firma electrónica.';
+
+    /**
+     * Default copy of the editable sections, used while the tenant hasn't
+     * edited them (NULL column). An empty list hides the section.
+     *
+     * @var list<array{title: string, text: string}>
+     */
+    public const DefaultUses = [
+        ['title' => 'Facturación electrónica', 'text' => 'Emite facturas, retenciones y notas de crédito autorizadas por el SRI.'],
+        ['title' => 'Firma de documentos', 'text' => 'Firma contratos y documentos PDF con la misma validez que tu firma manuscrita.'],
+        ['title' => 'Trámites públicos', 'text' => 'Compras públicas, Quipux, IESS, Superintendencias y otros trámites en línea.'],
+        ['title' => 'Seguridad jurídica', 'text' => 'Certificado emitido por Uanataca, entidad de certificación acreditada en Ecuador.'],
+    ];
+
+    /** @var list<array{title: string, text: string}> */
+    public const DefaultSteps = [
+        ['title' => 'Llena tu solicitud', 'text' => 'Elige tu firma y completa tus datos en línea, en pocos minutos.'],
+        ['title' => 'Sube tus documentos', 'text' => 'Fotos de tu cédula y una selfie desde tu celular. Si es para empresa, sus documentos en PDF.'],
+        ['title' => 'Validamos y pagas', 'text' => 'Revisamos tu información y te contactamos para completar el pago.'],
+        ['title' => 'Recibe tu firma', 'text' => 'La entidad certificadora valida tu identidad y te envía tu firma por correo.'],
+    ];
+
+    /** @var list<array{question: string, answer: string}> */
+    public const DefaultFaqs = [
+        ['question' => '¿Qué es la firma electrónica?', 'answer' => 'Es un certificado digital que te identifica en internet y tiene la misma validez legal que tu firma manuscrita, según la Ley de Comercio Electrónico del Ecuador.'],
+        ['question' => '¿Cuánto tarda la emisión?', 'answer' => 'Depende de la validación de tu identidad por la entidad certificadora. Con documentos claros y completos el proceso es rápido; te avisamos en cada paso.'],
+        ['question' => '¿Qué diferencia hay entre archivo y nube?', 'answer' => 'El archivo .p12 se descarga y lo usas desde tu computador o sistema de facturación. En la nube firmas desde cualquier dispositivo sin instalar nada.'],
+        ['question' => '¿Qué vigencia debo elegir?', 'answer' => 'Depende de tu uso: para facturar lo habitual es 1 o 2 años. Mientras más larga la vigencia, menor el costo por año.'],
+        ['question' => '¿Qué pasa si mi solicitud es rechazada?', 'answer' => 'Te indicamos qué corregir (por ejemplo, una foto poco legible) para que puedas completar tu trámite.'],
+    ];
+
+    /**
+     * @return list<array{title: string, text: string}>
+     */
+    public function resolvedUses(): array
+    {
+        return $this->uses ?? self::DefaultUses;
+    }
+
+    /**
+     * @return list<array{title: string, text: string}>
+     */
+    public function resolvedSteps(): array
+    {
+        return $this->steps ?? self::DefaultSteps;
+    }
+
+    /**
+     * @return list<array{question: string, answer: string}>
+     */
+    public function resolvedFaqs(): array
+    {
+        return $this->faqs ?? self::DefaultFaqs;
+    }
 
     public static function current(): self
     {
@@ -69,6 +126,9 @@ class SignatureStorefront extends Model
     {
         return [
             'prices' => 'array',
+            'uses' => 'array',
+            'steps' => 'array',
+            'faqs' => 'array',
         ];
     }
 }

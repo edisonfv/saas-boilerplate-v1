@@ -36,6 +36,9 @@ class StorefrontController extends Controller
 
         return Inertia::render('Signatures/Storefront/Show', [
             'storefront' => $this->storefrontProps($storefront),
+            'uses' => $storefront->resolvedUses(),
+            'steps' => $storefront->resolvedSteps(),
+            'faqs' => $storefront->resolvedFaqs(),
             'products' => $this->products()->map(fn (SignatureProduct $product) => [
                 'id' => $product->id,
                 'name' => $product->name,

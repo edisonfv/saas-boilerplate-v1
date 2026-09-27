@@ -30,6 +30,16 @@ class UpdateStorefrontRequest extends FormRequest
             'whatsapp_message' => ['nullable', 'string', 'max:500'],
             'prices' => ['nullable', 'array'],
             'prices.*' => ['nullable', 'numeric', 'min:0', 'max:99999'],
+            // Editable sections of the public site; an empty list hides it.
+            'uses' => ['present', 'array', 'max:8'],
+            'uses.*.title' => ['required', 'string', 'max:80'],
+            'uses.*.text' => ['required', 'string', 'max:300'],
+            'steps' => ['present', 'array', 'max:6'],
+            'steps.*.title' => ['required', 'string', 'max:80'],
+            'steps.*.text' => ['required', 'string', 'max:300'],
+            'faqs' => ['present', 'array', 'max:15'],
+            'faqs.*.question' => ['required', 'string', 'max:200'],
+            'faqs.*.answer' => ['required', 'string', 'max:1000'],
         ];
     }
 }

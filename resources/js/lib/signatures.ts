@@ -37,6 +37,60 @@ export interface DocumentKindOption {
     kind: string;
     label: string;
     accept: string;
+    accepts_images: boolean;
+    accepts_pdf: boolean;
+    /** Camera to open on phones: "user" (front) or "environment" (rear). */
+    capture: 'user' | 'environment' | null;
+}
+
+/** Longest side, in px, photos are scaled down to before upload. */
+const MaxPhotoSide = 2000;
+
+/**
+ * Normalizes a phone photo before upload: decodes it (including iPhone
+ * HEIC where the browser can), scales it down and re-encodes it as JPEG.
+ * Keeps uploads small on mobile data and always in a format the server
+ * accepts. Returns the original file when it can't be decoded but is
+ * already JPEG/PNG; throws when it's neither.
+ */
+export async function preparePhoto(file: File): Promise<File> {
+    let bitmap: ImageBitmap;
+
+    try {
+        bitmap = await createImageBitmap(file);
+    } catch {
+        if (['image/jpeg', 'image/png'].includes(file.type)) {
+            return file;
+        }
+
+        throw new Error(
+            'No pudimos leer esta imagen. Toma la foto de nuevo o usa un archivo JPG o PNG.',
+        );
+    }
+
+    const scale = Math.min(
+        1,
+        MaxPhotoSide / Math.max(bitmap.width, bitmap.height),
+    );
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(bitmap.width * scale);
+    canvas.height = Math.round(bitmap.height * scale);
+    canvas
+        .getContext('2d')
+        ?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+
+    const blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, 'image/jpeg', 0.85),
+    );
+
+    if (!blob) {
+        return file;
+    }
+
+    const name = file.name.replace(/\.[^.]+$/, '') || 'foto';
+
+    return new File([blob], `${name}.jpg`, { type: 'image/jpeg' });
 }
 
 /** Option lists from SignaturePresenter::formOptions(). */

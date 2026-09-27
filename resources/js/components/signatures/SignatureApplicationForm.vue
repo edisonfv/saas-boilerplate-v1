@@ -3,7 +3,7 @@ import { useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import Card from '@/components/Card.vue';
 import FormActions from '@/components/FormActions.vue';
-import Icon from '@/components/Icon.vue';
+import DocumentCapture from '@/components/signatures/DocumentCapture.vue';
 import { money } from '@/lib/signatures';
 import type { SignatureFormOptions } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
@@ -136,8 +136,7 @@ const documentSlots = computed(() =>
     ),
 );
 
-function pick(kind: string, event: Event) {
-    const file = (event.target as HTMLInputElement).files?.[0] ?? null;
+function pick(kind: string, file: File | null) {
     form.documents = { ...form.documents, [kind]: file };
 }
 
@@ -728,55 +727,24 @@ function submit() {
             ]"
         >
             <Card v-show="shows(3)" title="Documentos">
-                <ul class="space-y-4">
-                    <li v-for="slot in documentSlots" :key="slot.kind">
-                        <label
-                            :for="`document-${slot.kind}`"
-                            class="flex items-center justify-between gap-2 text-sm font-semibold text-ink-800 dark:text-ink-200"
-                        >
-                            <span>
-                                {{ slot.label }}
-                                <span
-                                    v-if="!requiredKinds.includes(slot.kind)"
-                                    class="font-normal text-ink-400"
-                                    >(opcional)</span
-                                >
-                            </span>
-                            <Icon
-                                v-if="
-                                    form.documents[slot.kind] ||
-                                    uploadedDocuments.includes(slot.kind)
-                                "
-                                name="check-circle"
-                                class="size-4.5 text-emerald-600"
-                            />
-                        </label>
-                        <input
-                            :id="`document-${slot.kind}`"
-                            type="file"
-                            :accept="slot.accept"
-                            class="mt-1.5 block w-full text-xs text-ink-600 file:mr-3 file:rounded-md file:border-0 file:bg-ink-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold dark:text-ink-300 dark:file:bg-ink-800 dark:file:text-ink-200"
-                            @change="pick(slot.kind, $event)"
-                        />
-                        <p
-                            v-if="uploadedDocuments.includes(slot.kind)"
-                            :class="ui.help"
-                        >
-                            Ya cargado. Sube otro archivo solo para
-                            reemplazarlo.
-                        </p>
-                        <p
-                            v-if="errorFor(`documents.${slot.kind}`)"
-                            :class="ui.error"
-                        >
-                            {{ errorFor(`documents.${slot.kind}`) }}
-                        </p>
-                    </li>
-                </ul>
+                <div class="space-y-3">
+                    <DocumentCapture
+                        v-for="documentSlot in documentSlots"
+                        :key="documentSlot.kind"
+                        :document="documentSlot"
+                        :required="requiredKinds.includes(documentSlot.kind)"
+                        :already-uploaded="
+                            uploadedDocuments.includes(documentSlot.kind)
+                        "
+                        :file="form.documents[documentSlot.kind] ?? null"
+                        :error="errorFor(`documents.${documentSlot.kind}`)"
+                        @select="(file) => pick(documentSlot.kind, file)"
+                    />
+                </div>
                 <p :class="[ui.help, 'mt-4']">
-                    Fotos nítidas en JPG o PNG, tomadas en el momento, sin
-                    filtros ni recortes; documentos societarios en PDF. Máximo
-                    13 MB por archivo.
+                    Desde el celular, toca «Tomar foto» para usar la cámara.
+                    Fotos nítidas, tomadas en el momento, sin filtros ni
+                    recortes; documentos de empresa en PDF (máximo 13 MB).
                 </p>
                 <p v-if="missingDocumentsError" :class="[ui.error, 'mt-2']">
                     {{ missingDocumentsError }}

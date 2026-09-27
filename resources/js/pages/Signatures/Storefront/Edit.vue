@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { Form, Head } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { Head, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import Card from '@/components/Card.vue';
 import FormActions from '@/components/FormActions.vue';
 import Icon from '@/components/Icon.vue';
+import EditableListCard from '@/components/signatures/EditableListCard.vue';
 import GeneralLayout from '@/layouts/GeneralLayout.vue';
 import { money } from '@/lib/signatures';
 import type { SignatureProduct } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
 import tenant from '@/routes/tenant';
+
+type Entry = { title: string; text: string };
+type Faq = { question: string; answer: string };
 
 const props = defineProps<{
     storefront: {
@@ -19,36 +23,65 @@ const props = defineProps<{
         whatsapp: string | null;
         whatsapp_message: string;
         prices: Record<string, string>;
+        uses: Entry[];
+        steps: Entry[];
+        faqs: Faq[];
     };
     products: SignatureProduct[];
     publicUrl: string;
 }>();
 
-const whatsapp = ref(props.storefront.whatsapp ?? '');
-const whatsappMessage = ref(props.storefront.whatsapp_message);
+/**
+ * useForm (JSON) rather than <Form>: the editable lists must reach the
+ * server even when empty, which hides that section of the site.
+ */
+const form = useForm({
+    headline: props.storefront.headline,
+    description: props.storefront.description ?? '',
+    contact_email: props.storefront.contact_email ?? '',
+    contact_phone: props.storefront.contact_phone ?? '',
+    whatsapp: props.storefront.whatsapp ?? '',
+    whatsapp_message: props.storefront.whatsapp_message,
+    prices: Object.fromEntries(
+        props.products.map((product) => [
+            product.id,
+            props.storefront.prices[product.id] ?? '',
+        ]),
+    ) as Record<string, string>,
+    uses: props.storefront.uses.map((entry) => ({ ...entry })),
+    steps: props.storefront.steps.map((entry) => ({ ...entry })),
+    faqs: props.storefront.faqs.map((faq) => ({ ...faq })),
+});
+
+const errors = computed(() => form.errors as Record<string, string>);
 
 /** Same link the public site builds (SignatureStorefront::whatsappUrl()). */
 const whatsappPreview = computed(() => {
-    const number = whatsapp.value.replace(/\D/g, '');
+    const number = form.whatsapp.replace(/\D/g, '');
 
     return number
-        ? `https://wa.me/${number}?text=${encodeURIComponent(whatsappMessage.value)}`
+        ? `https://wa.me/${number}?text=${encodeURIComponent(form.whatsapp_message)}`
         : null;
 });
+
+function submit() {
+    form.put(tenant.signatures.storefront.update().url, {
+        preserveScroll: true,
+    });
+}
 </script>
 
 <template>
     <Head title="Sitio web de firmas" />
 
     <GeneralLayout title="Sitio web de firmas">
-        <Form
+        <form
             autocomplete="off"
-            v-bind="tenant.signatures.storefront.update.form()"
-            #default="{ errors, processing, isDirty }"
             class="col-span-12 grid grid-cols-12 gap-6"
+            @submit.prevent="submit"
         >
             <div class="col-span-12 space-y-6 xl:col-span-8">
-                <Card title="Contenido de la página">
+                <Card title="Portada">
                     <div class="space-y-4">
                         <div>
                             <label for="headline" :class="ui.label"
@@ -56,9 +89,9 @@ const whatsappPreview = computed(() => {
                             >
                             <input
                                 id="headline"
-                                name="headline"
-                                :value="storefront.headline"
+                                v-model="form.headline"
                                 required
+                                maxlength="160"
                                 :class="ui.input"
                             />
                             <p v-if="errors.headline" :class="ui.error">
@@ -71,9 +104,9 @@ const whatsappPreview = computed(() => {
                             >
                             <textarea
                                 id="description"
-                                name="description"
+                                v-model="form.description"
                                 rows="4"
-                                :value="storefront.description ?? ''"
+                                maxlength="2000"
                                 :class="ui.input"
                             />
                         </div>
@@ -84,9 +117,8 @@ const whatsappPreview = computed(() => {
                                 >
                                 <input
                                     id="contact_email"
-                                    name="contact_email"
+                                    v-model="form.contact_email"
                                     type="email"
-                                    :value="storefront.contact_email ?? ''"
                                     :class="ui.input"
                                 />
                                 <p
@@ -102,8 +134,7 @@ const whatsappPreview = computed(() => {
                                 >
                                 <input
                                     id="contact_phone"
-                                    name="contact_phone"
-                                    :value="storefront.contact_phone ?? ''"
+                                    v-model="form.contact_phone"
                                     :class="ui.input"
                                 />
                             </div>
@@ -124,8 +155,7 @@ const whatsappPreview = computed(() => {
                             >
                             <input
                                 id="whatsapp"
-                                v-model="whatsapp"
-                                name="whatsapp"
+                                v-model="form.whatsapp"
                                 inputmode="tel"
                                 placeholder="593991234567"
                                 :class="ui.input"
@@ -144,8 +174,7 @@ const whatsappPreview = computed(() => {
                             >
                             <textarea
                                 id="whatsapp_message"
-                                v-model="whatsappMessage"
-                                name="whatsapp_message"
+                                v-model="form.whatsapp_message"
                                 rows="3"
                                 maxlength="500"
                                 :class="ui.input"
@@ -191,11 +220,10 @@ const whatsappPreview = computed(() => {
                                 </p>
                             </div>
                             <input
-                                :name="`prices[${product.id}]`"
+                                v-model="form.prices[product.id]"
                                 type="number"
                                 step="0.01"
                                 min="0"
-                                :value="storefront.prices[product.id] ?? ''"
                                 :placeholder="
                                     product.suggested_retail_price ?? ''
                                 "
@@ -205,6 +233,63 @@ const whatsappPreview = computed(() => {
                         </li>
                     </ul>
                 </Card>
+
+                <EditableListCard
+                    v-model="form.uses"
+                    title="¿Para qué sirve tu firma?"
+                    description="Tarjetas de beneficios que se muestran después de la portada."
+                    name="uses"
+                    :fields="[
+                        { key: 'title', label: 'Título', max: 80 },
+                        {
+                            key: 'text',
+                            label: 'Texto',
+                            multiline: true,
+                            max: 300,
+                        },
+                    ]"
+                    add-label="Agregar beneficio"
+                    :max-rows="8"
+                    :errors="errors"
+                />
+
+                <EditableListCard
+                    v-model="form.steps"
+                    title="Cómo funciona"
+                    description="Pasos del proceso, en orden."
+                    name="steps"
+                    :fields="[
+                        { key: 'title', label: 'Paso', max: 80 },
+                        {
+                            key: 'text',
+                            label: 'Descripción',
+                            multiline: true,
+                            max: 300,
+                        },
+                    ]"
+                    add-label="Agregar paso"
+                    :max-rows="6"
+                    :errors="errors"
+                />
+
+                <EditableListCard
+                    v-model="form.faqs"
+                    title="Preguntas frecuentes"
+                    description="Preguntas y respuestas que se muestran al final del sitio."
+                    name="faqs"
+                    :fields="[
+                        { key: 'question', label: 'Pregunta', max: 200 },
+                        {
+                            key: 'answer',
+                            label: 'Respuesta',
+                            multiline: true,
+                            max: 1000,
+                        },
+                    ]"
+                    add-label="Agregar pregunta"
+                    :max-rows="15"
+                    :errors="errors"
+                />
             </div>
 
             <div class="col-span-12 space-y-6 xl:col-span-4">
@@ -231,11 +316,11 @@ const whatsappPreview = computed(() => {
             </div>
 
             <FormActions
-                :processing="processing"
-                :is-dirty="isDirty"
+                :processing="form.processing"
+                :is-dirty="form.isDirty"
                 submit-label="Guardar sitio"
                 :cancel-href="tenant.signatures.requests.index().url"
             />
-        </Form>
+        </form>
     </GeneralLayout>
 </template>

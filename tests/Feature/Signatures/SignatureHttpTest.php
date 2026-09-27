@@ -193,7 +193,7 @@ test('the tenant configures its WhatsApp contact', function () {
 
     $this->actingAs(supportTenantUser($tenant))
         ->put("http://{$domain}/firmas-electronicas/sitio-web", [
-            'headline' => 'Tu firma hoy',
+            ...storefrontSettings(),
             'whatsapp' => '593991234567',
             'whatsapp_message' => 'Hola, necesito una firma',
         ])
@@ -202,6 +202,61 @@ test('the tenant configures its WhatsApp contact', function () {
     expect($tenant->run(fn () => SignatureStorefront::current()->whatsappUrl()))
         ->toBe('https://wa.me/593991234567?text=Hola%2C%20necesito%20una%20firma');
 });
+
+test('the public site shows the default copy until the tenant edits it', function () {
+    [, $domain] = signatureTenant();
+
+    $this->get("http://{$domain}/")
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('uses', SignatureStorefront::DefaultUses)
+            ->where('steps', SignatureStorefront::DefaultSteps)
+            ->where('faqs', SignatureStorefront::DefaultFaqs));
+});
+
+test('the tenant edits the sections of its site and can hide one', function () {
+    [$tenant, $domain] = signatureTenant();
+
+    $this->actingAs(supportTenantUser($tenant))
+        ->put("http://{$domain}/firmas-electronicas/sitio-web", [
+            ...storefrontSettings(),
+            'uses' => [['title' => ' Facturación SRI ', 'text' => 'Factura desde hoy.', 'extra' => 'x']],
+            'steps' => [],
+            'faqs' => [['question' => '¿Atienden sábados?', 'answer' => 'Sí, de 9 a 13h.']],
+        ])
+        ->assertSessionHasNoErrors();
+
+    $this->get("http://{$domain}/")
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('uses', [['title' => 'Facturación SRI', 'text' => 'Factura desde hoy.']])
+            ->where('steps', [])
+            ->where('faqs', [['question' => '¿Atienden sábados?', 'answer' => 'Sí, de 9 a 13h.']]));
+});
+
+test('each section entry needs its texts', function () {
+    [$tenant, $domain] = signatureTenant();
+
+    $this->actingAs(supportTenantUser($tenant))
+        ->put("http://{$domain}/firmas-electronicas/sitio-web", [
+            ...storefrontSettings(),
+            'faqs' => [['question' => '¿Precio?', 'answer' => '']],
+        ])
+        ->assertSessionHasErrors('faqs.0.answer');
+});
+
+/**
+ * A valid storefront settings payload (the editor always sends every list).
+ *
+ * @return array<string, mixed>
+ */
+function storefrontSettings(): array
+{
+    return [
+        'headline' => 'Tu firma hoy',
+        'uses' => SignatureStorefront::DefaultUses,
+        'steps' => SignatureStorefront::DefaultSteps,
+        'faqs' => SignatureStorefront::DefaultFaqs,
+    ];
+}
 
 // --- Central console ---------------------------------------------------------
 

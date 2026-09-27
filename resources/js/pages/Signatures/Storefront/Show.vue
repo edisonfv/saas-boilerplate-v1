@@ -20,6 +20,9 @@ const props = defineProps<{
         price: string | null;
     }[];
     requirements: { type: string; label: string; documents: string[] }[];
+    uses: { title: string; text: string }[];
+    steps: { title: string; text: string }[];
+    faqs: { question: string; answer: string }[];
 }>();
 
 const lowestPrice = computed(() => {
@@ -42,70 +45,8 @@ function applyUrl(productId?: string): string {
     }).url;
 }
 
-const uses: { icon: IconName; title: string; text: string }[] = [
-    {
-        icon: 'currency',
-        title: 'Facturación electrónica',
-        text: 'Emite facturas, retenciones y notas de crédito autorizadas por el SRI.',
-    },
-    {
-        icon: 'pencil',
-        title: 'Firma de documentos',
-        text: 'Firma contratos y documentos PDF con la misma validez que tu firma manuscrita.',
-    },
-    {
-        icon: 'building',
-        title: 'Trámites públicos',
-        text: 'Compras públicas, Quipux, IESS, Superintendencias y otros trámites en línea.',
-    },
-    {
-        icon: 'shield',
-        title: 'Seguridad jurídica',
-        text: 'Certificado emitido por Uanataca, entidad de certificación acreditada en Ecuador.',
-    },
-];
-
-const steps = [
-    {
-        title: 'Llena tu solicitud',
-        text: 'Elige tu firma y completa tus datos en línea, en pocos minutos.',
-    },
-    {
-        title: 'Sube tus documentos',
-        text: 'Fotos de tu cédula y una selfie. Si es para empresa, sus documentos en PDF.',
-    },
-    {
-        title: 'Validamos y pagas',
-        text: 'Revisamos tu información y te contactamos para completar el pago.',
-    },
-    {
-        title: 'Recibe tu firma',
-        text: 'La entidad certificadora valida tu identidad y te envía tu firma por correo.',
-    },
-];
-
-const faqs = [
-    {
-        question: '¿Qué es la firma electrónica?',
-        answer: 'Es un certificado digital que te identifica en internet y tiene la misma validez legal que tu firma manuscrita, según la Ley de Comercio Electrónico del Ecuador.',
-    },
-    {
-        question: '¿Cuánto tarda la emisión?',
-        answer: 'Depende de la validación de tu identidad por la entidad certificadora. Con documentos claros y completos el proceso es rápido; te avisamos en cada paso.',
-    },
-    {
-        question: '¿Qué diferencia hay entre archivo y nube?',
-        answer: 'El archivo .p12 se descarga y lo usas desde tu computador o sistema de facturación. En la nube firmas desde cualquier dispositivo sin instalar nada.',
-    },
-    {
-        question: '¿Qué vigencia debo elegir?',
-        answer: 'Depende de tu uso: para facturar lo habitual es 1 o 2 años. Mientras más larga la vigencia, menor el costo por año.',
-    },
-    {
-        question: '¿Qué pasa si mi solicitud es rechazada?',
-        answer: 'Te indicamos qué corregir (por ejemplo, una foto poco legible) para que puedas completar tu trámite.',
-    },
-];
+/** Icons cycle over the tenant's editable benefit cards. */
+const useIcons: IconName[] = ['currency', 'pencil', 'building', 'shield'];
 </script>
 
 <template>
@@ -200,7 +141,10 @@ const faqs = [
         </section>
 
         <!-- Uses -->
-        <section class="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6">
+        <section
+            v-if="uses.length"
+            class="mx-auto w-full max-w-6xl px-4 py-16 sm:px-6"
+        >
             <h2
                 class="text-center text-2xl font-extrabold text-ink-950 sm:text-3xl dark:text-white"
             >
@@ -208,14 +152,14 @@ const faqs = [
             </h2>
             <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <div
-                    v-for="use in uses"
-                    :key="use.title"
+                    v-for="(use, index) in uses"
+                    :key="index"
                     class="rounded-xl border border-ink-200 bg-white p-5 dark:border-ink-800 dark:bg-ink-900"
                 >
                     <div
                         class="flex size-11 items-center justify-center rounded-xl bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-300"
                     >
-                        <Icon :name="use.icon" />
+                        <Icon :name="useIcons[index % useIcons.length]" />
                     </div>
                     <h3 class="mt-4 font-bold text-ink-950 dark:text-white">
                         {{ use.title }}
@@ -281,16 +225,18 @@ const faqs = [
 
         <!-- How it works -->
         <section
+            v-if="steps.length"
             id="como-funciona"
             class="mx-auto w-full max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6"
         >
             <h2
                 class="text-center text-2xl font-extrabold text-ink-950 sm:text-3xl dark:text-white"
             >
-                Obtén tu firma en 4 pasos
+                Obtén tu firma en {{ steps.length }}
+                {{ steps.length === 1 ? 'paso' : 'pasos' }}
             </h2>
             <ol class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <li v-for="(step, index) in steps" :key="step.title">
+                <li v-for="(step, index) in steps" :key="index">
                     <span
                         class="flex size-10 items-center justify-center rounded-full bg-primary-600 font-extrabold text-white"
                         >{{ index + 1 }}</span
@@ -365,6 +311,7 @@ const faqs = [
 
         <!-- FAQ -->
         <section
+            v-if="faqs.length"
             id="preguntas"
             class="mx-auto w-full max-w-3xl scroll-mt-20 px-4 py-16 sm:px-6"
         >
@@ -375,8 +322,8 @@ const faqs = [
             </h2>
             <div class="mt-8 space-y-3">
                 <details
-                    v-for="faq in faqs"
-                    :key="faq.question"
+                    v-for="(faq, index) in faqs"
+                    :key="index"
                     class="group rounded-xl border border-ink-200 bg-white p-5 dark:border-ink-800 dark:bg-ink-900"
                 >
                     <summary

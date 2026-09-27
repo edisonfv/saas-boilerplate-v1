@@ -200,6 +200,14 @@ class SignaturePresenter
                     'kind' => $kind->value,
                     'label' => $kind->label,
                     'accept' => '.'.str_replace(',', ',.', $kind->mimes()),
+                    'accepts_images' => str_contains($kind->mimes(), 'jpg'),
+                    'accepts_pdf' => str_contains($kind->mimes(), 'pdf'),
+                    // Camera to open on phones: front for the selfie, rear for documents.
+                    'capture' => match (true) {
+                        $kind->equals(SignatureDocumentKind::Selfie()) => 'user',
+                        str_contains($kind->mimes(), 'jpg') => 'environment',
+                        default => null,
+                    },
                 ])
                 ->values(),
             'requiredDocuments' => collect(SignatureApplicantType::cases())
