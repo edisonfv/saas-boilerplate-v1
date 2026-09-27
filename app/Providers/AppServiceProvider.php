@@ -6,6 +6,8 @@ use App\Models\CentralUser;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
 use App\Models\User;
+use App\Services\Signatures\Contracts\SignatureProvider;
+use App\Services\Signatures\Uanataca\UanatacaSignatureProvider;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -29,7 +31,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // The certification authority behind the Signatures module; swap the
+        // adapter here to change (or fake) the provider.
+        $this->app->bind(SignatureProvider::class, UanatacaSignatureProvider::class);
     }
 
     /**

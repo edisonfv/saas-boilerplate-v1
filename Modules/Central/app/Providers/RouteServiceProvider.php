@@ -2,6 +2,7 @@
 
 namespace Modules\Central\Providers;
 
+use App\Http\Middleware\PreventAccessFromTenantDomains;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
 
@@ -39,7 +40,7 @@ class RouteServiceProvider extends ServiceProvider
      */
     protected function mapWebRoutes(): void
     {
-        Route::middleware('web')->group(module_path($this->name, '/routes/web.php'));
+        Route::middleware(['web', PreventAccessFromTenantDomains::class])->group(module_path($this->name, '/routes/web.php'));
     }
 
     /**

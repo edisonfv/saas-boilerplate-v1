@@ -65,6 +65,15 @@ final class CentralPermissions
                 'label' => 'Reportes de soporte',
                 'actions' => [Action::View()],
             ],
+            'signature-products' => [
+                'label' => 'Catálogo de firmas electrónicas',
+                'actions' => [Action::View(), Action::Create(), Action::Update()],
+            ],
+            'signature-accounts' => [
+                'label' => 'Cuentas de firmas de tenants',
+                'actions' => [Action::View(), Action::Update()],
+                'special' => ['transactions' => 'Registrar paquetes, abonos y ajustes de firmas'],
+            ],
             // Reservados: sin ruta/controlador todavía (no hay feature de
             // suscripciones ni billing construida), pero se sincronizan igual
             // para que el catálogo quede completo desde ya.

@@ -22,3 +22,8 @@ Schedule::command('subscriptions:expire-lapsed')
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('signatures:replay-webhooks')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping()
+    ->onOneServer();

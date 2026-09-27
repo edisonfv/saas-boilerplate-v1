@@ -28,6 +28,32 @@ const sections: NavigationSection[] = [
         ],
     },
     {
+        label: 'Ventas',
+        items: [
+            {
+                name: 'Firmas electrónicas',
+                href: tenant.signatures.requests.index().url,
+                icon: 'key',
+                permission: 'tenant.signature-requests.view',
+                module: 'signatures',
+            },
+            {
+                name: 'Enlaces prepagados',
+                href: tenant.signatures.invitations.index().url,
+                icon: 'currency',
+                permission: 'tenant.signature-requests.payments',
+                module: 'signatures',
+            },
+            {
+                name: 'Sitio web',
+                href: tenant.signatures.storefront.edit().url,
+                icon: 'globe',
+                permission: 'tenant.signature-storefront.update',
+                module: 'signatures',
+            },
+        ],
+    },
+    {
         label: 'Administración',
         items: [
             {
