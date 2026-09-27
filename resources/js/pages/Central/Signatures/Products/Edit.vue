@@ -7,14 +7,14 @@ import Icon from '@/components/Icon.vue';
 import ProductFields from '@/components/signatures/ProductFields.vue';
 import CentralLayout from '@/layouts/CentralLayout.vue';
 import { money } from '@/lib/signatures';
-import type { SignatureProduct } from '@/lib/signatures';
+import type { CentralSignatureProduct } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
 import central from '@/routes/central';
 
 defineProps<{
     validities: Record<string, string>;
     containers: Record<string, string>;
-    product: SignatureProduct & {
+    product: CentralSignatureProduct & {
         packages: {
             id: string;
             name: string;
@@ -99,6 +99,18 @@ defineProps<{
                                 <p class="text-xs text-ink-500">
                                     {{ pack.quantity }} firmas ·
                                     {{ money(pack.unit_price) }} c/u
+                                    <template v-if="product.provider_cost">
+                                        · utilidad
+                                        {{
+                                            money(
+                                                Number(pack.unit_price) -
+                                                    Number(
+                                                        product.provider_cost,
+                                                    ),
+                                            )
+                                        }}
+                                        c/u
+                                    </template>
                                 </p>
                             </div>
                             <span class="font-bold tabular-nums">{{

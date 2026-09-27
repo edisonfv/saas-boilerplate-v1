@@ -37,8 +37,10 @@ class SaveSignatureProductRequest extends FormRequest
                     ->where('validity', $this->input('validity'))
                     ->ignore($product?->id),
             ],
+            'provider_cost' => ['nullable', 'numeric', 'min:0', 'max:99999'],
             'credit_unit_price' => ['required', 'numeric', 'min:0', 'max:99999'],
             'suggested_retail_price' => ['nullable', 'numeric', 'min:0', 'max:99999'],
+            'min_retail_price' => ['nullable', 'numeric', 'min:0', 'max:99999'],
         ];
     }
 

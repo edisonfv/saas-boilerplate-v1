@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import Badge from '@/components/Badge.vue';
 import Card from '@/components/Card.vue';
-import Icon from '@/components/Icon.vue';
+import TenantHeader from '@/components/central/TenantHeader.vue';
+import type { TenantHeaderData } from '@/components/central/TenantHeader.vue';
 import Pagination from '@/components/Pagination.vue';
 import type { PaginationLink } from '@/components/Pagination.vue';
 import QuotaCard from '@/components/signatures/QuotaCard.vue';
+import StatCard from '@/components/StatCard.vue';
 import { useDateTime } from '@/composables/useDateTime';
 import CentralLayout from '@/layouts/CentralLayout.vue';
 import { ledgerEntryTone, money, signatureStatusTone } from '@/lib/signatures';
@@ -14,9 +16,32 @@ import type { SignatureAccount } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
 import central from '@/routes/central';
 
+interface Performance {
+    units: number;
+    revenue: string;
+    central_profit: string;
+    central_margin: number | null;
+    retail: string;
+    distributor_profit: string;
+    refunded: number;
+}
+
 const props = defineProps<{
-    tenant: { id: string; company_name: string | null };
+    header: TenantHeaderData;
     account: SignatureAccount | null;
+    performance: { month: Performance; year: Performance } | null;
+    pricing: {
+        product_id: string;
+        product_name: string;
+        provider_cost: string | null;
+        unit_price: string;
+        central_margin: string | null;
+        retail_price: string | null;
+        uses_own_price: boolean;
+        suggested_retail_price: string | null;
+        min_retail_price: string | null;
+        distributor_margin: string | null;
+    }[];
     ledger: {
         data: {
             id: string;
@@ -39,6 +64,8 @@ const props = defineProps<{
     sales: {
         id: string;
         product_name: string | null;
+        unit_price: string | null;
+        sale_price: string | null;
         status: string;
         status_label: string;
         provider_token: string | null;
@@ -57,6 +84,7 @@ const props = defineProps<{
     can: { update: boolean; transactions: boolean };
 }>();
 
+const tenant = props.header;
 const { dateTime } = useDateTime();
 const mode = ref(props.account?.affiliation_mode ?? 'Prepaid');
 
@@ -70,15 +98,146 @@ const confirmRefund = () =>
     <CentralLayout :title="`Firmas · ${tenant.company_name ?? tenant.id}`">
         <div class="grid grid-cols-12 gap-6">
             <div class="col-span-12">
-                <Link
-                    :href="central.signatures.accounts.index().url"
-                    class="inline-flex items-center gap-2 text-sm font-medium text-ink-500 hover:text-ink-950 dark:text-ink-400 dark:hover:text-white"
-                >
-                    <Icon name="arrow-left" /> Volver a cuentas
-                </Link>
+                <TenantHeader :tenant="header" active="signatures" />
+            </div>
+
+            <div
+                v-if="performance"
+                class="col-span-12 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            >
+                <StatCard
+                    label="Firmas vendidas (mes)"
+                    :value="performance.month.units"
+                    icon="key"
+                    :helper="`${performance.year.units} en el año · ${performance.month.refunded} reversadas`"
+                />
+                <StatCard
+                    label="Ingresos de central (mes)"
+                    :value="money(performance.month.revenue)"
+                    icon="currency"
+                    :helper="`${money(performance.year.revenue)} en el año`"
+                />
+                <StatCard
+                    label="Utilidad de central (mes)"
+                    :value="money(performance.month.central_profit)"
+                    icon="chart"
+                    :helper="
+                        performance.month.central_margin === null
+                            ? 'Registra el costo Uanataca'
+                            : `Margen ${performance.month.central_margin}%`
+                    "
+                />
+                <StatCard
+                    label="Venta al público (mes)"
+                    :value="money(performance.month.retail)"
+                    icon="users"
+                    :helper="`Gana el distribuidor ${money(performance.month.distributor_profit)}`"
+                />
             </div>
 
             <div class="col-span-12 space-y-6 xl:col-span-8">
+                <Card v-if="pricing.length" title="Precios del distribuidor">
+                    <p class="mb-4 text-sm text-ink-500 dark:text-ink-400">
+                        Lo que paga a central por cada firma y el precio que
+                        publica a sus clientes. El precio mínimo se define en el
+                        catálogo: el distribuidor no puede vender por debajo.
+                    </p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full min-w-[640px] text-left text-sm">
+                            <thead class="text-xs text-ink-500 uppercase">
+                                <tr>
+                                    <th class="py-2 pr-3 font-semibold">
+                                        Producto
+                                    </th>
+                                    <th
+                                        class="py-2 pr-3 text-right font-semibold"
+                                    >
+                                        Costo
+                                    </th>
+                                    <th
+                                        class="py-2 pr-3 text-right font-semibold"
+                                    >
+                                        Paga a central
+                                    </th>
+                                    <th
+                                        class="py-2 pr-3 text-right font-semibold"
+                                    >
+                                        Vende al público
+                                    </th>
+                                    <th class="py-2 text-right font-semibold">
+                                        Gana el distribuidor
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody
+                                class="divide-y divide-ink-100 dark:divide-ink-800"
+                            >
+                                <tr
+                                    v-for="row in pricing"
+                                    :key="row.product_id"
+                                >
+                                    <td
+                                        class="py-2.5 pr-3 text-ink-950 dark:text-white"
+                                    >
+                                        {{ row.product_name }}
+                                    </td>
+                                    <td
+                                        class="py-2.5 pr-3 text-right text-ink-500 tabular-nums"
+                                    >
+                                        {{
+                                            row.provider_cost
+                                                ? money(row.provider_cost)
+                                                : '—'
+                                        }}
+                                    </td>
+                                    <td
+                                        class="py-2.5 pr-3 text-right tabular-nums"
+                                    >
+                                        {{ money(row.unit_price) }}
+                                        <p
+                                            v-if="row.central_margin"
+                                            class="text-xs text-emerald-600 dark:text-emerald-400"
+                                        >
+                                            +{{ money(row.central_margin) }}
+                                            central
+                                        </p>
+                                    </td>
+                                    <td
+                                        class="py-2.5 pr-3 text-right tabular-nums"
+                                    >
+                                        {{
+                                            row.retail_price
+                                                ? money(row.retail_price)
+                                                : '—'
+                                        }}
+                                        <p class="text-xs text-ink-500">
+                                            {{
+                                                row.uses_own_price
+                                                    ? 'Precio propio'
+                                                    : 'PVP sugerido'
+                                            }}<template
+                                                v-if="row.min_retail_price"
+                                            >
+                                                · mín.
+                                                {{
+                                                    money(row.min_retail_price)
+                                                }}</template
+                                            >
+                                        </p>
+                                    </td>
+                                    <td class="py-2.5 text-right tabular-nums">
+                                        {{
+                                            row.distributor_margin
+                                                ? money(row.distributor_margin)
+                                                : '—'
+                                        }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </Card>
+
                 <Card
                     v-if="account && can.transactions"
                     title="Movimientos manuales"
@@ -371,6 +530,23 @@ const confirmRefund = () =>
                                 <p class="font-mono text-xs text-ink-500">
                                     {{ sale.provider_token ?? 'sin token' }} ·
                                     {{ dateTime(sale.submitted_at) }}
+                                </p>
+                            </div>
+                            <div class="text-right text-xs tabular-nums">
+                                <p class="text-ink-950 dark:text-white">
+                                    {{
+                                        sale.sale_price
+                                            ? money(sale.sale_price)
+                                            : '—'
+                                    }}
+                                </p>
+                                <p class="text-ink-500">
+                                    central
+                                    {{
+                                        sale.unit_price
+                                            ? money(sale.unit_price)
+                                            : '—'
+                                    }}
                                 </p>
                             </div>
                             <Badge :tone="signatureStatusTone(sale.status)">{{

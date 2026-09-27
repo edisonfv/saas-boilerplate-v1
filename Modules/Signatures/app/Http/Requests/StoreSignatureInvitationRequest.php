@@ -4,6 +4,7 @@ namespace Modules\Signatures\Http\Requests;
 
 use App\Enums\SignaturePaymentMethod;
 use App\Models\SignatureProduct;
+use App\Rules\RetailPriceFloor;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -33,7 +34,7 @@ class StoreSignatureInvitationRequest extends FormRequest
             'customer_name' => ['required', 'string', 'max:160'],
             'customer_email' => ['nullable', 'email', 'max:255'],
             'customer_phone' => ['nullable', 'regex:/^09\d{8}$/'],
-            'amount' => ['required', 'numeric', 'min:0', 'max:99999'],
+            'amount' => ['required', 'numeric', 'min:0', 'max:99999', new RetailPriceFloor($this->string('signature_product_id')->toString())],
             'method' => ['required', 'string', Rule::in(SignaturePaymentMethod::toValues())],
             'reference' => [
                 Rule::requiredIf($this->input('method') !== SignaturePaymentMethod::Cash()->value),

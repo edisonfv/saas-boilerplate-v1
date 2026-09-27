@@ -416,12 +416,19 @@ function submit() {
                             v-model="form.sale_price"
                             type="number"
                             step="0.01"
-                            min="0"
+                            :min="selectedProduct?.min_retail_price ?? 0"
                             :placeholder="
                                 selectedProduct?.retail_price ?? undefined
                             "
                             :class="ui.input"
                         />
+                        <p
+                            v-if="selectedProduct?.min_retail_price"
+                            :class="ui.help"
+                        >
+                            Precio mínimo permitido:
+                            {{ money(selectedProduct.min_retail_price) }}
+                        </p>
                         <p v-if="errorFor('sale_price')" :class="ui.error">
                             {{ errorFor('sale_price') }}
                         </p>

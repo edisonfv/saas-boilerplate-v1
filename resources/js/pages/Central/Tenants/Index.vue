@@ -23,6 +23,16 @@ interface TenantRow {
     status_label: string | null;
     trial_ends_at: string | null;
     created_at: string;
+    /** Signature distributor account; null when not affiliated (or hidden). */
+    signatures: {
+        affiliation_mode: 'Credit' | 'Prepaid';
+        affiliation_mode_label: string;
+        is_active: boolean;
+        credit_limit: string;
+        credit_used: string;
+        available_units: number;
+        sold_this_month: number;
+    } | null;
 }
 
 const props = defineProps<{
@@ -34,27 +44,49 @@ const props = defineProps<{
         total: number;
     };
     statuses: Record<string, string>;
+    affiliationModes: Record<string, string>;
     stats: {
         total: number;
         withSubscription: number;
         withoutSubscription: number;
+        distributors: number | null;
+        signaturesThisMonth: number | null;
     };
     can: {
         create: boolean;
+        signatures: boolean;
     };
 }>();
 
 const status = ref('');
+const affiliation = ref('');
 
 const { search, toggleSort, sortIndicator, reload } = useListingFilters(
     central.tenants.index().url,
     ['tenants'],
     {},
-    () =>
-        status.value
-            ? { 'filter[status]': status.value }
-            : ({} as Record<string, string>),
+    () => {
+        const filters: Record<string, string> = {};
+
+        if (status.value) {
+            filters['filter[status]'] = status.value;
+        }
+
+        if (affiliation.value) {
+            filters['filter[affiliation]'] = affiliation.value;
+        }
+
+        return filters;
+    },
 );
+
+function creditPercent(row: NonNullable<TenantRow['signatures']>): number {
+    const limit = Number(row.credit_limit);
+
+    return limit > 0
+        ? Math.min(100, Math.round((Number(row.credit_used) / limit) * 100))
+        : 0;
+}
 </script>
 
 <template>
@@ -77,8 +109,9 @@ const { search, toggleSort, sortIndicator, reload } = useListingFilters(
                     <p
                         class="mt-2 max-w-2xl text-sm text-ink-600 dark:text-ink-400"
                     >
-                        Revisa dominio, plan contratado y estado de suscripción
-                        de cada cuenta.
+                        Revisa dominio, plan, estado de suscripción y, para los
+                        distribuidores de firmas, su afiliación, saldo y ventas
+                        del mes.
                     </p>
                 </div>
                 <Link
@@ -91,7 +124,12 @@ const { search, toggleSort, sortIndicator, reload } = useListingFilters(
                 </Link>
             </div>
 
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div
+                :class="[
+                    'grid grid-cols-1 gap-4 sm:grid-cols-3',
+                    can.signatures && 'xl:grid-cols-5',
+                ]"
+            >
                 <StatCard
                     label="Total tenants"
                     :value="stats.total"
@@ -110,6 +148,20 @@ const { search, toggleSort, sortIndicator, reload } = useListingFilters(
                     icon="x-circle"
                     helper="Requieren atención"
                 />
+                <template v-if="can.signatures">
+                    <StatCard
+                        label="Distribuidores de firmas"
+                        :value="stats.distributors ?? 0"
+                        icon="key"
+                        helper="Afiliados a crédito o prepago"
+                    />
+                    <StatCard
+                        label="Firmas vendidas (mes)"
+                        :value="stats.signaturesThisMonth ?? 0"
+                        icon="chart"
+                        helper="Todos los distribuidores"
+                    />
+                </template>
             </div>
 
             <Card>
@@ -149,6 +201,22 @@ const { search, toggleSort, sortIndicator, reload } = useListingFilters(
                                 {{ label }}
                             </option>
                         </select>
+                        <select
+                            v-if="can.signatures"
+                            v-model="affiliation"
+                            class="form-control w-full sm:w-48"
+                            @change="reload"
+                        >
+                            <option value="">Toda afiliación</option>
+                            <option
+                                v-for="(label, value) in affiliationModes"
+                                :key="value"
+                                :value="value"
+                            >
+                                Firmas: {{ label }}
+                            </option>
+                            <option value="None">Sin afiliar</option>
+                        </select>
                     </div>
                 </div>
 
@@ -177,6 +245,9 @@ const { search, toggleSort, sortIndicator, reload } = useListingFilters(
                                 <th class="px-4 py-3">Plan</th>
                                 <th class="px-4 py-3">Operación</th>
                                 <th class="px-4 py-3">Suscripción</th>
+                                <th v-if="can.signatures" class="px-4 py-3">
+                                    Firmas
+                                </th>
                             </tr>
                         </thead>
                         <tbody
@@ -242,10 +313,96 @@ const { search, toggleSort, sortIndicator, reload } = useListingFilters(
                                         Sin estado
                                     </span>
                                 </td>
+                                <td v-if="can.signatures" class="px-4 py-4">
+                                    <Link
+                                        v-if="tenant.signatures"
+                                        :href="
+                                            central.tenants.signatures(
+                                                tenant.id,
+                                            ).url
+                                        "
+                                        class="block space-y-1 hover:opacity-80"
+                                    >
+                                        <div
+                                            class="flex flex-wrap items-center gap-1.5"
+                                        >
+                                            <Badge
+                                                :tone="
+                                                    tenant.signatures.is_active
+                                                        ? 'blue'
+                                                        : 'red'
+                                                "
+                                            >
+                                                {{
+                                                    tenant.signatures
+                                                        .affiliation_mode_label
+                                                }}
+                                            </Badge>
+                                            <span
+                                                class="text-xs text-ink-500 tabular-nums"
+                                            >
+                                                {{
+                                                    tenant.signatures
+                                                        .sold_this_month
+                                                }}
+                                                este mes
+                                            </span>
+                                        </div>
+                                        <p
+                                            v-if="
+                                                tenant.signatures
+                                                    .affiliation_mode ===
+                                                'Credit'
+                                            "
+                                            :class="[
+                                                'text-xs tabular-nums',
+                                                creditPercent(
+                                                    tenant.signatures,
+                                                ) >= 80
+                                                    ? 'text-amber-600 dark:text-amber-400'
+                                                    : 'text-ink-500',
+                                            ]"
+                                        >
+                                            Crédito
+                                            {{
+                                                creditPercent(
+                                                    tenant.signatures,
+                                                )
+                                            }}% usado
+                                        </p>
+                                        <p
+                                            v-else
+                                            :class="[
+                                                'text-xs tabular-nums',
+                                                tenant.signatures
+                                                    .available_units <= 5
+                                                    ? 'text-amber-600 dark:text-amber-400'
+                                                    : 'text-ink-500',
+                                            ]"
+                                        >
+                                            {{
+                                                tenant.signatures
+                                                    .available_units
+                                            }}
+                                            firmas disponibles
+                                        </p>
+                                    </Link>
+                                    <Link
+                                        v-else
+                                        :href="
+                                            central.tenants.signatures(
+                                                tenant.id,
+                                            ).url
+                                        "
+                                        class="text-xs text-ink-400 hover:text-primary-600"
+                                    >
+                                        Sin afiliar
+                                    </Link>
+                                </td>
                             </tr>
                             <tr v-if="props.tenants.data.length === 0">
                                 <td
-                                    colspan="6"
+                                    :colspan="can.signatures ? 7 : 6"
                                     class="px-4 py-10 text-center text-sm text-ink-500 dark:text-ink-400"
                                 >
                                     No hay tenants que coincidan con la

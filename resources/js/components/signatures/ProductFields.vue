@@ -12,8 +12,10 @@ defineProps<{
         name: string;
         validity: string;
         container: string;
+        provider_cost: string | null;
         credit_unit_price: string;
         suggested_retail_price: string | null;
+        min_retail_price: string | null;
     };
 }>();
 </script>
@@ -62,6 +64,27 @@ defineProps<{
             </p>
         </div>
         <div>
+            <label for="provider_cost" :class="ui.label"
+                >Costo Uanataca por firma (USD)</label
+            >
+            <input
+                id="provider_cost"
+                name="provider_cost"
+                type="number"
+                step="0.01"
+                min="0"
+                :value="product?.provider_cost ?? ''"
+                :class="ui.input"
+            />
+            <p :class="ui.help">
+                Lo que la entidad certificadora te cobra. Solo lo ve central;
+                sirve para calcular tu utilidad.
+            </p>
+            <p v-if="errors.provider_cost" :class="ui.error">
+                {{ errors.provider_cost }}
+            </p>
+        </div>
+        <div>
             <label for="credit_unit_price" :class="ui.label"
                 >Precio por firma a crédito (USD)</label
             >
@@ -92,6 +115,27 @@ defineProps<{
                 :value="product?.suggested_retail_price ?? ''"
                 :class="ui.input"
             />
+        </div>
+        <div>
+            <label for="min_retail_price" :class="ui.label"
+                >Precio mínimo de venta al público (USD)</label
+            >
+            <input
+                id="min_retail_price"
+                name="min_retail_price"
+                type="number"
+                step="0.01"
+                min="0"
+                :value="product?.min_retail_price ?? ''"
+                :class="ui.input"
+            />
+            <p :class="ui.help">
+                Piso de precio para los distribuidores: no podrán vender por
+                debajo. Vacío = sin restricción.
+            </p>
+            <p v-if="errors.min_retail_price" :class="ui.error">
+                {{ errors.min_retail_price }}
+            </p>
         </div>
     </div>
 </template>

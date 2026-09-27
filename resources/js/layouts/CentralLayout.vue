@@ -24,6 +24,7 @@ const sections: NavigationSection[] = [
         label: 'Plataforma',
         items: [
             {
+                // Also each tenant's signature distributor account (a tab).
                 name: 'Tenants',
                 href: central.tenants.index().url,
                 icon: 'building',
@@ -35,10 +36,10 @@ const sections: NavigationSection[] = [
         label: 'Firmas electrónicas',
         items: [
             {
-                name: 'Cuentas de tenants',
-                href: central.signatures.accounts.index().url,
-                icon: 'currency',
-                permission: 'central.signature-accounts.view',
+                name: 'Ventas y utilidad',
+                href: central.signatures.sales.index().url,
+                icon: 'chart',
+                permission: 'central.signature-sales.view',
             },
             {
                 name: 'Productos y paquetes',

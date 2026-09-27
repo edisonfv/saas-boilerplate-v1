@@ -43,12 +43,13 @@ class CentralAclSeeder extends Seeder
                 'central.support-tickets.view', 'central.support-tickets.billing', 'central.support-reports.view',
                 'central.signature-products.view', 'central.signature-products.create', 'central.signature-products.update',
                 'central.signature-accounts.view', 'central.signature-accounts.update', 'central.signature-accounts.transactions',
+                'central.signature-sales.view',
             ]));
 
         Role::firstOrCreate(['name' => 'sales', 'guard_name' => 'central'])
             ->syncPermissions($byName([
                 'central.tenants.view',
-                'central.signature-products.view', 'central.signature-accounts.view',
+                'central.signature-products.view', 'central.signature-accounts.view', 'central.signature-sales.view',
             ]));
 
         $admin = CentralUser::firstOrCreate(

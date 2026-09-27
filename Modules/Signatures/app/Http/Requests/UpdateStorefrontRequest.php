@@ -3,6 +3,7 @@
 namespace Modules\Signatures\Http\Requests;
 
 use App\Models\SignatureStorefront;
+use App\Rules\RetailPriceFloor;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateStorefrontRequest extends FormRequest
@@ -30,7 +31,7 @@ class UpdateStorefrontRequest extends FormRequest
             'whatsapp' => ['nullable', 'regex:/^\+?\d{9,15}$/'],
             'whatsapp_message' => ['nullable', 'string', 'max:500'],
             'prices' => ['nullable', 'array'],
-            'prices.*' => ['nullable', 'numeric', 'min:0', 'max:99999'],
+            'prices.*' => ['nullable', 'numeric', 'min:0', 'max:99999', new RetailPriceFloor],
             // Editable sections of the public site; an empty list hides it.
             'uses' => ['present', 'array', 'max:8'],
             'uses.*.title' => ['required', 'string', 'max:80'],

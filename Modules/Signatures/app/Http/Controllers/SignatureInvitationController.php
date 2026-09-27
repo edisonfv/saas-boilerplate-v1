@@ -56,7 +56,7 @@ class SignatureInvitationController extends Controller
                 ]),
             'products' => $products->map(fn (SignatureProduct $product) => [
                 ...$presenter->product($product),
-                'retail_price' => $storefront->priceFor($product->id) ?? $product->suggested_retail_price,
+                'retail_price' => $product->retailPriceFrom($storefront->priceFor($product->id)),
             ])->values(),
             'methods' => SignaturePaymentMethod::toArray(),
             'validDays' => SignatureLinks::InvitationDays,

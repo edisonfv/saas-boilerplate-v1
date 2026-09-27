@@ -31,7 +31,7 @@ class ProductController extends Controller
             ->orderBy('credit_unit_price')
             ->get()
             ->map(fn (SignatureProduct $product) => [
-                ...$this->presenter->product($product),
+                ...$this->presenter->centralProduct($product),
                 'packages' => $product->packages->map(fn (SignaturePackage $package) => $this->package($package))->values(),
             ]);
 
@@ -63,7 +63,7 @@ class ProductController extends Controller
         return Inertia::render('Central/Signatures/Products/Edit', [
             ...$this->options(),
             'product' => [
-                ...$this->presenter->product($product),
+                ...$this->presenter->centralProduct($product),
                 'packages' => $product->packages->map(fn (SignaturePackage $package) => $this->package($package))->values(),
             ],
         ]);

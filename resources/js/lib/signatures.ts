@@ -9,9 +9,17 @@ export interface SignatureProduct {
     container_label: string;
     credit_unit_price: string;
     suggested_retail_price: string | null;
+    /** Floor central set for distributors' retail price (null = none). */
+    min_retail_price: string | null;
     currency: string;
     is_active: boolean;
     retail_price?: string | null;
+}
+
+/** SignaturePresenter::centralProduct(): only ever sent to the console. */
+export interface CentralSignatureProduct extends SignatureProduct {
+    provider_cost: string | null;
+    credit_unit_margin: string | null;
 }
 
 export interface SignatureAccountProduct extends SignatureProduct {

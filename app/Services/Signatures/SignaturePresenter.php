@@ -53,6 +53,9 @@ class SignaturePresenter
     }
 
     /**
+     * What a tenant may see of a product. Never includes `provider_cost`
+     * (central's purchase price); see centralProduct() for the console.
+     *
      * @return array<string, mixed>
      */
     public function product(SignatureProduct $product): array
@@ -66,8 +69,26 @@ class SignaturePresenter
             'container_label' => $product->container->label,
             'credit_unit_price' => $product->credit_unit_price,
             'suggested_retail_price' => $product->suggested_retail_price,
+            'min_retail_price' => $product->min_retail_price,
             'currency' => $product->currency,
             'is_active' => $product->is_active,
+        ];
+    }
+
+    /**
+     * A product as the central console sees it: with the provider cost and
+     * central's margin per signature sold on credit.
+     *
+     * @return array<string, mixed>
+     */
+    public function centralProduct(SignatureProduct $product): array
+    {
+        return [
+            ...$this->product($product),
+            'provider_cost' => $product->provider_cost,
+            'credit_unit_margin' => $product->provider_cost === null
+                ? null
+                : Money::fromCents(Money::toCents($product->credit_unit_price) - Money::toCents($product->provider_cost)),
         ];
     }
 
@@ -192,7 +213,7 @@ class SignaturePresenter
         return [
             'products' => $products->map(fn (SignatureProduct $product) => [
                 ...$this->product($product),
-                'retail_price' => $prices[$product->id] ?? $product->suggested_retail_price,
+                'retail_price' => $product->retailPriceFrom($prices[$product->id] ?? null),
             ])->values(),
             'applicantTypes' => SignatureApplicantType::toArray(),
             'applicantTypeCards' => collect(SignatureApplicantType::cases())

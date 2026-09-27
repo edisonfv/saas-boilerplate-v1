@@ -98,6 +98,10 @@ function submit() {
         preserveScroll: true,
     });
 }
+
+/** Validation message of one product's price (keys like "prices.{id}"). */
+const priceError = (productId: string): string | undefined =>
+    (form.errors as Record<string, string | undefined>)[`prices.${productId}`];
 </script>
 
 <template>
@@ -285,13 +289,23 @@ function submit() {
                                 <p class="text-xs text-ink-500">
                                     Sugerido
                                     {{ money(product.suggested_retail_price) }}
+                                    <template v-if="product.min_retail_price">
+                                        · mínimo
+                                        {{ money(product.min_retail_price) }}
+                                    </template>
+                                </p>
+                                <p
+                                    v-if="priceError(product.id)"
+                                    class="form-error"
+                                >
+                                    {{ priceError(product.id) }}
                                 </p>
                             </div>
                             <input
                                 v-model="form.prices[product.id]"
                                 type="number"
                                 step="0.01"
-                                min="0"
+                                :min="product.min_retail_price ?? 0"
                                 :placeholder="
                                     product.suggested_retail_price ?? ''
                                 "

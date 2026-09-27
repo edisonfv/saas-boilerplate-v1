@@ -81,6 +81,9 @@ class SignatureIssuance
             'tenant_request_id' => $request->id,
             'signature_product_id' => $product->id,
             'consumption_entry_id' => $consumption->id,
+            'unit_cost' => $product->provider_cost,
+            'unit_price' => $this->wallet->unitPrice($account, $product),
+            'sale_price' => $request->sale_price,
             'provider' => $this->provider->key(),
             'status' => SignatureRequestStatus::Submitted(),
         ]);

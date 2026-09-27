@@ -11,9 +11,13 @@ use App\Models\SignatureLedgerEntry;
 use App\Models\SignaturePackage;
 use App\Models\SignatureProduct;
 use App\Models\SignatureProviderRequest;
+use App\Models\SignatureStorefront;
 use App\Models\Tenant;
+use App\Services\Signatures\Money;
 use App\Services\Signatures\SignaturePresenter;
+use App\Services\Signatures\SignatureSalesReport;
 use App\Services\Signatures\SignatureWallet;
+use App\Services\TenantPresenter;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -38,63 +42,19 @@ class AccountController extends Controller
         private SignaturePresenter $presenter,
     ) {}
 
-    public function index(Request $request): Response
-    {
-        $search = $request->string('search')->toString();
-
-        $tenants = Tenant::query()
-            ->with(['signatureAccount.balances', 'domains'])
-            ->when($search !== '', fn (Builder $query) => $query->where(fn (Builder $inner) => $inner
-                ->where('id', 'like', "%{$search}%")
-                ->orWhere('company_name', 'like', "%{$search}%")))
-            ->orderByRaw('company_name is null, company_name')
-            ->paginate(20)
-            ->withQueryString();
-
-        $soldByTenant = SignatureProviderRequest::query()
-            ->whereIn('tenant_id', $tenants->getCollection()->modelKeys())
-            ->selectRaw('tenant_id, count(*) as total')
-            ->groupBy('tenant_id')
-            ->pluck('total', 'tenant_id');
-
-        $tenants = $tenants
-            ->through(fn (Tenant $tenant) => [
-                'id' => $tenant->getTenantKey(),
-                'company_name' => $tenant->company_name,
-                'domain' => $tenant->domains->first()?->domain,
-                'signatures_sold' => (int) ($soldByTenant[$tenant->getTenantKey()] ?? 0),
-                'account' => $tenant->signatureAccount ? [
-                    'affiliation_mode' => $tenant->signatureAccount->affiliation_mode->value,
-                    'affiliation_mode_label' => $tenant->signatureAccount->affiliation_mode->label,
-                    'is_active' => $tenant->signatureAccount->is_active,
-                    'credit_limit' => $tenant->signatureAccount->credit_limit,
-                    'credit_used' => $tenant->signatureAccount->credit_used,
-                    'available_units' => (int) $tenant->signatureAccount->balances->sum('available_units'),
-                ] : null,
-            ]);
-
-        return Inertia::render('Central/Signatures/Accounts/Index', [
-            'tenants' => $tenants,
-            'filters' => ['search' => $search],
-            'stats' => [
-                'accounts' => SignatureAccount::query()->count(),
-                'credit' => SignatureAccount::query()->where('affiliation_mode', SignatureAffiliationMode::Credit()->value)->count(),
-                'prepaid' => SignatureAccount::query()->where('affiliation_mode', SignatureAffiliationMode::Prepaid()->value)->count(),
-                'sold_this_month' => SignatureProviderRequest::query()->where('created_at', '>=', now()->startOfMonth())->count(),
-            ],
-        ]);
-    }
-
-    public function show(Request $request, Tenant $tenant): Response
+    public function show(Request $request, Tenant $tenant, TenantPresenter $tenants, SignatureSalesReport $report): Response
     {
         $account = $tenant->signatureAccount()->first();
+        $tenantId = $tenant->getTenantKey();
 
-        return Inertia::render('Central/Signatures/Accounts/Show', [
-            'tenant' => [
-                'id' => $tenant->getTenantKey(),
-                'company_name' => $tenant->company_name,
-            ],
+        return Inertia::render('Central/Tenants/Signatures', [
+            'header' => $tenants->header($tenant),
             'account' => $this->presenter->account($account),
+            'performance' => $account ? [
+                'month' => $report->summary(now()->startOfMonth(), now()->endOfDay(), $tenantId),
+                'year' => $report->summary(now()->startOfYear(), now()->endOfDay(), $tenantId),
+            ] : null,
+            'pricing' => $account ? $this->pricing($tenant, $account) : [],
             'ledger' => $account
                 ? $account->ledgerEntries()->with(['product', 'author'])->withExists('reversal')->latest()->paginate(20, pageName: 'movimientos')
                     ->withQueryString()
@@ -118,6 +78,8 @@ class AccountController extends Controller
                     ->map(fn (SignatureProviderRequest $sale) => [
                         'id' => $sale->id,
                         'product_name' => $sale->product?->name,
+                        'unit_price' => $sale->unit_price,
+                        'sale_price' => $sale->sale_price,
                         'status' => $sale->status->value,
                         'status_label' => $sale->status->label,
                         'provider_token' => $sale->provider_token,
@@ -204,6 +166,48 @@ class AccountController extends Controller
         );
 
         return back()->with('status', 'signature-consumption-refunded');
+    }
+
+    /**
+     * What the distributor pays and charges for each active product: its
+     * price to the distributor, the retail price it publishes on its
+     * storefront (read from the tenant's own database) and the floor.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function pricing(Tenant $tenant, SignatureAccount $account): array
+    {
+        $published = rescue(
+            fn () => $tenant->run(fn () => SignatureStorefront::query()->first()?->prices ?? []),
+            [],
+            report: false,
+        );
+
+        return SignatureProduct::query()->active()->orderBy('credit_unit_price')->get()
+            ->map(function (SignatureProduct $product) use ($account, $published) {
+                $unitPrice = $this->wallet->unitPrice($account, $product);
+                $ownPrice = $published[$product->id] ?? null;
+                $retail = $product->retailPriceFrom($ownPrice === null || $ownPrice === '' ? null : (string) $ownPrice);
+
+                return [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'provider_cost' => $product->provider_cost,
+                    'unit_price' => $unitPrice,
+                    'central_margin' => $product->provider_cost === null
+                        ? null
+                        : Money::fromCents(Money::toCents($unitPrice) - Money::toCents($product->provider_cost)),
+                    'retail_price' => $retail,
+                    'uses_own_price' => $ownPrice !== null && $ownPrice !== '',
+                    'suggested_retail_price' => $product->suggested_retail_price,
+                    'min_retail_price' => $product->min_retail_price,
+                    'distributor_margin' => $retail === null
+                        ? null
+                        : Money::fromCents(Money::toCents($retail) - Money::toCents($unitPrice)),
+                ];
+            })
+            ->values()
+            ->all();
     }
 
     private function account(Tenant $tenant): SignatureAccount

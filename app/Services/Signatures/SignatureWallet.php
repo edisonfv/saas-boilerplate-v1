@@ -251,6 +251,32 @@ class SignatureWallet
         return max(0, (int) $account->balances()->where('signature_product_id', $product->id)->value('available_units'));
     }
 
+    /**
+     * What the distributor pays central for one signature of the product:
+     * the unit price on credit, or the average unit price of the packages
+     * it bought on prepaid (the list unit price if it only has courtesy or
+     * adjusted units).
+     */
+    public function unitPrice(SignatureAccount $account, SignatureProduct $product): string
+    {
+        if ($account->isCredit()) {
+            return (string) $product->credit_unit_price;
+        }
+
+        $purchases = $account->ledgerEntries()
+            ->where('signature_product_id', $product->id)
+            ->where('type', SignatureLedgerEntryType::PackagePurchase()->value)
+            ->toBase()
+            ->selectRaw('coalesce(sum(amount), 0) as amount, coalesce(sum(units), 0) as units')
+            ->first();
+
+        $units = (int) ($purchases->units ?? 0);
+
+        return $units > 0
+            ? Money::fromCents(intdiv(Money::toCents($purchases->amount) + intdiv($units, 2), $units))
+            : (string) $product->credit_unit_price;
+    }
+
     private function guardQuota(SignatureAccount $account, SignatureProduct $product): void
     {
         if (! $account->is_active) {

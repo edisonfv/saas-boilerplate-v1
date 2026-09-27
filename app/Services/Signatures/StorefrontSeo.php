@@ -39,7 +39,7 @@ class StorefrontSeo
         ]];
 
         foreach ($products as $product) {
-            $price = $storefront->priceFor($product->id) ?? $product->suggested_retail_price;
+            $price = $product->retailPriceFrom($storefront->priceFor($product->id));
 
             $graph[] = [
                 '@type' => 'Product',

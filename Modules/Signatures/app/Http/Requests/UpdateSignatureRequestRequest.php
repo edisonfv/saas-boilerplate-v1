@@ -2,6 +2,8 @@
 
 namespace Modules\Signatures\Http\Requests;
 
+use App\Rules\RetailPriceFloor;
+
 /**
  * Editing a draft: documents already on file don't need to be re-uploaded
  * (missing ones are enforced when the request is submitted).
@@ -15,7 +17,7 @@ class UpdateSignatureRequestRequest extends SignatureApplicationRequest
     {
         return [
             ...parent::rules(),
-            'sale_price' => ['nullable', 'numeric', 'min:0', 'max:99999'],
+            'sale_price' => ['nullable', 'numeric', 'min:0', 'max:99999', new RetailPriceFloor($this->string('signature_product_id')->toString())],
         ];
     }
 

@@ -69,6 +69,10 @@ final class CentralPermissions
                 'label' => 'Catálogo de firmas electrónicas',
                 'actions' => [Action::View(), Action::Create(), Action::Update()],
             ],
+            'signature-sales' => [
+                'label' => 'Ventas y utilidad de firmas electrónicas',
+                'actions' => [Action::View()],
+            ],
             'signature-accounts' => [
                 'label' => 'Cuentas de firmas de tenants',
                 'actions' => [Action::View(), Action::Update()],

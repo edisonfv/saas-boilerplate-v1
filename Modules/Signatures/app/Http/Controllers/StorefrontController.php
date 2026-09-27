@@ -61,7 +61,7 @@ class StorefrontController extends Controller
                 'validity_label' => $product->validity->label,
                 'container' => $product->container->value,
                 'container_label' => $product->container->label,
-                'price' => $storefront->priceFor($product->id) ?? $product->suggested_retail_price,
+                'price' => $product->retailPriceFrom($storefront->priceFor($product->id)),
             ])->values(),
             'requirements' => collect(SignatureApplicantType::cases())->map(fn (SignatureApplicantType $type) => [
                 'type' => $type->value,
@@ -104,7 +104,7 @@ class StorefrontController extends Controller
 
         $signatureRequest = $manager->create(
             $product,
-            [...$request->validated(), 'sale_price' => $storefront->priceFor($product->id) ?? $product->suggested_retail_price],
+            [...$request->validated(), 'sale_price' => $product->retailPriceFrom($storefront->priceFor($product->id))],
             $request->documents(),
             SignatureRequestSource::Storefront(),
             actorName: trim($request->string('first_names').' '.$request->string('first_surname')),

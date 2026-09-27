@@ -20,6 +20,7 @@ use Modules\Central\Http\Controllers\ProfileController;
 use Modules\Central\Http\Controllers\RoleController;
 use Modules\Central\Http\Controllers\Signatures\AccountController as SignatureAccountController;
 use Modules\Central\Http\Controllers\Signatures\ProductController as SignatureProductController;
+use Modules\Central\Http\Controllers\Signatures\SalesController as SignatureSalesController;
 use Modules\Central\Http\Controllers\StaffController;
 use Modules\Central\Http\Controllers\Support\AppointmentController as SupportAppointmentController;
 use Modules\Central\Http\Controllers\Support\ReportController as SupportReportController;
@@ -186,6 +187,11 @@ Route::prefix('central')->name('central.')->group(function () {
                 Route::get('/tenants/{tenant}', [TenantController::class, 'show'])->name('tenants.show');
             });
 
+            // A tenant's signature distributor account is a tab of the tenant.
+            Route::get('/tenants/{tenant}/signatures', [SignatureAccountController::class, 'show'])
+                ->middleware('permission:central.signature-accounts.view')
+                ->name('tenants.signatures');
+
             Route::middleware('permission:central.tenants.update')->group(function () {
                 Route::patch('/tenants/{tenant}/toggle-status', [TenantController::class, 'toggleStatus'])->name('tenants.toggle-status');
             });
@@ -211,9 +217,12 @@ Route::prefix('central')->name('central.')->group(function () {
                         ->name('products.packages.toggle-active');
                 });
 
-                Route::middleware('permission:central.signature-accounts.view')->group(function () {
-                    Route::get('/accounts', [SignatureAccountController::class, 'index'])->name('accounts.index');
-                    Route::get('/accounts/{tenant}', [SignatureAccountController::class, 'show'])->name('accounts.show');
+                // Accounts are managed from each tenant (see "tenants.signatures").
+                Route::redirect('/accounts', '/central/tenants');
+
+                Route::middleware('permission:central.signature-sales.view')->group(function () {
+                    Route::get('/sales', [SignatureSalesController::class, 'index'])->name('sales.index');
+                    Route::get('/sales/export', [SignatureSalesController::class, 'export'])->name('sales.export');
                 });
 
                 Route::put('/accounts/{tenant}', [SignatureAccountController::class, 'configure'])

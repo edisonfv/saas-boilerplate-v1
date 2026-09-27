@@ -5,12 +5,12 @@ import Card from '@/components/Card.vue';
 import Icon from '@/components/Icon.vue';
 import CentralLayout from '@/layouts/CentralLayout.vue';
 import { money } from '@/lib/signatures';
-import type { SignatureProduct } from '@/lib/signatures';
+import type { CentralSignatureProduct } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
 import central from '@/routes/central';
 
 defineProps<{
-    products: (SignatureProduct & {
+    products: (CentralSignatureProduct & {
         packages: {
             id: string;
             name: string;
@@ -65,10 +65,13 @@ defineProps<{
                                     Producto
                                 </th>
                                 <th class="py-2 pr-4 font-semibold">
+                                    Costo Uanataca
+                                </th>
+                                <th class="py-2 pr-4 font-semibold">
                                     Precio crédito
                                 </th>
                                 <th class="py-2 pr-4 font-semibold">
-                                    PVP sugerido
+                                    PVP sugerido / mínimo
                                 </th>
                                 <th class="py-2 pr-4 font-semibold">
                                     Paquetes prepago
@@ -97,7 +100,20 @@ defineProps<{
                                     </p>
                                 </td>
                                 <td class="py-3 pr-4 tabular-nums">
+                                    <template v-if="product.provider_cost">
+                                        {{ money(product.provider_cost) }}
+                                    </template>
+                                    <Badge v-else tone="amber">Sin costo</Badge>
+                                </td>
+                                <td class="py-3 pr-4 tabular-nums">
                                     {{ money(product.credit_unit_price) }}
+                                    <p
+                                        v-if="product.credit_unit_margin"
+                                        class="text-xs text-ink-500"
+                                    >
+                                        Utilidad
+                                        {{ money(product.credit_unit_margin) }}
+                                    </p>
                                 </td>
                                 <td class="py-3 pr-4 tabular-nums">
                                     {{
@@ -107,6 +123,13 @@ defineProps<{
                                               )
                                             : '—'
                                     }}
+                                    <p
+                                        v-if="product.min_retail_price"
+                                        class="text-xs text-ink-500"
+                                    >
+                                        Mín.
+                                        {{ money(product.min_retail_price) }}
+                                    </p>
                                 </td>
                                 <td class="py-3 pr-4">
                                     <span
@@ -142,7 +165,7 @@ defineProps<{
                             </tr>
                             <tr v-if="!products.length">
                                 <td
-                                    colspan="5"
+                                    colspan="6"
                                     class="py-10 text-center text-ink-500"
                                 >
                                     Aún no hay productos de firma.

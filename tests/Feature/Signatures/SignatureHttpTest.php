@@ -314,10 +314,11 @@ test('billing staff affiliates a tenant and sells it a prepaid package', functio
     expect(app(SignatureWallet::class)->sellableUnits($tenant->signatureAccount()->first(), signatureProduct()))->toBe(10);
 
     $this->actingAs($staff, 'central')
-        ->get(route('central.signatures.accounts.show', $tenant))
+        ->get(route('central.tenants.signatures', $tenant))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Central/Signatures/Accounts/Show')
+            ->component('Central/Tenants/Signatures')
+            ->where('header.id', $tenant->id)
             ->where('account.affiliation_mode', 'Prepaid')
             ->where('ledger.data.0.type', 'PackagePurchase')
             ->where('ledger.data.0.reference', 'FAC-001-001-000123'));
@@ -339,7 +340,7 @@ test('sales staff can look at accounts but not move quota', function () {
     $sales = supportStaff('sales');
 
     $this->actingAs($sales, 'central')
-        ->get(route('central.signatures.accounts.index'))
+        ->get(route('central.tenants.signatures', $tenant))
         ->assertOk();
 
     $this->actingAs($sales, 'central')
