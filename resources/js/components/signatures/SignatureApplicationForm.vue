@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import Card from '@/components/Card.vue';
 import FormActions from '@/components/FormActions.vue';
 import Icon from '@/components/Icon.vue';
@@ -23,6 +23,10 @@ const props = withDefaults(
         uploadedDocuments?: string[];
         showSalePrice?: boolean;
         isPublic?: boolean;
+        /** Step-by-step flow (public application) instead of one long form. */
+        wizard?: boolean;
+        selectedProductId?: string | null;
+        whatsappUrl?: string | null;
         submitLabel: string;
         cancelHref?: string;
     }>(),
@@ -32,9 +36,22 @@ const props = withDefaults(
         uploadedDocuments: () => [],
         showSalePrice: false,
         isPublic: false,
+        wizard: false,
+        selectedProductId: null,
+        whatsappUrl: null,
         cancelHref: undefined,
     },
 );
+
+const steps = ['Tu firma', 'Tus datos', 'Documentos', 'Confirmar'];
+const step = ref(1);
+const stepContainer = ref<HTMLElement | null>(null);
+const missingDocumentsError = ref<string | null>(null);
+
+/** Whether a step's section is on screen (always, outside the wizard). */
+function shows(section: number): boolean {
+    return !props.wizard || step.value === section;
+}
 
 const fields = [
     'signature_product_id',
@@ -66,7 +83,8 @@ const fields = [
 ] as const;
 
 const defaults: Record<string, string> = {
-    signature_product_id: props.options.products[0]?.id ?? '',
+    signature_product_id:
+        props.selectedProductId ?? props.options.products[0]?.id ?? '',
     applicant_type: 'NaturalPerson',
     document_type: 'Cedula',
     gender: 'Male',
@@ -127,25 +145,139 @@ function errorFor(field: string): string | undefined {
     return (form.errors as Record<string, string>)[field];
 }
 
+const missingRequiredDocuments = computed(() =>
+    props.options.documentKinds.filter(
+        (kind) =>
+            requiredKinds.value.includes(kind.kind) &&
+            !form.documents[kind.kind] &&
+            !props.uploadedDocuments.includes(kind.kind),
+    ),
+);
+
+/** Wizard step that holds a server-side validation error. */
+function stepOf(field: string): number {
+    if (
+        ['signature_product_id', 'applicant_type', 'sale_price'].includes(field)
+    ) {
+        return 1;
+    }
+
+    if (field.startsWith('documents')) {
+        return 3;
+    }
+
+    return field === 'accepts_terms' ? 4 : 2;
+}
+
+function goTo(target: number) {
+    step.value = target;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Native validation of the visible step only. The wizard's <form> is
+ * `novalidate`, since the browser would otherwise block on required
+ * fields of steps that are hidden.
+ */
+function currentStepIsValid(): boolean {
+    const fieldsOnStep = Array.from(
+        stepContainer.value?.querySelectorAll<
+            HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+        >('input, select, textarea') ?? [],
+    ).filter((field) => field.offsetParent !== null);
+
+    if (!fieldsOnStep.every((field) => field.reportValidity())) {
+        return false;
+    }
+
+    if (step.value === 3 && missingRequiredDocuments.value.length > 0) {
+        missingDocumentsError.value = `Sube: ${missingRequiredDocuments.value
+            .map((kind) => kind.label)
+            .join(', ')}.`;
+
+        return false;
+    }
+
+    missingDocumentsError.value = null;
+
+    return true;
+}
+
 function submit() {
+    if (props.wizard) {
+        if (!currentStepIsValid()) {
+            return;
+        }
+
+        if (step.value < steps.length) {
+            goTo(step.value + 1);
+
+            return;
+        }
+    }
+
     form.transform((data) => ({
         ...data,
         documents: Object.fromEntries(
             Object.entries(data.documents).filter(([, file]) => file),
         ),
         ...(props.method === 'put' ? { _method: 'put' } : {}),
-    })).post(props.action, { forceFormData: true, preserveScroll: true });
+    })).post(props.action, {
+        forceFormData: true,
+        preserveScroll: !props.wizard,
+        onError: (errors) => {
+            if (props.wizard) {
+                goTo(Math.min(...Object.keys(errors).map(stepOf)));
+            }
+        },
+    });
 }
 </script>
 
 <template>
     <form
+        ref="stepContainer"
         autocomplete="off"
+        :novalidate="wizard"
         class="col-span-12 grid grid-cols-12 gap-6"
         @submit.prevent="submit"
     >
-        <div class="col-span-12 space-y-6 xl:col-span-8">
-            <Card title="Firma electrónica">
+        <ol
+            v-if="wizard"
+            class="col-span-12 grid grid-cols-4 gap-2 lg:col-span-8 lg:col-start-3"
+            aria-label="Progreso de la solicitud"
+        >
+            <li v-for="(label, index) in steps" :key="label">
+                <div
+                    :class="[
+                        'h-1.5 rounded-full',
+                        index + 1 <= step
+                            ? 'bg-primary-600'
+                            : 'bg-ink-200 dark:bg-ink-800',
+                    ]"
+                />
+                <p
+                    :class="[
+                        'mt-2 text-xs font-semibold',
+                        index + 1 === step
+                            ? 'text-primary-700 dark:text-primary-300'
+                            : 'text-ink-500',
+                    ]"
+                    :aria-current="index + 1 === step ? 'step' : undefined"
+                >
+                    <span class="hidden sm:inline">Paso {{ index + 1 }} · </span
+                    >{{ label }}
+                </p>
+            </li>
+        </ol>
+
+        <div
+            :class="[
+                'col-span-12 space-y-6',
+                wizard ? 'lg:col-span-8 lg:col-start-3' : 'xl:col-span-8',
+            ]"
+        >
+            <Card v-show="shows(1)" title="Firma electrónica">
                 <div class="grid gap-3 sm:grid-cols-2">
                     <label
                         v-for="product in options.products"
@@ -226,7 +358,7 @@ function submit() {
                 </div>
             </Card>
 
-            <Card title="Datos del titular">
+            <Card v-show="shows(2)" title="Datos del titular">
                 <div class="grid gap-4 sm:grid-cols-6">
                     <div class="sm:col-span-6">
                         <label for="first_names" :class="ui.label"
@@ -380,7 +512,7 @@ function submit() {
                 </div>
             </Card>
 
-            <Card title="Contacto y dirección">
+            <Card v-show="shows(2)" title="Contacto y dirección">
                 <div class="grid gap-4 sm:grid-cols-6">
                     <div class="sm:col-span-2">
                         <label for="mobile_phone" :class="ui.label"
@@ -469,7 +601,7 @@ function submit() {
                 </div>
             </Card>
 
-            <Card v-if="requiresCompany" title="Empresa">
+            <Card v-if="requiresCompany" v-show="shows(2)" title="Empresa">
                 <div class="grid gap-4 sm:grid-cols-6">
                     <div class="sm:col-span-4">
                         <label for="company_name" :class="ui.label"
@@ -478,6 +610,7 @@ function submit() {
                         <input
                             id="company_name"
                             v-model="form.company_name"
+                            required
                             :class="ui.input"
                         />
                         <p v-if="errorFor('company_name')" :class="ui.error">
@@ -491,6 +624,7 @@ function submit() {
                         <input
                             id="company_ruc"
                             v-model="form.company_ruc"
+                            required
                             inputmode="numeric"
                             :class="ui.input"
                         />
@@ -503,6 +637,7 @@ function submit() {
                         <input
                             id="position"
                             v-model="form.position"
+                            required
                             :class="ui.input"
                         />
                         <p v-if="errorFor('position')" :class="ui.error">
@@ -586,8 +721,13 @@ function submit() {
             </Card>
         </div>
 
-        <div class="col-span-12 space-y-6 xl:col-span-4">
-            <Card title="Documentos">
+        <div
+            :class="[
+                'col-span-12 space-y-6',
+                wizard ? 'lg:col-span-8 lg:col-start-3' : 'xl:col-span-4',
+            ]"
+        >
+            <Card v-show="shows(3)" title="Documentos">
                 <ul class="space-y-4">
                     <li v-for="slot in documentSlots" :key="slot.kind">
                         <label
@@ -634,8 +774,12 @@ function submit() {
                     </li>
                 </ul>
                 <p :class="[ui.help, 'mt-4']">
-                    Fotos nítidas en JPG o PNG; documentos societarios en PDF.
-                    Máximo 13 MB por archivo.
+                    Fotos nítidas en JPG o PNG, tomadas en el momento, sin
+                    filtros ni recortes; documentos societarios en PDF. Máximo
+                    13 MB por archivo.
+                </p>
+                <p v-if="missingDocumentsError" :class="[ui.error, 'mt-2']">
+                    {{ missingDocumentsError }}
                 </p>
                 <progress
                     v-if="form.progress"
@@ -645,13 +789,80 @@ function submit() {
                 />
             </Card>
 
-            <Card v-if="isPublic" title="Autorización">
+            <Card v-if="wizard" v-show="shows(4)" title="Revisa tu solicitud">
+                <dl class="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+                    <div>
+                        <dt class="text-ink-500">Firma</dt>
+                        <dd class="font-semibold text-ink-950 dark:text-white">
+                            {{ selectedProduct?.name }}
+                            <span v-if="selectedProduct?.retail_price">
+                                ·
+                                {{ money(selectedProduct.retail_price) }}</span
+                            >
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-ink-500">Solicitante</dt>
+                        <dd class="font-semibold text-ink-950 dark:text-white">
+                            {{ form.first_names }} {{ form.first_surname }}
+                            {{ form.second_surname }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-ink-500">
+                            {{ options.documentTypes[form.document_type] }}
+                        </dt>
+                        <dd class="font-semibold text-ink-950 dark:text-white">
+                            {{ form.document_number }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-ink-500">Tipo</dt>
+                        <dd class="font-semibold text-ink-950 dark:text-white">
+                            {{ options.applicantTypes[form.applicant_type] }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-ink-500">Correo</dt>
+                        <dd
+                            class="font-semibold break-all text-ink-950 dark:text-white"
+                        >
+                            {{ form.email }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-ink-500">Celular</dt>
+                        <dd class="font-semibold text-ink-950 dark:text-white">
+                            {{ form.mobile_phone }}
+                        </dd>
+                    </div>
+                    <div v-if="form.company_name" class="sm:col-span-2">
+                        <dt class="text-ink-500">Empresa</dt>
+                        <dd class="font-semibold text-ink-950 dark:text-white">
+                            {{ form.company_name }} · RUC {{ form.company_ruc }}
+                        </dd>
+                    </div>
+                    <div class="sm:col-span-2">
+                        <dt class="text-ink-500">Documentos</dt>
+                        <dd class="font-semibold text-ink-950 dark:text-white">
+                            {{
+                                Object.values(form.documents).filter(Boolean)
+                                    .length
+                            }}
+                            archivo(s) adjunto(s)
+                        </dd>
+                    </div>
+                </dl>
+            </Card>
+
+            <Card v-if="isPublic" v-show="shows(4)" title="Autorización">
                 <label
                     class="flex items-start gap-3 text-sm text-ink-600 dark:text-ink-300"
                 >
                     <input
                         v-model="form.accepts_terms"
                         type="checkbox"
+                        required
                         :class="[ui.checkbox, 'mt-0.5']"
                     />
                     <span>
@@ -667,7 +878,47 @@ function submit() {
             </Card>
         </div>
 
+        <div
+            v-if="wizard"
+            class="col-span-12 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between lg:col-span-8 lg:col-start-3"
+        >
+            <a
+                v-if="whatsappUrl"
+                :href="whatsappUrl"
+                target="_blank"
+                rel="noopener"
+                class="text-sm"
+                :class="ui.link"
+                >¿Necesitas ayuda? Escríbenos por WhatsApp</a
+            >
+            <span v-else />
+            <div class="flex gap-3">
+                <button
+                    v-if="step > 1"
+                    type="button"
+                    :class="[ui.buttonSecondary, 'flex-1 sm:flex-none']"
+                    @click="goTo(step - 1)"
+                >
+                    Atrás
+                </button>
+                <button
+                    type="submit"
+                    :disabled="form.processing"
+                    :class="[ui.buttonPrimary, 'flex-1 sm:flex-none']"
+                >
+                    {{
+                        step < steps.length
+                            ? 'Continuar'
+                            : form.processing
+                              ? 'Enviando…'
+                              : submitLabel
+                    }}
+                </button>
+            </div>
+        </div>
+
         <FormActions
+            v-else
             :processing="form.processing"
             :is-dirty="form.isDirty"
             :submit-label="submitLabel"

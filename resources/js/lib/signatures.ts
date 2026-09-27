@@ -71,8 +71,8 @@ export interface StorefrontInfo {
     description: string | null;
     contact_email: string | null;
     contact_phone: string | null;
-    whatsapp: string | null;
-    received_code: string | null;
+    /** wa.me link with the tenant's pre-filled message (null if not set). */
+    whatsapp_url: string | null;
 }
 
 export function money(value: string | number | null | undefined): string {

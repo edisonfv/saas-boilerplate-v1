@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 import Card from '@/components/Card.vue';
 import FormActions from '@/components/FormActions.vue';
 import Icon from '@/components/Icon.vue';
@@ -9,19 +10,31 @@ import type { SignatureProduct } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
 import tenant from '@/routes/tenant';
 
-defineProps<{
+const props = defineProps<{
     storefront: {
-        is_published: boolean;
         headline: string;
         description: string | null;
         contact_email: string | null;
         contact_phone: string | null;
         whatsapp: string | null;
+        whatsapp_message: string;
         prices: Record<string, string>;
     };
     products: SignatureProduct[];
     publicUrl: string;
 }>();
+
+const whatsapp = ref(props.storefront.whatsapp ?? '');
+const whatsappMessage = ref(props.storefront.whatsapp_message);
+
+/** Same link the public site builds (SignatureStorefront::whatsappUrl()). */
+const whatsappPreview = computed(() => {
+    const number = whatsapp.value.replace(/\D/g, '');
+
+    return number
+        ? `https://wa.me/${number}?text=${encodeURIComponent(whatsappMessage.value)}`
+        : null;
+});
 </script>
 
 <template>
@@ -64,7 +77,7 @@ defineProps<{
                                 :class="ui.input"
                             />
                         </div>
-                        <div class="grid gap-4 sm:grid-cols-3">
+                        <div class="grid gap-4 sm:grid-cols-2">
                             <div>
                                 <label for="contact_email" :class="ui.label"
                                     >Correo de contacto</label
@@ -94,22 +107,64 @@ defineProps<{
                                     :class="ui.input"
                                 />
                             </div>
-                            <div>
-                                <label for="whatsapp" :class="ui.label"
-                                    >WhatsApp</label
-                                >
-                                <input
-                                    id="whatsapp"
-                                    name="whatsapp"
-                                    placeholder="593991234567"
-                                    :value="storefront.whatsapp ?? ''"
-                                    :class="ui.input"
-                                />
-                                <p v-if="errors.whatsapp" :class="ui.error">
-                                    Número con código de país, sin espacios.
-                                </p>
-                            </div>
                         </div>
+                    </div>
+                </Card>
+
+                <Card title="WhatsApp">
+                    <p class="mb-4 text-sm text-ink-600 dark:text-ink-400">
+                        Tus clientes verán un botón de WhatsApp en todo el sitio
+                        y durante la solicitud. Al enviarla, podrán continuar la
+                        conversación con su número de solicitud.
+                    </p>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="whatsapp" :class="ui.label"
+                                >Número de WhatsApp</label
+                            >
+                            <input
+                                id="whatsapp"
+                                v-model="whatsapp"
+                                name="whatsapp"
+                                inputmode="tel"
+                                placeholder="593991234567"
+                                :class="ui.input"
+                            />
+                            <p :class="ui.help">
+                                Con código de país y sin espacios (593 para
+                                Ecuador). Déjalo vacío para ocultar el botón.
+                            </p>
+                            <p v-if="errors.whatsapp" :class="ui.error">
+                                Número con código de país, sin espacios.
+                            </p>
+                        </div>
+                        <div>
+                            <label for="whatsapp_message" :class="ui.label"
+                                >Mensaje predeterminado</label
+                            >
+                            <textarea
+                                id="whatsapp_message"
+                                v-model="whatsappMessage"
+                                name="whatsapp_message"
+                                rows="3"
+                                maxlength="500"
+                                :class="ui.input"
+                            />
+                            <p v-if="errors.whatsapp_message" :class="ui.error">
+                                {{ errors.whatsapp_message }}
+                            </p>
+                        </div>
+                        <a
+                            v-if="whatsappPreview"
+                            :href="whatsappPreview"
+                            target="_blank"
+                            rel="noopener"
+                            class="inline-flex items-center gap-2 text-sm"
+                            :class="ui.link"
+                        >
+                            <Icon name="chat" class="size-4" /> Probar enlace de
+                            WhatsApp
+                        </a>
                     </div>
                 </Card>
 
@@ -153,23 +208,16 @@ defineProps<{
             </div>
 
             <div class="col-span-12 space-y-6 xl:col-span-4">
-                <Card title="Publicación">
-                    <input type="hidden" name="is_published" value="0" />
-                    <label
-                        class="flex items-start gap-3 text-sm text-ink-700 dark:text-ink-300"
+                <Card title="Tu sitio web">
+                    <p class="text-sm text-ink-600 dark:text-ink-400">
+                        Es la página principal de tu subdominio. Es pública y
+                        tus clientes pueden solicitar su firma desde ahí.
+                    </p>
+                    <p
+                        class="mt-3 rounded-lg bg-ink-50 px-3 py-2 font-mono text-xs break-all text-ink-700 dark:bg-ink-800 dark:text-ink-200"
                     >
-                        <input
-                            type="checkbox"
-                            name="is_published"
-                            value="1"
-                            :checked="storefront.is_published"
-                            :class="[ui.checkbox, 'mt-0.5']"
-                        />
-                        <span>
-                            Publicar el sitio: tus clientes podrán ver tus
-                            firmas y dejar solicitudes en línea.
-                        </span>
-                    </label>
+                        {{ publicUrl }}
+                    </p>
                     <a
                         :href="publicUrl"
                         target="_blank"

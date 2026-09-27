@@ -23,18 +23,18 @@ class StorefrontSettingsController extends Controller
 
         return Inertia::render('Signatures/Storefront/Edit', [
             'storefront' => [
-                'is_published' => $storefront->is_published,
                 'headline' => $storefront->headline,
                 'description' => $storefront->description,
                 'contact_email' => $storefront->contact_email,
                 'contact_phone' => $storefront->contact_phone,
                 'whatsapp' => $storefront->whatsapp,
+                'whatsapp_message' => $storefront->whatsapp_message ?? SignatureStorefront::DefaultWhatsappMessage,
                 'prices' => (object) ($storefront->prices ?? []),
             ],
             'products' => SignatureProduct::query()->active()->orderBy('credit_unit_price')->get()
                 ->map(fn (SignatureProduct $product) => $presenter->product($product))
                 ->values(),
-            'publicUrl' => route('tenant.signatures.storefront.show'),
+            'publicUrl' => url('/'),
         ]);
     }
 

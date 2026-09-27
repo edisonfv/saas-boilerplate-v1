@@ -7,6 +7,7 @@ use App\Models\SignatureProduct;
 use App\Models\SignatureRequest;
 use App\Models\SignatureStorefront;
 use App\Services\Signatures\SignatureWallet;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -105,57 +106,101 @@ test('without quota the submission is refused with a clear message', function ()
         ->post("http://{$domain}/firmas-electronicas/solicitudes/{$draft->id}/enviar")
         ->assertSessionHasErrors(['submit' => 'No tienes firmas disponibles de «Firma 1 año». Adquiere un nuevo paquete para continuar vendiendo.']);
 
-    Http::assertNothingSent();
+    // Nothing reaches the provider (Inertia SSR may use the HTTP client in dev).
+    Http::assertNotSent(fn (Request $request) => str_contains($request->url(), 'uanataca'));
 });
 
-// --- Public storefront -------------------------------------------------------
+// --- Public website -----------------------------------------------------------
 
-test('the storefront is hidden until the tenant publishes it', function () {
+test('the root of a tenant subdomain is its public signatures website', function () {
     [$tenant, $domain] = signatureTenant();
-
-    $this->get("http://{$domain}/firmas")->assertNotFound();
-
     $tenant->run(fn () => SignatureStorefront::current()->update([
-        'is_published' => true,
         'prices' => [signatureProduct()->id => '29.90'],
+        'whatsapp' => '+593 99 123 4567',
+        'whatsapp_message' => 'Hola, quiero mi firma',
     ]));
 
-    $this->get("http://{$domain}/firmas")
+    $this->get("http://{$domain}/")
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('Signatures/Storefront/Show')
             ->where('storefront.company_name', 'Acme S.A.')
-            ->where('products', fn ($products) => collect($products)->firstWhere('id', signatureProduct()->id)['price'] === '29.90'));
+            ->where('storefront.whatsapp_url', 'https://wa.me/593991234567?text=Hola%2C%20quiero%20mi%20firma')
+            ->where('products', fn ($products) => collect($products)->firstWhere('id', signatureProduct()->id)['price'] === '29.90')
+            ->has('requirements', 3));
+
+    $this->get("http://{$domain}/firmas")->assertRedirect('/');
 });
 
-test('a customer applies on the storefront and it lands as a draft for review', function () {
+test('tenants without the signatures module land on their login', function () {
+    [, $domain] = supportTenant('starter');
+
+    $this->get("http://{$domain}/")->assertRedirect('/login');
+    $this->get("http://{$domain}/solicitud")->assertForbidden();
+});
+
+test('a customer applies step by step and it lands as a draft for review', function () {
     Http::fake();
 
     [$tenant, $domain] = signatureTenant();
-    $tenant->run(fn () => SignatureStorefront::current()->update(['is_published' => true]));
+    $tenant->run(fn () => SignatureStorefront::current()->update(['whatsapp' => '593991234567']));
 
-    $this->post("http://{$domain}/firmas/solicitar", [
+    $this->get("http://{$domain}/solicitud?firma=".signatureProduct('TwoYears')->id)
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Signatures/Storefront/Apply')
+            ->where('selectedProductId', signatureProduct('TwoYears')->id));
+
+    $this->post("http://{$domain}/solicitud", [
         ...signatureApplicant(['sale_price' => '1.00']),
         'accepts_terms' => '1',
         'documents' => signatureDocuments(),
-    ])->assertRedirect(route('tenant.signatures.storefront.show'));
+    ])->assertRedirect(route('tenant.signatures.storefront.received'));
 
     $request = $tenant->run(fn () => SignatureRequest::sole());
 
     expect($request->source->equals(SignatureRequestSource::Storefront()))->toBeTrue()
         ->and($request->status->equals(SignatureRequestStatus::Draft()))->toBeTrue()
-        // The customer can't set their own price.
+        // The customer can not set their own price.
         ->and($request->sale_price)->toBe('25.00');
 
-    Http::assertNothingSent();
+    $this->get("http://{$domain}/solicitud/enviada")
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('Signatures/Storefront/Received')
+            ->where('code', 'FE-000001')
+            ->where('whatsappUrl', fn (string $url) => str_contains($url, 'FE-000001')));
+
+    // Nothing reaches the provider (Inertia SSR may use the HTTP client in dev).
+    Http::assertNotSent(fn (Request $request) => str_contains($request->url(), 'uanataca'));
 });
 
-test('the storefront requires the data-processing authorization', function () {
-    [$tenant, $domain] = signatureTenant();
-    $tenant->run(fn () => SignatureStorefront::current()->update(['is_published' => true]));
+test('the confirmation page needs a fresh application', function () {
+    [, $domain] = signatureTenant();
 
-    $this->post("http://{$domain}/firmas/solicitar", [...signatureApplicant(), 'documents' => signatureDocuments()])
+    $this->get("http://{$domain}/solicitud/enviada")->assertRedirect('/');
+});
+
+test('the application requires the data-processing authorization', function () {
+    [, $domain] = signatureTenant();
+
+    $this->post("http://{$domain}/solicitud", [...signatureApplicant(), 'documents' => signatureDocuments()])
         ->assertSessionHasErrors('accepts_terms');
+});
+
+test('the tenant configures its WhatsApp contact', function () {
+    [$tenant, $domain] = signatureTenant();
+
+    $this->actingAs(supportTenantUser($tenant))
+        ->put("http://{$domain}/firmas-electronicas/sitio-web", [
+            'headline' => 'Tu firma hoy',
+            'whatsapp' => '593991234567',
+            'whatsapp_message' => 'Hola, necesito una firma',
+        ])
+        ->assertSessionHasNoErrors();
+
+    expect($tenant->run(fn () => SignatureStorefront::current()->whatsappUrl()))
+        ->toBe('https://wa.me/593991234567?text=Hola%2C%20necesito%20una%20firma');
 });
 
 // --- Central console ---------------------------------------------------------

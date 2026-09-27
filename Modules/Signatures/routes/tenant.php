@@ -14,21 +14,24 @@ use Modules\Signatures\Http\Controllers\StorefrontSettingsController;
 |
 | Registered with the tenancy middleware by this module's
 | RouteServiceProvider. URIs must not collide with central ones (routes are
-| not domain-bound): the public storefront uses /firmas and the workspace
-| uses /firmas-electronicas. Never "/" (see routes/tenant.php).
+| not domain-bound): the public application flow uses /solicitud and the
+| workspace /firmas-electronicas. Never "/" (see routes/tenant.php): the
+| public landing page is served at "/" by App\Http\Controllers\HomeController.
 |
 */
 
-// Public storefront on the tenant's subdomain (guests).
+// Public website on the tenant's subdomain (guests).
 Route::middleware(['tenant.active', 'tenant.module:signatures'])
-    ->prefix('firmas')
     ->name('tenant.signatures.storefront.')
     ->group(function () {
-        Route::get('/', [StorefrontController::class, 'show'])->name('show');
-        Route::get('/solicitar', [StorefrontController::class, 'create'])->name('create');
-        Route::post('/solicitar', [StorefrontController::class, 'store'])
+        Route::get('/solicitud', [StorefrontController::class, 'create'])->name('create');
+        Route::post('/solicitud', [StorefrontController::class, 'store'])
             ->middleware('throttle:5,1')
             ->name('store');
+        Route::get('/solicitud/enviada', [StorefrontController::class, 'received'])->name('received');
+
+        // Former storefront address.
+        Route::permanentRedirect('/firmas', '/');
     });
 
 Route::middleware(['auth', 'tenant.active', 'tenant.module:signatures'])

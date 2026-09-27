@@ -22,12 +22,12 @@ class UpdateStorefrontRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'is_published' => ['required', 'boolean'],
             'headline' => ['required', 'string', 'max:160'],
             'description' => ['nullable', 'string', 'max:2000'],
             'contact_email' => ['nullable', 'email', 'max:255'],
             'contact_phone' => ['nullable', 'string', 'max:30'],
             'whatsapp' => ['nullable', 'regex:/^\+?\d{9,15}$/'],
+            'whatsapp_message' => ['nullable', 'string', 'max:500'],
             'prices' => ['nullable', 'array'],
             'prices.*' => ['nullable', 'numeric', 'min:0', 'max:99999'],
         ];
