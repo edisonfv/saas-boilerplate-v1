@@ -4,6 +4,7 @@ namespace App\Services\Signatures;
 
 use App\Enums\SignatureApplicantType;
 use App\Enums\SignatureDocumentKind;
+use App\Enums\SignaturePaymentStatus;
 use App\Enums\SignatureRequestSource;
 use App\Enums\SignatureRequestStatus;
 use App\Models\SignatureProduct;
@@ -41,14 +42,17 @@ class SignatureRequestManager
         SignatureRequestSource $source,
         ?string $actorId = null,
         ?string $actorName = null,
+        ?SignaturePaymentStatus $paymentStatus = null,
     ): SignatureRequest {
-        return DB::transaction(function () use ($product, $attributes, $documents, $source, $actorId, $actorName) {
+        return DB::transaction(function () use ($product, $attributes, $documents, $source, $actorId, $actorName, $paymentStatus) {
             $request = SignatureRequest::create([
                 ...$this->applicantAttributes($attributes),
                 ...$this->productSnapshot($product),
                 'number' => (int) SignatureRequest::query()->lockForUpdate()->max('number') + 1,
                 'source' => $source,
                 'status' => SignatureRequestStatus::Draft(),
+                // Only a paid request can be sent to the provider (see SignatureIssuance).
+                'payment_status' => $paymentStatus ?? SignaturePaymentStatus::Pending(),
                 'created_by' => $actorId,
             ]);
 

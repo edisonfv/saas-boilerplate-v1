@@ -7,6 +7,7 @@ use App\Enums\IdentityDocumentType;
 use App\Enums\SignatureApplicantType;
 use App\Enums\SignatureContainer;
 use App\Enums\SignatureDocumentKind;
+use App\Enums\SignaturePaymentStatus;
 use App\Enums\SignatureRequestSource;
 use App\Enums\SignatureRequestStatus;
 use App\Enums\SignatureValidity;
@@ -26,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $number
  * @property SignatureRequestSource $source
  * @property SignatureRequestStatus $status
+ * @property SignaturePaymentStatus $payment_status
  * @property SignatureApplicantType $applicant_type
  * @property string $signature_product_id
  * @property string $product_name
@@ -68,7 +70,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonImmutable|null $updated_at
  */
 #[Fillable([
-    'number', 'source', 'status', 'applicant_type', 'signature_product_id', 'product_name', 'validity', 'container',
+    'number', 'source', 'status', 'payment_status', 'applicant_type', 'signature_product_id', 'product_name', 'validity', 'container',
     'sale_price', 'first_names', 'first_surname', 'second_surname', 'document_type', 'document_number',
     'fingerprint_code', 'personal_ruc', 'gender', 'birth_date', 'nationality', 'mobile_phone', 'landline_phone',
     'email', 'province', 'city', 'address', 'company_name', 'company_ruc', 'position',
@@ -113,6 +115,19 @@ class SignatureRequest extends Model
         return $this->hasMany(SignatureRequestDocument::class);
     }
 
+    public function isPaid(): bool
+    {
+        return $this->payment_status->equals(SignaturePaymentStatus::Paid());
+    }
+
+    /**
+     * @return HasMany<SignaturePayment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(SignaturePayment::class);
+    }
+
     /**
      * @return HasMany<SignatureRequestEvent, $this>
      */
@@ -147,6 +162,7 @@ class SignatureRequest extends Model
             'number' => 'integer',
             'source' => SignatureRequestSource::class,
             'status' => SignatureRequestStatus::class,
+            'payment_status' => SignaturePaymentStatus::class,
             'applicant_type' => SignatureApplicantType::class,
             'validity' => SignatureValidity::class,
             'container' => SignatureContainer::class,

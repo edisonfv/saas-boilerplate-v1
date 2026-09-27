@@ -11,7 +11,8 @@ use App\Models\Tenant;
 use DomainException;
 
 /**
- * Sells a signature: the one use case that spans both databases.
+ * Sells a signature: the one use case that spans both databases. Only
+ * paid requests (see SignaturePaymentManager) can be sold.
  *
  *   1. (tenant)  claim the draft (Draft → Submitted, compare-and-set, so a
  *                double click can't sell it twice) and read its documents;
@@ -39,6 +40,11 @@ class SignatureIssuance
     public function submit(Tenant $tenant, SignatureRequest $request, ?string $actorName = null): void
     {
         $this->requests->ensureEditable($request);
+
+        // The customer must have paid the tenant before its quota is spent.
+        if (! $request->isPaid()) {
+            throw new DomainException('La solicitud aún no está pagada. Confirma el pago del cliente antes de enviarla.');
+        }
 
         $missing = $request->missingDocuments();
 

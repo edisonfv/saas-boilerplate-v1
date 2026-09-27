@@ -2,9 +2,12 @@
 
 namespace Modules\Signatures\Http\Controllers;
 
+use App\Enums\SignaturePaymentMethod;
+use App\Enums\SignaturePaymentStatus;
 use App\Enums\SignatureRequestSource;
 use App\Enums\SignatureRequestStatus;
 use App\Http\Controllers\Controller;
+use App\Models\SignaturePayment;
 use App\Models\SignatureProduct;
 use App\Models\SignatureRequest;
 use App\Models\SignatureRequestDocument;
@@ -12,6 +15,7 @@ use App\Models\SignatureStorefront;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Signatures\SignatureIssuance;
+use App\Services\Signatures\SignatureLinks;
 use App\Services\Signatures\SignaturePresenter;
 use App\Services\Signatures\SignatureProviderException;
 use App\Services\Signatures\SignatureRequestManager;
@@ -63,11 +67,13 @@ class SignatureRequestController extends Controller
             'counts' => [
                 'drafts' => SignatureRequest::query()->where('status', SignatureRequestStatus::Draft()->value)->count(),
                 'issued' => SignatureRequest::query()->where('status', SignatureRequestStatus::Issued()->value)->count(),
+                'payment_review' => SignatureRequest::query()->where('payment_status', SignaturePaymentStatus::UnderReview()->value)->count(),
             ],
             'account' => $this->presenter->account($this->tenant()->signatureAccount()->first()),
             'can' => [
                 'create' => $user->can('tenant.signature-requests.create'),
                 'storefront' => $user->can('tenant.signature-storefront.update'),
+                'payments' => $user->can('tenant.signature-requests.payments'),
             ],
         ]);
     }
@@ -98,21 +104,49 @@ class SignatureRequestController extends Controller
             ->with('status', 'signature-request-created');
     }
 
-    public function show(Request $request, SignatureRequest $signatureRequest): Response
+    public function show(Request $request, SignatureRequest $signatureRequest, SignatureLinks $links): Response
     {
-        $signatureRequest->load(['documents', 'events']);
+        $signatureRequest->load(['documents', 'events', 'payments' => fn ($query) => $query->latest()]);
         $user = $request->user();
+        $canManagePayments = $user->can('tenant.signature-requests.payments');
+        $paymentLink = $canManagePayments && $signatureRequest->payment_status->equals(SignaturePaymentStatus::Pending())
+            ? $links->payment($signatureRequest)
+            : null;
 
         return Inertia::render('Signatures/Requests/Show', [
             'request' => $this->presenter->requestDetail(
                 $signatureRequest,
                 fn (SignatureRequestDocument $document) => route('tenant.signatures.requests.documents.show', [$signatureRequest, $document]),
             ),
+            'payments' => $signatureRequest->payments->map(fn (SignaturePayment $payment) => [
+                'id' => $payment->id,
+                'method' => $payment->method->value,
+                'method_label' => $payment->method->label,
+                'amount' => $payment->amount,
+                'reference' => $payment->reference,
+                'review' => $payment->review->value,
+                'review_label' => $payment->review->label,
+                'rejection_reason' => $payment->rejection_reason,
+                'reported_by_name' => $payment->reported_by_name,
+                'reviewed_by_name' => $payment->reviewed_by_name,
+                'reviewed_at' => $payment->reviewed_at,
+                'created_at' => $payment->created_at,
+                'receipt_url' => $payment->hasReceipt() && $canManagePayments
+                    ? route('tenant.signatures.requests.payments.receipt', [$signatureRequest, $payment])
+                    : null,
+            ])->values(),
+            'paymentLink' => $paymentLink,
+            'paymentWhatsappUrl' => $paymentLink !== null ? $links->whatsappTo(
+                $signatureRequest->mobile_phone,
+                "Hola {$signatureRequest->first_names}, para continuar con tu firma electrónica {$signatureRequest->code()} realiza el pago y sube tu comprobante aquí: {$paymentLink}",
+            ) : null,
+            'paymentMethods' => SignaturePaymentMethod::toArray(),
             'account' => $this->presenter->account($this->tenant()->signatureAccount()->first()),
             'can' => [
                 'update' => $user->can('tenant.signature-requests.update'),
                 'delete' => $user->can('tenant.signature-requests.delete'),
                 'submit' => $user->can('tenant.signature-requests.submit'),
+                'payments' => $canManagePayments,
             ],
         ]);
     }

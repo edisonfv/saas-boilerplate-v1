@@ -194,6 +194,36 @@ const messages: Record<string, FlashMessage> = {
         message:
             '¡Recibimos tu solicitud! Te contactaremos para completar el pago y la validación.',
     },
+    'signature-payment-registered': {
+        tone: 'success',
+        message: 'Pago registrado: la solicitud ya puede enviarse a Uanataca.',
+    },
+    'signature-payment-approved': {
+        tone: 'success',
+        message: 'Pago confirmado. Avisamos al cliente por correo.',
+    },
+    'signature-payment-rejected': {
+        tone: 'warning',
+        message:
+            'Comprobante rechazado. El cliente recibió el motivo y un nuevo enlace.',
+    },
+    'signature-payment-link-sent': {
+        tone: 'success',
+        message: 'Enlace de pago enviado al correo del cliente.',
+    },
+    'signature-receipt-received': {
+        tone: 'success',
+        message:
+            'Recibimos tu comprobante. Te avisaremos por correo cuando lo confirmemos.',
+    },
+    'signature-invitation-created': {
+        tone: 'success',
+        message: 'Enlace prepagado creado. Compártelo con tu cliente.',
+    },
+    'signature-invitation-sent': {
+        tone: 'success',
+        message: 'Enlace prepagado enviado al correo del cliente.',
+    },
 };
 
 export function resolveFlash(

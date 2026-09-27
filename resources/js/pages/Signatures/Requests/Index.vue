@@ -10,7 +10,11 @@ import QuotaCard from '@/components/signatures/QuotaCard.vue';
 import StatCard from '@/components/StatCard.vue';
 import { useDateTime } from '@/composables/useDateTime';
 import GeneralLayout from '@/layouts/GeneralLayout.vue';
-import { money, signatureStatusTone } from '@/lib/signatures';
+import {
+    money,
+    paymentStatusTone,
+    signatureStatusTone,
+} from '@/lib/signatures';
 import type {
     SignatureAccount,
     SignatureRequestSummary,
@@ -28,9 +32,9 @@ const props = defineProps<{
     };
     filters: { search: string; status: string | null };
     statuses: Record<string, string>;
-    counts: { drafts: number; issued: number };
+    counts: { drafts: number; issued: number; payment_review: number };
     account: SignatureAccount | null;
-    can: { create: boolean; storefront: boolean };
+    can: { create: boolean; storefront: boolean; payments: boolean };
 }>();
 
 const { dateTime } = useDateTime();
@@ -67,7 +71,14 @@ function applyFilters() {
                         Solicitudes de firma
                     </h2>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
+                    <Link
+                        v-if="can.payments"
+                        :href="tenant.signatures.invitations.index().url"
+                        :class="ui.buttonSecondary"
+                    >
+                        <Icon name="key" class="size-4.5" /> Enlaces prepagados
+                    </Link>
                     <Link
                         v-if="can.storefront"
                         :href="tenant.signatures.storefront.edit().url"
@@ -85,7 +96,13 @@ function applyFilters() {
                 </div>
             </div>
 
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="grid gap-4 sm:grid-cols-3">
+                <StatCard
+                    label="Comprobantes por revisar"
+                    :value="counts.payment_review"
+                    icon="currency"
+                    helper="Pagos que el cliente reportó"
+                />
                 <StatCard
                     label="Borradores por enviar"
                     :value="counts.drafts"
@@ -156,6 +173,11 @@ function applyFilters() {
                                 v-if="item.sale_price"
                                 class="hidden text-sm font-semibold text-ink-700 tabular-nums sm:block dark:text-ink-300"
                                 >{{ money(item.sale_price) }}</span
+                            >
+                            <Badge
+                                v-if="item.payment_status !== 'Paid'"
+                                :tone="paymentStatusTone(item.payment_status)"
+                                >{{ item.payment_status_label }}</Badge
                             >
                             <Badge :tone="signatureStatusTone(item.status)">{{
                                 item.status_label

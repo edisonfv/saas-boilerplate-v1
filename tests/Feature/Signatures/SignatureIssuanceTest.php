@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\SignaturePaymentStatus;
 use App\Enums\SignatureRequestSource;
 use App\Enums\SignatureRequestStatus;
 use App\Exceptions\SignatureQuotaExceeded;
@@ -72,6 +73,7 @@ test('a natural person with RUC is sent as a natural person with its RUC and RUC
         signatureApplicant(['applicant_type' => 'NaturalPersonWithRuc', 'personal_ruc' => '1710034065001']),
         [...signatureDocuments(), 'RucCopy' => UploadedFile::fake()->createWithContent('ruc.pdf', '%PDF-1.4 certificado RUC')],
         SignatureRequestSource::Workspace(),
+        paymentStatus: SignaturePaymentStatus::Paid(),
     ));
 
     submitDraft($tenant, $draft);

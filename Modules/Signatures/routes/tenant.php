@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Modules\Signatures\Http\Controllers\SignatureInvitationController;
+use Modules\Signatures\Http\Controllers\SignaturePaymentController;
 use Modules\Signatures\Http\Controllers\SignatureRequestController;
 use Modules\Signatures\Http\Controllers\StorefrontController;
 use Modules\Signatures\Http\Controllers\StorefrontSettingsController;
@@ -29,6 +31,19 @@ Route::middleware(['tenant.active', 'tenant.module:signatures'])
             ->middleware('throttle:5,1')
             ->name('store');
         Route::get('/solicitud/enviada', [StorefrontController::class, 'received'])->name('received');
+
+        // Signed links sent to customers (see App\Services\Signatures\SignatureLinks).
+        Route::middleware('signed:relative')->group(function () {
+            Route::get('/solicitud/{signatureRequest}/pago', [StorefrontController::class, 'payment'])->name('payment.show');
+            Route::post('/solicitud/{signatureRequest}/pago', [StorefrontController::class, 'reportPayment'])
+                ->middleware('throttle:10,1')
+                ->name('payment.store');
+
+            Route::get('/solicitud/invitacion/{invitation}', [StorefrontController::class, 'invitation'])->name('invitation.show');
+            Route::post('/solicitud/invitacion/{invitation}', [StorefrontController::class, 'redeemInvitation'])
+                ->middleware('throttle:5,1')
+                ->name('invitation.store');
+        });
 
         // Former storefront address.
         Route::permanentRedirect('/firmas', '/');
@@ -64,6 +79,26 @@ Route::middleware(['auth', 'tenant.active', 'tenant.module:signatures'])
         Route::post('/solicitudes/{signatureRequest}/enviar', [SignatureRequestController::class, 'submit'])
             ->middleware(['permission:tenant.signature-requests.submit', 'throttle:10,1'])
             ->name('requests.submit');
+
+        // End-customer payments and prepaid links (unlock "enviar").
+        Route::middleware('permission:tenant.signature-requests.payments')->group(function () {
+            Route::post('/solicitudes/{signatureRequest}/pagos', [SignaturePaymentController::class, 'store'])->name('requests.payments.store');
+            Route::post('/solicitudes/{signatureRequest}/enlace-de-pago', [SignaturePaymentController::class, 'sendLink'])
+                ->middleware('throttle:10,1')
+                ->name('requests.payments.link');
+
+            Route::scopeBindings()->group(function () {
+                Route::get('/solicitudes/{signatureRequest}/pagos/{payment}/comprobante', [SignaturePaymentController::class, 'receipt'])->name('requests.payments.receipt');
+                Route::post('/solicitudes/{signatureRequest}/pagos/{payment}/confirmar', [SignaturePaymentController::class, 'approve'])->name('requests.payments.approve');
+                Route::post('/solicitudes/{signatureRequest}/pagos/{payment}/rechazar', [SignaturePaymentController::class, 'reject'])->name('requests.payments.reject');
+            });
+
+            Route::get('/enlaces-prepagados', [SignatureInvitationController::class, 'index'])->name('invitations.index');
+            Route::post('/enlaces-prepagados', [SignatureInvitationController::class, 'store'])->name('invitations.store');
+            Route::post('/enlaces-prepagados/{invitation}/reenviar', [SignatureInvitationController::class, 'resend'])
+                ->middleware('throttle:10,1')
+                ->name('invitations.resend');
+        });
 
         Route::middleware('permission:tenant.signature-storefront.update')->group(function () {
             Route::get('/sitio-web', [StorefrontSettingsController::class, 'edit'])->name('storefront.edit');

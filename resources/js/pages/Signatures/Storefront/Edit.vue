@@ -7,7 +7,7 @@ import Icon from '@/components/Icon.vue';
 import EditableListCard from '@/components/signatures/EditableListCard.vue';
 import GeneralLayout from '@/layouts/GeneralLayout.vue';
 import { money } from '@/lib/signatures';
-import type { SignatureProduct } from '@/lib/signatures';
+import type { BankAccount, SignatureProduct } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
 import tenant from '@/routes/tenant';
 
@@ -26,6 +26,7 @@ const props = defineProps<{
         uses: Entry[];
         steps: Entry[];
         faqs: Faq[];
+        bank_accounts: BankAccount[];
     };
     products: SignatureProduct[];
     publicUrl: string;
@@ -51,6 +52,9 @@ const form = useForm({
     uses: props.storefront.uses.map((entry) => ({ ...entry })),
     steps: props.storefront.steps.map((entry) => ({ ...entry })),
     faqs: props.storefront.faqs.map((faq) => ({ ...faq })),
+    bank_accounts: props.storefront.bank_accounts.map((account) => ({
+        ...account,
+    })) as Record<string, string>[],
 });
 
 const errors = computed(() => form.errors as Record<string, string>);
@@ -196,6 +200,31 @@ function submit() {
                         </a>
                     </div>
                 </Card>
+
+                <EditableListCard
+                    v-model="form.bank_accounts"
+                    title="Cuentas para recibir pagos"
+                    description="Tus clientes verán estas cuentas en su enlace de pago para transferir o depositar."
+                    name="bank_accounts"
+                    :fields="[
+                        { key: 'bank', label: 'Banco', max: 80 },
+                        {
+                            key: 'account_type',
+                            label: 'Tipo de cuenta (Ahorros / Corriente)',
+                            max: 40,
+                        },
+                        { key: 'number', label: 'Número de cuenta', max: 30 },
+                        { key: 'holder', label: 'Titular', max: 120 },
+                        {
+                            key: 'holder_id',
+                            label: 'Cédula o RUC del titular',
+                            max: 20,
+                        },
+                    ]"
+                    add-label="Agregar cuenta"
+                    :max-rows="6"
+                    :errors="errors"
+                />
 
                 <Card title="Precios al público">
                     <p class="mb-4 text-sm text-ink-600 dark:text-ink-400">

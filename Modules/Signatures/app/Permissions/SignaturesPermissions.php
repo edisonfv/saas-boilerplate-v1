@@ -10,7 +10,9 @@ use App\Enums\Action;
  * synced into a tenant's own ACL when the module is activated for it.
  *
  * "submit" is separate from "create" because sending a request to the
- * certification authority consumes the tenant's quota (units or credit).
+ * certification authority consumes the tenant's quota (units or credit);
+ * "payments" (confirming the customer paid) is separate too, so a cashier
+ * and an operator can hold different duties.
  */
 final class SignaturesPermissions
 {
@@ -23,7 +25,10 @@ final class SignaturesPermissions
             'signature-requests' => [
                 'label' => 'Solicitudes de firma electrónica',
                 'actions' => [Action::View(), Action::Create(), Action::Update(), Action::Delete()],
-                'special' => ['submit' => 'Enviar solicitudes de firma a la entidad certificadora'],
+                'special' => [
+                    'submit' => 'Enviar solicitudes de firma a la entidad certificadora',
+                    'payments' => 'Registrar, confirmar y rechazar pagos; crear enlaces prepagados',
+                ],
             ],
             'signature-storefront' => [
                 'label' => 'Sitio web de firmas',

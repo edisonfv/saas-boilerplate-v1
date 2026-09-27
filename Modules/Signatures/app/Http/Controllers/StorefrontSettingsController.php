@@ -33,6 +33,7 @@ class StorefrontSettingsController extends Controller
                 'uses' => $storefront->resolvedUses(),
                 'steps' => $storefront->resolvedSteps(),
                 'faqs' => $storefront->resolvedFaqs(),
+                'bank_accounts' => $storefront->bank_accounts ?? [],
             ],
             'products' => SignatureProduct::query()->active()->orderBy('credit_unit_price')->get()
                 ->map(fn (SignatureProduct $product) => $presenter->product($product))
@@ -44,10 +45,11 @@ class StorefrontSettingsController extends Controller
     public function update(UpdateStorefrontRequest $request): RedirectResponse
     {
         SignatureStorefront::current()->update([
-            ...$request->safe()->except(['prices', 'uses', 'steps', 'faqs']),
+            ...$request->safe()->except(['prices', 'uses', 'steps', 'faqs', 'bank_accounts']),
             'uses' => $this->rows($request->validated('uses'), ['title', 'text']),
             'steps' => $this->rows($request->validated('steps'), ['title', 'text']),
             'faqs' => $this->rows($request->validated('faqs'), ['question', 'answer']),
+            'bank_accounts' => $this->rows($request->validated('bank_accounts'), ['bank', 'account_type', 'number', 'holder', 'holder_id']),
             'prices' => $request->safe()->collect('prices')
                 ->filter(fn (mixed $price) => $price !== null && $price !== '')
                 ->map(fn (mixed $price) => number_format((float) $price, 2, '.', ''))

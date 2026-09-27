@@ -4,18 +4,29 @@ namespace Modules\Signatures\Http\Controllers;
 
 use App\Enums\SignatureApplicantType;
 use App\Enums\SignatureDocumentKind;
+use App\Enums\SignaturePaymentMethod;
+use App\Enums\SignaturePaymentReview;
+use App\Enums\SignaturePaymentStatus;
 use App\Enums\SignatureRequestSource;
 use App\Http\Controllers\Controller;
+use App\Models\SignatureInvitation;
 use App\Models\SignatureProduct;
+use App\Models\SignatureRequest;
 use App\Models\SignatureStorefront;
 use App\Models\Tenant;
+use App\Services\Signatures\SignatureInvitationManager;
+use App\Services\Signatures\SignatureLinks;
+use App\Services\Signatures\SignaturePaymentManager;
 use App\Services\Signatures\SignaturePresenter;
 use App\Services\Signatures\SignatureRequestManager;
+use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Modules\Signatures\Http\Requests\ReportPaymentReceiptRequest;
 use Modules\Signatures\Http\Requests\StoreStorefrontSignatureRequest;
 
 /**
@@ -72,8 +83,11 @@ class StorefrontController extends Controller
         ]);
     }
 
-    public function store(StoreStorefrontSignatureRequest $request, SignatureRequestManager $manager): RedirectResponse
-    {
+    public function store(
+        StoreStorefrontSignatureRequest $request,
+        SignatureRequestManager $manager,
+        SignaturePaymentManager $payments,
+    ): RedirectResponse {
         $storefront = SignatureStorefront::current();
         $product = $request->product();
 
@@ -85,30 +99,125 @@ class StorefrontController extends Controller
             actorName: trim($request->string('first_names').' '.$request->string('first_surname')),
         );
 
+        // Unpaid until the customer uploads a receipt and staff confirms it.
+        $payments->sendPaymentLink($signatureRequest);
+
         return redirect()->route('tenant.signatures.storefront.received')
-            ->with('signature_request_code', $signatureRequest->code())
-            ->with('signature_request_product', $product->name);
+            ->with('signature_request_id', $signatureRequest->id);
     }
 
-    public function received(Request $request): Response|RedirectResponse
+    public function received(Request $request, SignatureLinks $links): Response|RedirectResponse
     {
-        $code = $request->session()->get('signature_request_code');
+        $signatureRequest = SignatureRequest::query()->find($request->session()->get('signature_request_id'));
 
-        if (! is_string($code)) {
+        if (! $signatureRequest instanceof SignatureRequest) {
             return redirect('/');
         }
 
         $storefront = SignatureStorefront::current();
+        $code = $signatureRequest->code();
 
         return Inertia::render('Signatures/Storefront/Received', [
             'storefront' => $this->storefrontProps($storefront),
             'code' => $code,
+            'isPaid' => $signatureRequest->isPaid(),
+            'amount' => $signatureRequest->sale_price,
+            'email' => $signatureRequest->email,
+            'paymentUrl' => $signatureRequest->isPaid() ? null : $links->payment($signatureRequest),
             'whatsappUrl' => $storefront->whatsappUrl(
-                "Hola, acabo de enviar mi solicitud de firma electrónica {$code} ("
-                .$request->session()->get('signature_request_product', 'firma electrónica')
-                .'). Quisiera continuar con el pago y la validación.',
+                "Hola, envié mi solicitud de firma electrónica {$code} ({$signatureRequest->product_name}). "
+                .($signatureRequest->isPaid() ? 'Quisiera saber el estado de mi trámite.' : 'Quisiera coordinar el pago.'),
             ),
         ]);
+    }
+
+    /**
+     * The customer's signed payment link: bank accounts, amount and the
+     * receipt upload while payment is pending; the status afterwards.
+     */
+    public function payment(Request $request, SignatureRequest $signatureRequest): Response
+    {
+        $storefront = SignatureStorefront::current();
+        $rejected = $signatureRequest->payments()
+            ->where('review', SignaturePaymentReview::Rejected()->value)
+            ->latest()
+            ->first();
+
+        return Inertia::render('Signatures/Storefront/Payment', [
+            'storefront' => $this->storefrontProps($storefront),
+            'request' => [
+                'code' => $signatureRequest->code(),
+                'applicant_name' => $signatureRequest->applicantName(),
+                'product_name' => $signatureRequest->product_name,
+                'amount' => $signatureRequest->sale_price,
+                'payment_status' => $signatureRequest->payment_status->value,
+                'payment_status_label' => $signatureRequest->payment_status->label,
+                'rejection_reason' => $signatureRequest->payment_status->equals(SignaturePaymentStatus::Pending())
+                    ? $rejected?->rejection_reason
+                    : null,
+            ],
+            'bankAccounts' => $storefront->bank_accounts ?? [],
+            'methods' => collect(SignaturePaymentMethod::selfReported())
+                ->mapWithKeys(fn (SignaturePaymentMethod $method) => [$method->value => $method->label]),
+            // Posting back to the same signed URL keeps the signature valid.
+            'action' => $request->getRequestUri(),
+        ]);
+    }
+
+    public function reportPayment(
+        ReportPaymentReceiptRequest $request,
+        SignatureRequest $signatureRequest,
+        SignaturePaymentManager $payments,
+    ): RedirectResponse {
+        try {
+            $payments->reportReceipt(
+                $signatureRequest,
+                SignaturePaymentMethod::from($request->string('method')->toString()),
+                $request->input('reference'),
+                $request->file('receipt'),
+            );
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['receipt' => $exception->getMessage()]);
+        }
+
+        return back()->with('status', 'signature-receipt-received');
+    }
+
+    /**
+     * Application form opened from a prepaid, single-use invitation.
+     */
+    public function invitation(Request $request, SignatureInvitation $invitation): Response
+    {
+        $storefront = SignatureStorefront::current();
+        $products = $this->products()->where('id', $invitation->signature_product_id)->values();
+
+        return Inertia::render('Signatures/Storefront/Apply', [
+            'storefront' => $this->storefrontProps($storefront),
+            'selectedProductId' => $invitation->signature_product_id,
+            'invitation' => [
+                'customer_name' => $invitation->customer_name,
+                'product_name' => $invitation->product_name,
+                'is_usable' => $invitation->isUsable(),
+                // Posting back to the same signed URL keeps the signature valid.
+                'action' => $request->getRequestUri(),
+            ],
+            ...$this->presenter->formOptions($products, [$invitation->signature_product_id => $invitation->amount]),
+        ]);
+    }
+
+    public function redeemInvitation(
+        StoreStorefrontSignatureRequest $request,
+        SignatureInvitation $invitation,
+        SignatureInvitationManager $invitations,
+    ): RedirectResponse {
+        try {
+            $signatureRequest = $invitations->redeem($invitation, $request->validated(), $request->documents());
+        } catch (DomainException $exception) {
+            throw ValidationException::withMessages(['invitation' => $exception->getMessage()]);
+        }
+
+        return redirect()->route('tenant.signatures.storefront.received')
+            ->with('signature_request_id', $signatureRequest->id);
     }
 
     /**

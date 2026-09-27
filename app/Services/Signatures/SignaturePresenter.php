@@ -87,6 +87,8 @@ class SignaturePresenter
             'source_label' => $request->source->label,
             'status' => $request->status->value,
             'status_label' => $request->status->label,
+            'payment_status' => $request->payment_status->value,
+            'payment_status_label' => $request->payment_status->label,
             'sale_price' => $request->sale_price,
             'created_at' => $request->created_at,
         ];

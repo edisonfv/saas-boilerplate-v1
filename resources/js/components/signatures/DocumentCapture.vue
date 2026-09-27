@@ -41,6 +41,8 @@ const hints: Record<string, string> = {
     LegalRepresentativeAuthorization:
         'Carta firmada por el representante legal autorizando tu firma (PDF).',
     Additional: 'Cualquier documento que ayude a validar tu solicitud.',
+    Receipt:
+        'Foto o PDF del comprobante donde se vean el monto, la fecha y la cuenta de destino.',
 };
 
 const processing = ref(false);

@@ -40,6 +40,13 @@ class UpdateStorefrontRequest extends FormRequest
             'faqs' => ['present', 'array', 'max:15'],
             'faqs.*.question' => ['required', 'string', 'max:200'],
             'faqs.*.answer' => ['required', 'string', 'max:1000'],
+            // Where customers transfer/deposit; shown on their payment link.
+            'bank_accounts' => ['present', 'array', 'max:6'],
+            'bank_accounts.*.bank' => ['required', 'string', 'max:80'],
+            'bank_accounts.*.account_type' => ['required', 'string', 'max:40'],
+            'bank_accounts.*.number' => ['required', 'string', 'max:30'],
+            'bank_accounts.*.holder' => ['required', 'string', 'max:120'],
+            'bank_accounts.*.holder_id' => ['required', 'string', 'max:20'],
         ];
     }
 }

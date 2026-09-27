@@ -23,10 +23,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<array{title: string, text: string}>|null $uses
  * @property list<array{title: string, text: string}>|null $steps
  * @property list<array{question: string, answer: string}>|null $faqs
+ * @property list<array{bank: string, account_type: string, number: string, holder: string, holder_id: string}>|null $bank_accounts
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['headline', 'description', 'contact_email', 'contact_phone', 'whatsapp', 'whatsapp_message', 'prices', 'uses', 'steps', 'faqs'])]
+#[Fillable(['headline', 'description', 'contact_email', 'contact_phone', 'whatsapp', 'whatsapp_message', 'prices', 'uses', 'steps', 'faqs', 'bank_accounts'])]
 class SignatureStorefront extends Model
 {
     public const DefaultWhatsappMessage = 'Hola, quiero información para obtener mi firma electrónica.';
@@ -129,6 +130,7 @@ class SignatureStorefront extends Model
             'uses' => 'array',
             'steps' => 'array',
             'faqs' => 'array',
+            'bank_accounts' => 'array',
         ];
     }
 }

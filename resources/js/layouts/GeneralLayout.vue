@@ -38,6 +38,13 @@ const sections: NavigationSection[] = [
                 module: 'signatures',
             },
             {
+                name: 'Enlaces prepagados',
+                href: tenant.signatures.invitations.index().url,
+                icon: 'currency',
+                permission: 'tenant.signature-requests.payments',
+                module: 'signatures',
+            },
+            {
                 name: 'Sitio web',
                 href: tenant.signatures.storefront.edit().url,
                 icon: 'globe',

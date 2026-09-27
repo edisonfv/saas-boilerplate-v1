@@ -234,8 +234,17 @@ function submit() {
         forceFormData: true,
         preserveScroll: !props.wizard,
         onError: (errors) => {
-            if (props.wizard) {
-                goTo(Math.min(...Object.keys(errors).map(stepOf)));
+            // Only field errors map to a step; others (e.g. a used
+            // invitation link) are shown by the page itself.
+            const fieldErrors = Object.keys(errors).filter(
+                (key) =>
+                    (fields as readonly string[]).includes(key) ||
+                    key === 'accepts_terms' ||
+                    key.startsWith('documents'),
+            );
+
+            if (props.wizard && fieldErrors.length > 0) {
+                goTo(Math.min(...fieldErrors.map(stepOf)));
             }
         },
     });

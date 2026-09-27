@@ -121,6 +121,8 @@ export interface SignatureRequestSummary {
     source_label: string;
     status: string;
     status_label: string;
+    payment_status: string;
+    payment_status_label: string;
     sale_price: string | null;
     created_at: string;
 }
@@ -168,6 +170,59 @@ export function signatureStatusTone(status: string): BadgeTone {
         default:
             return 'gray';
     }
+}
+
+/**
+ * Badge tones for App\Enums\SignaturePaymentStatus values.
+ */
+export function paymentStatusTone(status: string): BadgeTone {
+    switch (status) {
+        case 'Paid':
+            return 'green';
+        case 'UnderReview':
+            return 'blue';
+        default:
+            return 'amber';
+    }
+}
+
+/**
+ * Badge tones for App\Enums\SignaturePaymentReview values.
+ */
+export function paymentReviewTone(review: string): BadgeTone {
+    switch (review) {
+        case 'Approved':
+            return 'green';
+        case 'Rejected':
+            return 'red';
+        default:
+            return 'blue';
+    }
+}
+
+/** A recorded payment of a request (workspace). */
+export interface PaymentRecord {
+    id: string;
+    method: string;
+    method_label: string;
+    amount: string;
+    reference: string | null;
+    review: string;
+    review_label: string;
+    rejection_reason: string | null;
+    reported_by_name: string | null;
+    reviewed_by_name: string | null;
+    reviewed_at: string | null;
+    created_at: string;
+    receipt_url: string | null;
+}
+
+export interface BankAccount {
+    bank: string;
+    account_type: string;
+    number: string;
+    holder: string;
+    holder_id: string;
 }
 
 /**

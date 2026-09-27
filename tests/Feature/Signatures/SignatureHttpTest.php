@@ -66,7 +66,16 @@ test('an operator registers a sale with its documents and sends it to Uanataca',
             ->where('request.code', 'FE-000001')
             ->where('request.missing_documents', [])
             ->where('account.credit_available', '50.00')
+            ->where('request.payment_status', 'Pending')
             ->where('can.submit', true));
+
+    // The customer pays at the counter; only then can it be sent.
+    $this->actingAs($owner)
+        ->post("http://{$domain}/firmas-electronicas/solicitudes/{$request->id}/pagos", [
+            'method' => 'Cash',
+            'amount' => '30',
+        ])
+        ->assertSessionHasNoErrors();
 
     $this->actingAs($owner)
         ->post("http://{$domain}/firmas-electronicas/solicitudes/{$request->id}/enviar")
@@ -293,6 +302,7 @@ function storefrontSettings(): array
         'uses' => SignatureStorefront::DefaultUses,
         'steps' => SignatureStorefront::DefaultSteps,
         'faqs' => SignatureStorefront::DefaultFaqs,
+        'bank_accounts' => [],
     ];
 }
 

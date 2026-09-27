@@ -3,11 +3,16 @@ import { Form, Head, Link } from '@inertiajs/vue3';
 import Badge from '@/components/Badge.vue';
 import Card from '@/components/Card.vue';
 import Icon from '@/components/Icon.vue';
+import PaymentPanel from '@/components/signatures/PaymentPanel.vue';
 import QuotaCard from '@/components/signatures/QuotaCard.vue';
 import { useDateTime } from '@/composables/useDateTime';
 import GeneralLayout from '@/layouts/GeneralLayout.vue';
-import { money, signatureStatusTone } from '@/lib/signatures';
-import type { SignatureAccount } from '@/lib/signatures';
+import {
+    money,
+    paymentStatusTone,
+    signatureStatusTone,
+} from '@/lib/signatures';
+import type { PaymentRecord, SignatureAccount } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
 import tenant from '@/routes/tenant';
 
@@ -16,6 +21,8 @@ interface RequestDetail {
     code: string;
     status: string;
     status_label: string;
+    payment_status: string;
+    payment_status_label: string;
     source_label: string;
     applicant_name: string;
     applicant_type_label: string;
@@ -71,8 +78,17 @@ interface RequestDetail {
 
 defineProps<{
     request: RequestDetail;
+    payments: PaymentRecord[];
+    paymentLink: string | null;
+    paymentWhatsappUrl: string | null;
+    paymentMethods: Record<string, string>;
     account: SignatureAccount | null;
-    can: { update: boolean; delete: boolean; submit: boolean };
+    can: {
+        update: boolean;
+        delete: boolean;
+        submit: boolean;
+        payments: boolean;
+    };
 }>();
 
 const { dateTime, date } = useDateTime();
@@ -109,6 +125,13 @@ const confirmSubmit = () =>
                             </h2>
                             <Badge :tone="signatureStatusTone(request.status)">
                                 {{ request.status_label }}
+                            </Badge>
+                            <Badge
+                                :tone="
+                                    paymentStatusTone(request.payment_status)
+                                "
+                            >
+                                {{ request.payment_status_label }}
                             </Badge>
                         </div>
                         <p class="mt-1 text-sm text-ink-500">
@@ -176,7 +199,10 @@ const confirmSubmit = () =>
                             >
                                 Enviar a la entidad certificadora
                             </p>
-                            <p v-if="request.missing_documents.length">
+                            <p v-if="request.payment_status !== 'Paid'">
+                                Primero confirma el pago del cliente.
+                            </p>
+                            <p v-else-if="request.missing_documents.length">
                                 Faltan:
                                 {{
                                     request.missing_documents
@@ -193,6 +219,7 @@ const confirmSubmit = () =>
                             type="submit"
                             :disabled="
                                 processing ||
+                                request.payment_status !== 'Paid' ||
                                 request.missing_documents.length > 0
                             "
                             :class="ui.buttonPrimary"
@@ -206,6 +233,18 @@ const confirmSubmit = () =>
                     </p>
                 </Form>
             </Card>
+
+            <PaymentPanel
+                :request-id="request.id"
+                :status="request.payment_status"
+                :status-label="request.payment_status_label"
+                :sale-price="request.sale_price"
+                :payments="payments"
+                :payment-link="paymentLink"
+                :whatsapp-url="paymentWhatsappUrl"
+                :methods="paymentMethods"
+                :can-manage="can.payments"
+            />
 
             <Card title="Datos del titular">
                 <dl class="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-3">

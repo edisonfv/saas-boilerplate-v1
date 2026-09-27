@@ -2,6 +2,7 @@
 
 use App\Enums\BillingPeriod;
 use App\Enums\SignatureAffiliationMode;
+use App\Enums\SignaturePaymentStatus;
 use App\Enums\SignatureRequestSource;
 use App\Models\CentralUser;
 use App\Models\Plan;
@@ -251,9 +252,10 @@ function signatureDocuments(): array
 }
 
 /**
- * A complete draft request in the tenant's database.
+ * A complete draft request in the tenant's database, already paid by the
+ * customer unless told otherwise (only paid requests can be submitted).
  */
-function signatureDraft(Tenant $tenant, ?array $documents = null): SignatureRequest
+function signatureDraft(Tenant $tenant, ?array $documents = null, bool $paid = true): SignatureRequest
 {
     return $tenant->run(fn () => app(SignatureRequestManager::class)->create(
         signatureProduct(),
@@ -261,5 +263,6 @@ function signatureDraft(Tenant $tenant, ?array $documents = null): SignatureRequ
         $documents ?? signatureDocuments(),
         SignatureRequestSource::Workspace(),
         actorName: 'Operador',
+        paymentStatus: $paid ? SignaturePaymentStatus::Paid() : SignaturePaymentStatus::Pending(),
     ));
 }
