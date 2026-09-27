@@ -89,5 +89,12 @@ class CatalogSeeder extends Seeder
                     ->all()
             );
         }
+
+        // Example: Pro also bundles electronic-signature resale (see SignaturesModuleSeeder).
+        $signatures = Module::where('slug', config('signatures.module_slug', 'signatures'))->first();
+
+        if ($signatures !== null) {
+            $pro->modules()->attach($signatures->id);
+        }
     }
 }

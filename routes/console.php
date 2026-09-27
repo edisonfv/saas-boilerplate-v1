@@ -17,3 +17,8 @@ Schedule::command('support:close-resolved')
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
+
+Schedule::command('signatures:replay-webhooks')
+    ->everyFifteenMinutes()
+    ->withoutOverlapping()
+    ->onOneServer();

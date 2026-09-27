@@ -32,6 +32,23 @@ const sections: NavigationSection[] = [
         ],
     },
     {
+        label: 'Firmas electrónicas',
+        items: [
+            {
+                name: 'Cuentas de tenants',
+                href: central.signatures.accounts.index().url,
+                icon: 'currency',
+                permission: 'central.signature-accounts.view',
+            },
+            {
+                name: 'Productos y paquetes',
+                href: central.signatures.products.index().url,
+                icon: 'key',
+                permission: 'central.signature-products.view',
+            },
+        ],
+    },
+    {
         label: 'Soporte',
         items: [
             {

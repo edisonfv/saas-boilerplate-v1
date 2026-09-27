@@ -1,18 +1,27 @@
 <?php
 
 use App\Enums\BillingPeriod;
+use App\Enums\SignatureAffiliationMode;
+use App\Enums\SignatureRequestSource;
 use App\Models\CentralUser;
 use App\Models\Plan;
+use App\Models\SignatureProduct;
+use App\Models\SignatureRequest;
 use App\Models\SupportTechnician;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Signatures\SignatureRequestManager;
+use App\Services\Signatures\SignatureWallet;
 use App\Services\TenantPlanSubscriber;
 use Database\Seeders\CatalogSeeder;
 use Database\Seeders\CentralAclSeeder;
 use Database\Seeders\GeneralModuleSeeder;
+use Database\Seeders\SignaturesModuleSeeder;
 use Database\Seeders\SupportModuleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /*
@@ -148,4 +157,109 @@ function supportTechnician(int $capacity = 1, ?CentralUser $user = null): Suppor
     }
 
     return $technician;
+}
+
+/*
+|--------------------------------------------------------------------------
+| Signatures module helpers
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Seeds the Signatures module (example products/packages) + example
+ * catalog ("pro" bundles the module), fakes the documents disk and
+ * configures the provider with a Bearer token and a webhook token.
+ */
+function seedSignatures(): void
+{
+    test()->seed(GeneralModuleSeeder::class);
+    test()->seed(SupportModuleSeeder::class);
+    test()->seed(SignaturesModuleSeeder::class);
+    test()->seed(CatalogSeeder::class);
+    test()->seed(CentralAclSeeder::class);
+
+    config([
+        'signatures.documents_disk' => 'signature-documents',
+        'services.uanataca.base_url' => 'https://uanataca.test',
+        'services.uanataca.token' => 'provider-token',
+        'services.uanataca.webhook_token' => 'webhook-secret',
+    ]);
+    Storage::fake('signature-documents');
+}
+
+function signatureProduct(string $validity = 'OneYear'): SignatureProduct
+{
+    return SignatureProduct::query()->where('validity', $validity)->where('container', 'File')->sole();
+}
+
+/**
+ * A tenant on the "pro" plan (includes Signatures) with a distributor
+ * account in the given mode.
+ *
+ * @return array{0: Tenant, 1: string}
+ */
+function signatureTenant(string $mode = 'Prepaid', int $creditLimit = 0): array
+{
+    [$tenant, $domain] = supportTenant('pro');
+
+    app(SignatureWallet::class)->configure($tenant, SignatureAffiliationMode::from($mode), $creditLimit);
+
+    return [$tenant, $domain];
+}
+
+/**
+ * Valid applicant data (natural person with an Ecuadorian cédula).
+ *
+ * @return array<string, mixed>
+ */
+function signatureApplicant(array $overrides = []): array
+{
+    return [
+        'signature_product_id' => signatureProduct()->id,
+        'applicant_type' => 'NaturalPerson',
+        'first_names' => 'María José',
+        'first_surname' => 'Pérez',
+        'second_surname' => 'López',
+        'document_type' => 'Cedula',
+        'document_number' => '1710034065',
+        'fingerprint_code' => 'V3331I4222',
+        'gender' => 'Female',
+        'birth_date' => '1990-05-10',
+        'nationality' => 'Ecuatoriana',
+        'mobile_phone' => '0991234567',
+        'email' => 'maria@example.test',
+        'province' => 'Pichincha',
+        'city' => 'Quito',
+        'address' => 'Av. Amazonas N23-45',
+        'sale_price' => '30.00',
+        ...$overrides,
+    ];
+}
+
+/**
+ * The three identity documents a natural person needs.
+ *
+ * @return array<string, UploadedFile>
+ */
+function signatureDocuments(): array
+{
+    return [
+        'IdFront' => UploadedFile::fake()->image('cedula-frente.jpg'),
+        'IdBack' => UploadedFile::fake()->image('cedula-reverso.jpg'),
+        'Selfie' => UploadedFile::fake()->image('selfie.png'),
+    ];
+}
+
+/**
+ * A complete draft request in the tenant's database.
+ */
+function signatureDraft(Tenant $tenant, ?array $documents = null): SignatureRequest
+{
+    return $tenant->run(fn () => app(SignatureRequestManager::class)->create(
+        signatureProduct(),
+        signatureApplicant(),
+        $documents ?? signatureDocuments(),
+        SignatureRequestSource::Workspace(),
+        actorName: 'Operador',
+    ));
 }

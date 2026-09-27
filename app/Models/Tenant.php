@@ -41,6 +41,16 @@ class Tenant extends BaseTenant implements TenantWithDatabase
         return $this->hasOne(Subscription::class, 'tenant_id', 'id');
     }
 
+    /**
+     * Its affiliation as an electronic-signature distributor, if any.
+     *
+     * @return HasOne<SignatureAccount, $this>
+     */
+    public function signatureAccount(): HasOne
+    {
+        return $this->hasOne(SignatureAccount::class, 'tenant_id', 'id');
+    }
+
     public function operationalStatus(): TenantStatus
     {
         $status = $this->getRawOriginal('status') ?? $this->attributes['status'] ?? TenantStatus::Active()->value;

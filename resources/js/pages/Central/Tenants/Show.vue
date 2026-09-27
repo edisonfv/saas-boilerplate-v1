@@ -6,6 +6,7 @@ import Badge from '@/components/Badge.vue';
 import Card from '@/components/Card.vue';
 import Icon from '@/components/Icon.vue';
 import StatCard from '@/components/StatCard.vue';
+import { usePermissions } from '@/composables/usePermissions';
 import CentralLayout from '@/layouts/CentralLayout.vue';
 import { subscriptionStatusTone } from '@/lib/status';
 import central from '@/routes/central';
@@ -54,6 +55,7 @@ const props = defineProps<{
 }>();
 
 const isActive = computed(() => props.tenant.status === 'Active');
+const { can: hasPermission } = usePermissions();
 </script>
 
 <template>
@@ -101,6 +103,18 @@ const isActive = computed(() => props.tenant.status === 'Active');
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
+                        <Link
+                            v-if="
+                                hasPermission('central.signature-accounts.view')
+                            "
+                            :href="
+                                central.signatures.accounts.show(tenant.id).url
+                            "
+                            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-ink-300 px-3.5 text-sm font-medium text-ink-700 transition hover:bg-ink-50 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+                        >
+                            <Icon name="key" class="size-4.5" />
+                            Firmas electrónicas
+                        </Link>
                         <Form
                             autocomplete="off"
                             v-if="can.manage"
