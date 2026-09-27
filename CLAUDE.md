@@ -194,3 +194,10 @@ Laravel already ships most of the infrastructure a SaaS needs. **Before writing 
 - Enum-backed properties, method parameters, and return types must be typed as the enum class, never `string`.
 - Eloquent attributes backed by an enum must use a cast to the enum class so they are never read back as a raw string.
 - Every enum must define a `labels()` override (`Spatie\Enum\Enum::labels()`) with the human-readable text for the frontend. Never compare against `->label` — comparisons and business logic always use `->value`/`->equals()`. `Enum::jsonSerialize()` only emits `->value`, so when a prop/resource needs the label for display (e.g. a `<select>` of billing periods), expose it explicitly (e.g. `'billing_period' => $model->billing_period->value, 'billing_period_label' => $model->billing_period->label`, or `EnumClass::toArray()` for a full value→label list of options).
+
+### Seeders
+
+- Every seeder must be idempotent: running it again (e.g. `php artisan db:seed --class=...` on an existing central or tenant database, after adding a permission, module or catalog item) must never duplicate rows, fail on unique constraints, or overwrite data the users changed.
+- Match records on their natural/unique key with `firstOrCreate()` (create once, keep later user edits), `updateOrCreate()` (only for platform-owned definitions that must track the code, e.g. permission labels), or `upsert()` for bulk rows; guard optional example data with `exists()`/`doesntExist()`. Never use bare `create()`/`insert()` in a seeder, and never truncate or delete existing rows.
+- Attach relations with `syncWithoutDetaching()` (or `firstOrCreate()` on the pivot), never `attach()`, so re-running doesn't duplicate pivot rows.
+- Cover it with a test that runs the seeder twice and asserts the row counts don't change.
