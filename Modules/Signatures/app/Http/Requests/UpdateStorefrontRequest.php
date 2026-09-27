@@ -2,6 +2,7 @@
 
 namespace Modules\Signatures\Http\Requests;
 
+use App\Models\SignatureStorefront;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateStorefrontRequest extends FormRequest
@@ -41,6 +42,13 @@ class UpdateStorefrontRequest extends FormRequest
             'faqs.*.question' => ['required', 'string', 'max:200'],
             'faqs.*.answer' => ['required', 'string', 'max:1000'],
             // Where customers transfer/deposit; shown on their payment link.
+            // Search snippet; empty = generated from the headline/description.
+            'seo_title' => ['nullable', 'string', 'max:70'],
+            'seo_description' => ['nullable', 'string', 'max:160'],
+            // Banner photos kept, in order, with their alt text (uploads go through storeImage).
+            'hero_slides' => ['present', 'array', 'max:'.SignatureStorefront::MaxHeroSlides],
+            'hero_slides.*.id' => ['required', 'string'],
+            'hero_slides.*.alt' => ['required', 'string', 'max:150'],
             'bank_accounts' => ['present', 'array', 'max:6'],
             'bank_accounts.*.bank' => ['required', 'string', 'max:80'],
             'bank_accounts.*.account_type' => ['required', 'string', 'max:40'],

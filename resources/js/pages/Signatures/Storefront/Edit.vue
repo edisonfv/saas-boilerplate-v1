@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { Head, useForm } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import Card from '@/components/Card.vue';
 import FormActions from '@/components/FormActions.vue';
 import Icon from '@/components/Icon.vue';
+import BannerPhotosCard from '@/components/signatures/BannerPhotosCard.vue';
 import EditableListCard from '@/components/signatures/EditableListCard.vue';
+import SeoCard from '@/components/signatures/SeoCard.vue';
 import GeneralLayout from '@/layouts/GeneralLayout.vue';
 import { money } from '@/lib/signatures';
 import type { BankAccount, SignatureProduct } from '@/lib/signatures';
@@ -18,6 +20,9 @@ const props = defineProps<{
     storefront: {
         headline: string;
         description: string | null;
+        seo_title: string;
+        seo_description: string;
+        hero_slides: { id: string; url: string; alt: string }[];
         contact_email: string | null;
         contact_phone: string | null;
         whatsapp: string | null;
@@ -30,6 +35,8 @@ const props = defineProps<{
     };
     products: SignatureProduct[];
     publicUrl: string;
+    seoDefaults: { title: string; description: string };
+    maxSlides: number;
 }>();
 
 /**
@@ -39,6 +46,9 @@ const props = defineProps<{
 const form = useForm({
     headline: props.storefront.headline,
     description: props.storefront.description ?? '',
+    seo_title: props.storefront.seo_title,
+    seo_description: props.storefront.seo_description,
+    hero_slides: props.storefront.hero_slides.map((slide) => ({ ...slide })),
     contact_email: props.storefront.contact_email ?? '',
     contact_phone: props.storefront.contact_phone ?? '',
     whatsapp: props.storefront.whatsapp ?? '',
@@ -58,6 +68,21 @@ const form = useForm({
 });
 
 const errors = computed(() => form.errors as Record<string, string>);
+
+// Photos are uploaded right away (preserving this form's state): add the
+// new ones to the list without touching unsaved edits.
+watch(
+    () => props.storefront.hero_slides,
+    (slides) => {
+        const known = new Set(form.hero_slides.map((slide) => slide.id));
+
+        form.hero_slides.push(
+            ...slides
+                .filter((slide) => !known.has(slide.id))
+                .map((slide) => ({ ...slide })),
+        );
+    },
+);
 
 /** Same link the public site builds (SignatureStorefront::whatsappUrl()). */
 const whatsappPreview = computed(() => {
@@ -85,6 +110,12 @@ function submit() {
             @submit.prevent="submit"
         >
             <div class="col-span-12 space-y-6 xl:col-span-8">
+                <BannerPhotosCard
+                    v-model="form.hero_slides"
+                    :max-slides="maxSlides"
+                    :errors="errors"
+                />
+
                 <Card title="Portada">
                     <div class="space-y-4">
                         <div>
@@ -145,6 +176,14 @@ function submit() {
                         </div>
                     </div>
                 </Card>
+
+                <SeoCard
+                    v-model:title="form.seo_title"
+                    v-model:description="form.seo_description"
+                    :url="publicUrl"
+                    :defaults="seoDefaults"
+                    :errors="errors"
+                />
 
                 <Card title="WhatsApp">
                     <p class="mb-4 text-sm text-ink-600 dark:text-ink-400">

@@ -19,6 +19,8 @@ use App\Services\Signatures\SignatureLinks;
 use App\Services\Signatures\SignaturePaymentManager;
 use App\Services\Signatures\SignaturePresenter;
 use App\Services\Signatures\SignatureRequestManager;
+use App\Services\Signatures\StorefrontMedia;
+use App\Services\Signatures\StorefrontSeo;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,12 +43,15 @@ class StorefrontController extends Controller
 {
     public function __construct(private SignaturePresenter $presenter) {}
 
-    public function show(): Response
+    public function show(StorefrontSeo $seo, StorefrontMedia $media): Response
     {
         $storefront = SignatureStorefront::current();
+        $seoData = $seo->landing($storefront, $this->products());
 
         return Inertia::render('Signatures/Storefront/Show', [
             'storefront' => $this->storefrontProps($storefront),
+            'pageTitle' => $seoData['title'],
+            'slides' => $media->slides($storefront),
             'uses' => $storefront->resolvedUses(),
             'steps' => $storefront->resolvedSteps(),
             'faqs' => $storefront->resolvedFaqs(),
@@ -65,22 +70,28 @@ class StorefrontController extends Controller
                     ->map(fn (SignatureDocumentKind $kind) => $kind->label)
                     ->values(),
             ])->values(),
-        ]);
+        ])->withViewData(['seo' => $seoData]);
     }
 
-    public function create(Request $request): Response
+    public function create(Request $request, StorefrontSeo $seo): Response
     {
         $storefront = SignatureStorefront::current();
         $products = $this->products();
+        $seoData = $seo->page(
+            'Solicita tu firma electrónica en línea',
+            'Completa tu solicitud de firma electrónica en minutos: elige tu firma, ingresa tus datos y sube tus documentos desde el celular.',
+            '/solicitud',
+        );
 
         return Inertia::render('Signatures/Storefront/Apply', [
+            'pageTitle' => $seoData['title'],
             'storefront' => $this->storefrontProps($storefront),
             'selectedProductId' => $products->firstWhere('id', $request->string('firma')->toString())?->id,
             ...$this->presenter->formOptions(
                 $products,
                 $products->mapWithKeys(fn (SignatureProduct $product) => [$product->id => $storefront->priceFor($product->id)])->all(),
             ),
-        ]);
+        ])->withViewData(['seo' => $seoData]);
     }
 
     public function store(
@@ -106,7 +117,7 @@ class StorefrontController extends Controller
             ->with('signature_request_id', $signatureRequest->id);
     }
 
-    public function received(Request $request, SignatureLinks $links): Response|RedirectResponse
+    public function received(Request $request, SignatureLinks $links, StorefrontSeo $seo): Response|RedirectResponse
     {
         $signatureRequest = SignatureRequest::query()->find($request->session()->get('signature_request_id'));
 
@@ -128,14 +139,14 @@ class StorefrontController extends Controller
                 "Hola, envié mi solicitud de firma electrónica {$code} ({$signatureRequest->product_name}). "
                 .($signatureRequest->isPaid() ? 'Quisiera saber el estado de mi trámite.' : 'Quisiera coordinar el pago.'),
             ),
-        ]);
+        ])->withViewData(['seo' => $seo->private('Solicitud recibida')]);
     }
 
     /**
      * The customer's signed payment link: bank accounts, amount and the
      * receipt upload while payment is pending; the status afterwards.
      */
-    public function payment(Request $request, SignatureRequest $signatureRequest): Response
+    public function payment(Request $request, SignatureRequest $signatureRequest, StorefrontSeo $seo): Response
     {
         $storefront = SignatureStorefront::current();
         $rejected = $signatureRequest->payments()
@@ -161,7 +172,7 @@ class StorefrontController extends Controller
                 ->mapWithKeys(fn (SignaturePaymentMethod $method) => [$method->value => $method->label]),
             // Posting back to the same signed URL keeps the signature valid.
             'action' => $request->getRequestUri(),
-        ]);
+        ])->withViewData(['seo' => $seo->private('Pago de tu firma')]);
     }
 
     public function reportPayment(
@@ -186,7 +197,7 @@ class StorefrontController extends Controller
     /**
      * Application form opened from a prepaid, single-use invitation.
      */
-    public function invitation(Request $request, SignatureInvitation $invitation): Response
+    public function invitation(Request $request, SignatureInvitation $invitation, StorefrontSeo $seo): Response
     {
         $storefront = SignatureStorefront::current();
         $products = $this->products()->where('id', $invitation->signature_product_id)->values();
@@ -202,7 +213,7 @@ class StorefrontController extends Controller
                 'action' => $request->getRequestUri(),
             ],
             ...$this->presenter->formOptions($products, [$invitation->signature_product_id => $invitation->amount]),
-        ]);
+        ])->withViewData(['seo' => $seo->private('Completa tu solicitud')]);
     }
 
     public function redeemInvitation(

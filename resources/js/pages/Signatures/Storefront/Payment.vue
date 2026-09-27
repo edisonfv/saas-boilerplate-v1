@@ -54,7 +54,7 @@ function submit() {
 </script>
 
 <template>
-    <Head :title="`Pago de ${request.code} · ${storefront.company_name}`" />
+    <Head :title="`Pago de ${request.code} | ${storefront.company_name}`" />
 
     <StorefrontShell :storefront="storefront" :show-navigation="false">
         <div class="mx-auto w-full max-w-2xl space-y-6 px-4 py-10 sm:px-6">

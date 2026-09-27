@@ -103,5 +103,8 @@ Route::middleware(['auth', 'tenant.active', 'tenant.module:signatures'])
         Route::middleware('permission:tenant.signature-storefront.update')->group(function () {
             Route::get('/sitio-web', [StorefrontSettingsController::class, 'edit'])->name('storefront.edit');
             Route::put('/sitio-web', [StorefrontSettingsController::class, 'update'])->name('storefront.update');
+            Route::post('/sitio-web/fotos', [StorefrontSettingsController::class, 'storeImage'])
+                ->middleware('throttle:20,1')
+                ->name('storefront.images.store');
         });
     });

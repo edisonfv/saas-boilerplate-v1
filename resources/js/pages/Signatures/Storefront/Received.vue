@@ -19,7 +19,7 @@ defineProps<{
 </script>
 
 <template>
-    <Head :title="`Solicitud recibida · ${storefront.company_name}`" />
+    <Head :title="`Solicitud recibida | ${storefront.company_name}`" />
 
     <StorefrontShell :storefront="storefront" :show-navigation="false">
         <div class="mx-auto w-full max-w-xl px-4 py-16 text-center sm:px-6">

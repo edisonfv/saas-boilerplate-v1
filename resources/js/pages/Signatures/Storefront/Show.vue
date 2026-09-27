@@ -2,6 +2,7 @@
 import { Head, Link } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import Icon from '@/components/Icon.vue';
+import HeroSlider from '@/components/signatures/HeroSlider.vue';
 import StorefrontShell from '@/components/signatures/StorefrontShell.vue';
 import { money } from '@/lib/signatures';
 import type { StorefrontInfo } from '@/lib/signatures';
@@ -11,6 +12,9 @@ import type { IconName } from '@/types/icon';
 
 const props = defineProps<{
     storefront: StorefrontInfo;
+    /** Complete "Page | Company" title (App\Services\Signatures\StorefrontSeo). */
+    pageTitle: string;
+    slides: { id: string; url: string; alt: string }[];
     products: {
         id: string;
         name: string;
@@ -50,15 +54,13 @@ const useIcons: IconName[] = ['currency', 'pencil', 'building', 'shield'];
 </script>
 
 <template>
-    <Head :title="`Firma electrónica · ${storefront.company_name}`" />
+    <Head :title="pageTitle" />
 
     <StorefrontShell :storefront="storefront">
         <!-- Hero -->
-        <section
-            class="bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white"
-        >
+        <HeroSlider :slides="slides">
             <div
-                class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-5 md:py-24"
+                class="mx-auto grid w-full max-w-6xl gap-10 px-4 py-16 sm:px-6 md:grid-cols-5 md:py-28"
             >
                 <div class="md:col-span-3">
                     <p class="eyebrow text-primary-100">
@@ -138,7 +140,7 @@ const useIcons: IconName[] = ['currency', 'pencil', 'building', 'shield'];
                     </div>
                 </div>
             </div>
-        </section>
+        </HeroSlider>
 
         <!-- Uses -->
         <section

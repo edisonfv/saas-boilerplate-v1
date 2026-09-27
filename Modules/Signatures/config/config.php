@@ -22,6 +22,12 @@ return [
     'documents_disk' => 'local',
 
     /*
+    | Disk (tenant-suffixed by FilesystemTenancyBootstrapper) for the public
+    | website's banner photos, served with stancl's tenant_asset() route.
+    */
+    'media_disk' => 'public',
+
+    /*
     | Max upload size per document, in kilobytes (Uanataca accepts 13 MB for
     | identity images and up to 35 MB for company deeds).
     */

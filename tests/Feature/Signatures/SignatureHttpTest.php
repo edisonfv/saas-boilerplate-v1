@@ -290,22 +290,6 @@ test('each section entry needs its texts', function () {
         ->assertSessionHasErrors('faqs.0.answer');
 });
 
-/**
- * A valid storefront settings payload (the editor always sends every list).
- *
- * @return array<string, mixed>
- */
-function storefrontSettings(): array
-{
-    return [
-        'headline' => 'Tu firma hoy',
-        'uses' => SignatureStorefront::DefaultUses,
-        'steps' => SignatureStorefront::DefaultSteps,
-        'faqs' => SignatureStorefront::DefaultFaqs,
-        'bank_accounts' => [],
-    ];
-}
-
 // --- Central console ---------------------------------------------------------
 
 test('billing staff affiliates a tenant and sells it a prepaid package', function () {

@@ -8,6 +8,7 @@ use App\Models\CentralUser;
 use App\Models\Plan;
 use App\Models\SignatureProduct;
 use App\Models\SignatureRequest;
+use App\Models\SignatureStorefront;
 use App\Models\SupportTechnician;
 use App\Models\Tenant;
 use App\Models\User;
@@ -181,11 +182,13 @@ function seedSignatures(): void
 
     config([
         'signatures.documents_disk' => 'signature-documents',
+        'signatures.media_disk' => 'signature-media',
         'services.uanataca.base_url' => 'https://uanataca.test',
         'services.uanataca.token' => 'provider-token',
         'services.uanataca.webhook_token' => 'webhook-secret',
     ]);
     Storage::fake('signature-documents');
+    Storage::fake('signature-media');
 }
 
 function signatureProduct(string $validity = 'OneYear'): SignatureProduct
@@ -265,4 +268,21 @@ function signatureDraft(Tenant $tenant, ?array $documents = null, bool $paid = t
         actorName: 'Operador',
         paymentStatus: $paid ? SignaturePaymentStatus::Paid() : SignaturePaymentStatus::Pending(),
     ));
+}
+
+/**
+ * A valid storefront settings payload (the editor always sends every list).
+ *
+ * @return array<string, mixed>
+ */
+function storefrontSettings(): array
+{
+    return [
+        'headline' => 'Tu firma hoy',
+        'uses' => SignatureStorefront::DefaultUses,
+        'steps' => SignatureStorefront::DefaultSteps,
+        'faqs' => SignatureStorefront::DefaultFaqs,
+        'bank_accounts' => [],
+        'hero_slides' => [],
+    ];
 }

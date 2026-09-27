@@ -12,6 +12,8 @@ import tenant from '@/routes/tenant';
 const props = defineProps<
     SignatureFormOptions & {
         storefront: StorefrontInfo;
+        /** Server-computed title (absent on private invitation links). */
+        pageTitle?: string;
         selectedProductId: string | null;
         /** Present when opened from a prepaid single-use link. */
         invitation?: {
@@ -40,7 +42,11 @@ const options = computed<SignatureFormOptions>(() => ({
 </script>
 
 <template>
-    <Head :title="`Solicita tu firma · ${storefront.company_name}`" />
+    <Head
+        :title="
+            pageTitle ?? `Completa tu solicitud | ${storefront.company_name}`
+        "
+    />
 
     <StorefrontShell :storefront="storefront" :show-navigation="false">
         <div class="mx-auto w-full max-w-6xl px-4 py-10 sm:px-6">

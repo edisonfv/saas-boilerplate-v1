@@ -24,13 +24,30 @@ use Illuminate\Database\Eloquent\Model;
  * @property list<array{title: string, text: string}>|null $steps
  * @property list<array{question: string, answer: string}>|null $faqs
  * @property list<array{bank: string, account_type: string, number: string, holder: string, holder_id: string}>|null $bank_accounts
+ * @property list<array{id: string, path: string, alt: string}>|null $hero_slides
+ * @property string|null $seo_title
+ * @property string|null $seo_description
  * @property CarbonImmutable|null $created_at
  * @property CarbonImmutable|null $updated_at
  */
-#[Fillable(['headline', 'description', 'contact_email', 'contact_phone', 'whatsapp', 'whatsapp_message', 'prices', 'uses', 'steps', 'faqs', 'bank_accounts'])]
+#[Fillable([
+    'headline', 'description', 'contact_email', 'contact_phone', 'whatsapp', 'whatsapp_message', 'prices', 'uses',
+    'steps', 'faqs', 'bank_accounts', 'hero_slides', 'seo_title', 'seo_description',
+])]
 class SignatureStorefront extends Model
 {
     public const DefaultWhatsappMessage = 'Hola, quiero información para obtener mi firma electrónica.';
+
+    /** Photos the main banner (slider) can hold. */
+    public const MaxHeroSlides = 5;
+
+    /**
+     * @return list<array{id: string, path: string, alt: string}>
+     */
+    public function heroSlides(): array
+    {
+        return $this->hero_slides ?? [];
+    }
 
     /**
      * Default copy of the editable sections, used while the tenant hasn't
@@ -131,6 +148,7 @@ class SignatureStorefront extends Model
             'steps' => 'array',
             'faqs' => 'array',
             'bank_accounts' => 'array',
+            'hero_slides' => 'array',
         ];
     }
 }
