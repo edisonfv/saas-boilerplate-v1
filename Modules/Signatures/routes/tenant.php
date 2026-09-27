@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Signatures\Http\Controllers\SignatureInvitationController;
 use Modules\Signatures\Http\Controllers\SignaturePaymentController;
 use Modules\Signatures\Http\Controllers\SignatureRequestController;
+use Modules\Signatures\Http\Controllers\SignatureSettlementController;
 use Modules\Signatures\Http\Controllers\StorefrontController;
 use Modules\Signatures\Http\Controllers\StorefrontSettingsController;
 
@@ -22,8 +23,10 @@ use Modules\Signatures\Http\Controllers\StorefrontSettingsController;
 |
 */
 
-// Public website on the tenant's subdomain (guests).
-Route::middleware(['tenant.active', 'tenant.module:signatures'])
+// Public website on the tenant's subdomain (guests). It keeps taking orders
+// when the tenant's subscription lapsed (only a suspension closes it): the
+// pending orders are what motivates the renewal.
+Route::middleware(['tenant.active:allow-lapsed', 'tenant.module:signatures,allow-lapsed'])
     ->name('tenant.signatures.storefront.')
     ->group(function () {
         Route::get('/solicitud', [StorefrontController::class, 'create'])->name('create');
@@ -98,6 +101,11 @@ Route::middleware(['auth', 'tenant.active', 'tenant.module:signatures'])
             Route::post('/enlaces-prepagados/{invitation}/reenviar', [SignatureInvitationController::class, 'resend'])
                 ->middleware('throttle:10,1')
                 ->name('invitations.resend');
+        });
+
+        Route::middleware('permission:tenant.signature-requests.settlement')->group(function () {
+            Route::get('/liquidacion', [SignatureSettlementController::class, 'index'])->name('settlement.index');
+            Route::get('/liquidacion/exportar', [SignatureSettlementController::class, 'export'])->name('settlement.export');
         });
 
         Route::middleware('permission:tenant.signature-storefront.update')->group(function () {

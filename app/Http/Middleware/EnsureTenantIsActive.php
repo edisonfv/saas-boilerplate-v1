@@ -17,7 +17,9 @@ use Symfony\Component\HttpFoundation\Response;
  * or expired). Instead of a bare 403 the user sees a "workspace disabled"
  * page explaining why, and can still log out. Tenants without any
  * subscription keep the baseline General module (module routes are already
- * gated by "tenant.module").
+ * gated by "tenant.module"). With the "allow-lapsed" option only a
+ * suspension blocks: used by the public signatures website, which keeps
+ * taking orders while the tenant renews.
  */
 class EnsureTenantIsActive
 {
@@ -26,7 +28,7 @@ class EnsureTenantIsActive
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next, ?string $option = null): Response
     {
         $tenant = tenant();
 
@@ -34,6 +36,10 @@ class EnsureTenantIsActive
 
         if (! $tenant->operationalStatus()->equals(TenantStatus::Active())) {
             return $this->disabled($request, TenantAccessBlockReason::Suspended(), null);
+        }
+
+        if ($option === 'allow-lapsed') {
+            return $next($request);
         }
 
         $subscription = tenancy()->central(fn (): ?Subscription => $tenant->subscription()->first());

@@ -28,6 +28,7 @@ final class SignaturesPermissions
                 'special' => [
                     'submit' => 'Enviar solicitudes de firma a la entidad certificadora',
                     'payments' => 'Registrar, confirmar y rechazar pagos; crear enlaces prepagados',
+                    'settlement' => 'Ver y exportar la liquidación y rentabilidad de la venta de firmas',
                 ],
             ],
             'signature-storefront' => [
