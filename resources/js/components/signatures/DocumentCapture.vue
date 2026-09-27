@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue';
 import Icon from '@/components/Icon.vue';
+import CameraDialog from '@/components/signatures/CameraDialog.vue';
 import { preparePhoto } from '@/lib/signatures';
 import type { DocumentKindOption } from '@/lib/signatures';
 import { ui } from '@/lib/ui';
 
 /**
- * One document slot of a signature application, built for phones: photo
- * slots offer "Tomar foto" (opens the camera directly, front camera for
- * the selfie) and "Elegir de la galería"; PDF slots a file picker. Photos
- * are previewed and normalized (scaled down, JPEG) before being emitted.
+ * One document slot of a signature application: photo slots offer "Tomar
+ * foto" (the phone's camera app, or the webcam in a dialog on computers;
+ * front camera for the selfie) and "Elegir de la galería"; PDF slots a
+ * file picker. Photos are previewed and normalized (scaled down, JPEG)
+ * before being emitted.
  */
 const props = defineProps<{
     document: DocumentKindOption;
@@ -35,6 +37,7 @@ const localError = ref<string | null>(null);
 const previewUrl = ref<string | null>(null);
 const cameraInput = ref<HTMLInputElement | null>(null);
 const galleryInput = ref<HTMLInputElement | null>(null);
+const cameraOpen = ref(false);
 
 const galleryAccept = computed(() =>
     [
@@ -57,15 +60,7 @@ function setPreview(file: File | null) {
             : null;
 }
 
-async function onPicked(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const picked = input.files?.[0];
-    input.value = '';
-
-    if (!picked) {
-        return;
-    }
-
+async function accept(picked: File) {
     localError.value = null;
 
     if (
@@ -95,6 +90,45 @@ async function onPicked(event: Event) {
     } finally {
         processing.value = false;
     }
+}
+
+function onPicked(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const picked = input.files?.[0];
+    input.value = '';
+
+    if (picked) {
+        accept(picked);
+    }
+}
+
+/**
+ * Phones and tablets open their native camera app through the input's
+ * `capture` attribute; desktop browsers ignore it (they'd just show the
+ * file picker), so computers get the in-page webcam dialog instead.
+ */
+function takePhoto() {
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+    const canStreamCamera =
+        window.isSecureContext && Boolean(navigator.mediaDevices?.getUserMedia);
+
+    if (isTouchDevice || !canStreamCamera) {
+        cameraInput.value?.click();
+
+        return;
+    }
+
+    cameraOpen.value = true;
+}
+
+function onCameraCapture(photo: File) {
+    cameraOpen.value = false;
+    accept(photo);
+}
+
+function onCameraFallback() {
+    cameraOpen.value = false;
+    galleryInput.value?.click();
 }
 
 function clear() {
@@ -170,7 +204,7 @@ onBeforeUnmount(() => setPreview(null));
                 type="button"
                 :disabled="processing"
                 :class="[ui.buttonPrimary, 'h-11 w-full']"
-                @click="cameraInput?.click()"
+                @click="takePhoto"
             >
                 <Icon name="camera" class="size-4.5" />
                 {{
@@ -219,6 +253,15 @@ onBeforeUnmount(() => setPreview(null));
             class="hidden"
             :aria-label="`Elegir archivo: ${document.label}`"
             @change="onPicked"
+        />
+
+        <CameraDialog
+            v-if="cameraOpen && document.capture"
+            :title="document.label"
+            :facing-mode="document.capture"
+            @capture="onCameraCapture"
+            @close="cameraOpen = false"
+            @fallback="onCameraFallback"
         />
 
         <p v-if="processing" class="mt-2 text-xs text-ink-500">
