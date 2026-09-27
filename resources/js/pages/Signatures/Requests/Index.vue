@@ -112,7 +112,7 @@ function applyFilters() {
                     />
                     <select
                         v-model="status"
-                        :class="[ui.input, 'sm:w-48']"
+                        class="form-control w-full sm:w-48"
                         @change="applyFilters"
                     >
                         <option value="">Todos los estados</option>

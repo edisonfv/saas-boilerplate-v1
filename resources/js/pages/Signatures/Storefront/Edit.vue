@@ -144,7 +144,8 @@ defineProps<{
                                 :placeholder="
                                     product.suggested_retail_price ?? ''
                                 "
-                                :class="[ui.input, 'w-32 text-right']"
+                                :aria-label="`Precio de ${product.name}`"
+                                class="form-control w-32 shrink-0 text-right"
                             />
                         </li>
                     </ul>
