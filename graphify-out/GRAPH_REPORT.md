@@ -1,34 +1,39 @@
-# Graph Report - saas-boilerplate  (2026-09-20)
+# Graph Report - signature-project  (2026-09-27)
 
 ## Corpus Check
-- 349 files · ~84,246 words
+- 639 files · ~169,564 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1894 nodes · 3112 edges · 199 communities (119 shown, 29 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 9 edges (avg confidence: 0.85)
+- 3589 nodes · 8117 edges · 266 communities (167 shown, 35 thin omitted)
+- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 50 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
+
+## Graph Freshness
+- Built from commit: `c6b66147`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
 - RouteServiceProvider
 - devDependencies
-- Subscription
+- TenantPlanSubscriber
 - scripts
-- Illuminate\Database\Eloquent\Factories\HasFactory
+- Illuminate\Database\Eloquent\Relations\BelongsTo
 - CentralUser
-- useListingFilters
+- Badge.vue
 - compilerOptions
-- CentralLayout.vue
-- Controller
+- ui.ts
+- Illuminate\Http\RedirectResponse
 - Illuminate\Database\Eloquent\Factories\Factory
 - AGENTS.md
-- Tenants/Index.vue
+- Tenants/Show.vue
 - bootstrap/app.php
 - dependencies
-- Illuminate\Database\Seeder
-- Role
-- Plan
-- Card.vue
+- Module
+- Illuminate\Contracts\Queue\ShouldQueue
+- BillingPeriod
+- Icon.vue
 - Inertia v3 Features
 - Feature
 - User
@@ -36,63 +41,69 @@
 - General/composer.json
 - CLAUDE.md
 - StoreTenantRequest
-- ProfileUpdateRequest
+- Central/Support/Tickets/Show.vue
 - SubscriptionModuleChanged
 - Tenant
 - TenantEntitlements
 - Action
-- Illuminate\Database\Eloquent\Attributes\Fillable
-- General/app/Http/Controllers/RoleController.php
+- Plan
+- RegisterSignaturePaymentRequest
 - PasswordResetLinkRequest
-- AppearanceToggle.vue
-- GeneralLayout.vue
-- SyncTenantPermissions.php
+- useAppearance.ts
+- AppShell.vue
+- SubscriptionChangeStatus
 - require-dev
 - Inertia v3 Features
 - global.d.ts
-- Closure
-- CacheTenancyBootstrapper
+- Symfony\Component\HttpFoundation\Response
+- tenancy.php
 - require
 - composer.json
-- LoginRequest
+- CentralLoginRequest
 - devDependencies
-- Inertia\Response
+- LimitType
 - Illuminate\Database\Migrations\Migration
-- CentralAuthShell.vue
+- Central/Dashboard.vue
 - devDependencies
-- Permission
+- Role
 - config
-- EventServiceProvider
+- Illuminate\Database\Schema\Blueprint
+- signatures.ts
+- Illuminate\Foundation\Support\Providers\EventServiceProvider
 - UsesUuidPrimaryKey
-- AppServiceProvider.php
+- SupportTicketManager.php
 - extra
 - Nwidart\Modules\Support\ModuleServiceProvider
 - Pest.php
-- CentralLoginRequest
+- SignatureRequest
 - Gestión de planes, módulos y permisos (multi-tenant)
 - Quick Reference
 - psr-4
 - logging.php
-- Illuminate\Http\RedirectResponse
+- SupportTicket
 - Quick Reference
 - Pest Testing 4
-- Module
+- SignatureAccount
 - Pest Testing 4
-- Plans/Index.vue
-- Badge.vue
-- Illuminate\Support\Carbon
-- FeatureController.php
-- Subscription.php
-- AppServiceProvider
-- UserFactory
-- PlanLimitPivot.php
-- keywords
+- DocumentCapture.vue
+- cn
+- Carbon\CarbonImmutable
+- Illuminate\Support\Facades\DB
+- Illuminate\Database\Eloquent\Relations\HasMany
+- Schedule/Index.vue
+- TicketPriority
+- CatalogSeeder.php
+- SignatureApplicationForm.vue
 - modules.php
-- Illuminate\Database\Schema\Blueprint
 - Illuminate\Support\Facades\Schema
+- SupportAppointment
+- SignaturePaymentStatus
 - console.php
-- NewPasswordRequest
-- StoreFeatureRequest
+- SignatureProduct
+- StoreTenantRequest.php
+- SignatureProviderRequest
+- Illuminate\Database\Eloquent\Model
+- ScheduleController
 - eslint.config.js
 - Tailwind CSS Development
 - laravel-boost
@@ -101,7 +112,10 @@
 - Architecture Best Practices
 - Security Best Practices
 - vue-shims.d.ts
-- TenancyServiceProvider.php
+- AppServiceProvider.php
+- Attachment
+- AccountController
+- SignatureInvitation
 - Architecture Best Practices
 - Security Best Practices
 - Queue & Job Best Practices
@@ -111,8 +125,8 @@
 - Database Performance Best Practices
 - Events & Notifications Best Practices
 - Wayfinder Development
-- TenantLimitGuard
-- StoreLimitTypeRequest
+- SignatureProvider
+- AttachmentStore
 - Advanced Query Patterns
 - Database Performance Best Practices
 - Events & Notifications Best Practices
@@ -138,139 +152,184 @@
 - Routing & Controllers Best Practices
 - Conventions & Style
 - Validation & Forms Best Practices
-- StorePlanRequest
+- Spatie\Enum\Laravel\Enum
 - Collection Best Practices
 - HTTP Client Best Practices
 - Mail Best Practices
 - Routing & Controllers Best Practices
 - Conventions & Style
 - Validation & Forms Best Practices
-- Tenants/Create.vue
+- SignatureApplicantType
 - Configuration Best Practices
 - Configuration Best Practices
-- UpdateFeatureRequest
+- TicketBillingMode
+- SignatureStorefront
 - Q: Determinar debilidades para gestionar tenants empresariales y comercializar productos de software como firma electronica, ISO, privacidad y ensenanza
-- UpdateLimitTypeRequest
-- UpdatePlanRequest
+- SignatureValidity
+- SignatureDocumentKind
 - Illuminate\Foundation\Http\FormRequest
-- UpdateStaffRolesRequest
-- eslint-import-resolver-typescript
-- @vue/eslint-config-typescript
-- Illuminate\Http\Request
+- RetailPriceFloor
+- StorefrontMedia
+- devDependencies
+- devDependencies
+- SignaturePaymentMethod
+- Signatures/composer.json
+- Support/composer.json
+- BannerPhotosCard.vue
+- Money
 - Illuminate\Support\Facades\Route
+- WeeklyHoursEditor.vue
+- Sales/Index.vue
+- SignatureRequestController
+- SignatureSettlementRequest
+- TicketController
+- TenantStatus
+- TicketAuthorType
+- StorefrontSeo
+- UanatacaSignatureProvider
+- SupportCalendar
+- TicketRatingForm.vue
+- Illuminate\Database\Eloquent\Relations\HasOne
+- Closure
+- PublicTicketController
+- TimeField.vue
+- .disabled
+- SupportLinks
+- ci:check
+- setup
+- EditableListCard.vue
+- UanatacaPayloadMapper
+- SeoCard.vue
+- useSidebar.ts
+- HandleInertiaRequests.php
+- test
+- 2026_09_27_173253_add_margins_to_signature_sales.php
+- .storeBlackout
+- RouteServiceProvider
+- RouteServiceProvider
+- HeroSlider.vue
+- createTechnician
+- migrations/2026_09_26_214346_use_morph_aliases_for_permission_models.php
+- VerifyEmailController.php
+- ProviderWebhookController.php
+- format
+- days
+- tailwind-merge
+- prettier-plugin-tailwindcss
+- WeeklyWindow
 
 ## God Nodes (most connected - your core abstractions)
-1. `Tenant` - 71 edges
-2. `Module` - 55 edges
-3. `Plan` - 49 edges
-4. `Role` - 46 edges
-5. `Controller` - 45 edges
-6. `CentralUser` - 43 edges
-7. `BillingPeriod` - 39 edges
-8. `UsesUuidPrimaryKey` - 34 edges
-9. `TenantEntitlements` - 30 edges
-10. `Permission` - 24 edges
+1. `Tenant` - 145 edges
+2. `SupportTicket` - 121 edges
+3. `Controller` - 85 edges
+4. `UsesUuidPrimaryKey` - 82 edges
+5. `SignatureRequest` - 80 edges
+6. `CentralUser` - 78 edges
+7. `SignatureProduct` - 73 edges
+8. `Module` - 62 edges
+9. `Plan` - 55 edges
+10. `SupportActor` - 55 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `createRoleTestTenant()` --calls--> `Tenant`  [EXTRACTED]
   tests/Feature/Tenant/RoleCrudTest.php → app/Models/Tenant.php
 - `createUserTestTenant()` --calls--> `Tenant`  [EXTRACTED]
   tests/Feature/Tenant/UserCrudTest.php → app/Models/Tenant.php
-- `AuthenticatedSessionController` --inherits--> `Controller`  [EXTRACTED]
-  Modules/Central/app/Http/Controllers/Auth/AuthenticatedSessionController.php → app/Http/Controllers/Controller.php
-- `NewPasswordController` --inherits--> `Controller`  [EXTRACTED]
-  Modules/Central/app/Http/Controllers/Auth/NewPasswordController.php → app/Http/Controllers/Controller.php
+- `AttachmentController` --inherits--> `Controller`  [EXTRACTED]
+  Modules/Central/app/Http/Controllers/AttachmentController.php → app/Http/Controllers/Controller.php
 - `RegisteredUserController` --inherits--> `Controller`  [EXTRACTED]
   Modules/Central/app/Http/Controllers/Auth/RegisteredUserController.php → app/Http/Controllers/Controller.php
+- `VerifyEmailController` --inherits--> `Controller`  [EXTRACTED]
+  Modules/Central/app/Http/Controllers/Auth/VerifyEmailController.php → app/Http/Controllers/Controller.php
 
 ## Import Cycles
 - None detected.
 
-## Communities (199 total, 29 thin omitted)
+## Communities (266 total, 35 thin omitted)
 
 ### Community 0 - "RouteServiceProvider"
-Cohesion: 0.23
+Cohesion: 0.25
 Nodes (3): Illuminate\Foundation\Support\Providers\RouteServiceProvider, RouteServiceProvider, RouteServiceProvider
 
 ### Community 1 - "devDependencies"
-Cohesion: 0.08
-Nodes (25): eslint, eslint-config-prettier, @eslint/js, eslint-plugin-import, eslint-plugin-vue, @laravel/vite-plugin-wayfinder, devDependencies, eslint (+17 more)
+Cohesion: 0.07
+Nodes (27): eslint, eslint-config-prettier, eslint-import-resolver-typescript, @eslint/js, eslint-plugin-import, eslint-plugin-vue, @laravel/vite-plugin-wayfinder, devDependencies (+19 more)
 
-### Community 2 - "Subscription"
-Cohesion: 0.11
-Nodes (11): ModuleActivationAction, ModuleSource, SubscriptionChangeStatus, SubscriptionChangeType, SubscriptionStatus, Subscription, Carbon\CarbonImmutable, CarbonImmutable (+3 more)
+### Community 2 - "TenantPlanSubscriber"
+Cohesion: 0.16
+Nodes (7): SubscriptionStatus, Subscription, CarbonImmutable, TenantPlanSubscriber, SubscriptionFactory, SubscriptionModuleFactory, Illuminate\Support\Facades\Cache
 
 ### Community 3 - "scripts"
-Cohesion: 0.05
-Nodes (39): scripts, ci:check, dev, lint, lint:check, post-autoload-dump, post-create-project-cmd, post-root-package-install (+31 more)
+Cohesion: 0.11
+Nodes (18): scripts, lint, lint:check, post-autoload-dump, post-create-project-cmd, post-update-cmd, pre-package-uninstall, types:check (+10 more)
 
-### Community 4 - "Illuminate\Database\Eloquent\Factories\HasFactory"
-Cohesion: 0.16
-Nodes (8): ModulePermission, ModulePrice, PlanPrice, SubscriptionChange, SubscriptionModule, Illuminate\Database\Eloquent\Factories\HasFactory, Illuminate\Database\Eloquent\Model, Illuminate\Database\Eloquent\Relations\BelongsTo
+### Community 4 - "Illuminate\Database\Eloquent\Relations\BelongsTo"
+Cohesion: 0.08
+Nodes (6): SignatureRequestDocument, SignatureRequestEvent, SubscriptionChange, SubscriptionModule, SupportRating, Illuminate\Database\Eloquent\Relations\BelongsTo
 
 ### Community 5 - "CentralUser"
-Cohesion: 0.14
-Nodes (9): CentralUser, CentralAclSeeder, featureManager(), limitTypeManager(), moduleManager(), planManager(), roleManager(), staffManager() (+1 more)
-
-### Community 6 - "useListingFilters"
 Cohesion: 0.09
-Nodes (25): PaginationLink, useListingFilters(), reload(), toggleSort(), FeatureRow, props, { search, toggleSort, sortIndicator }, LimitTypeRow (+17 more)
+Nodes (13): CentralUser, CentralAclSeeder, Illuminate\Support\Facades\Hash, RegisteredUserController, StaffController, RegisterCentralUserRequest, featureManager(), limitTypeManager() (+5 more)
+
+### Community 6 - "Badge.vue"
+Cohesion: 0.06
+Nodes (41): BadgeTone, props, toneClasses, PaginationLink, useListingFilters(), reload(), toggleSort(), FeatureRow (+33 more)
 
 ### Community 7 - "compilerOptions"
 Cohesion: 0.07
 Nodes (28): DOM, DOM.Iterable, ESNext, resources/js/**/*.d.ts, resources/js/**/*.ts, resources/js/**/*.tsx, resources/js/**/*.vue, vite/client (+20 more)
 
-### Community 8 - "CentralLayout.vue"
-Cohesion: 0.10
-Nodes (16): allNavigationSections, authUser, can(), collapseLabel, currentPath, isMobileNavigationOpen, isSidebarCollapsed, isUserMenuOpen (+8 more)
+### Community 8 - "ui.ts"
+Cohesion: 0.04
+Nodes (49): copied, { dateTime }, method, pendingReceipt, props, registering, rejecting, emit (+41 more)
 
-### Community 9 - "Controller"
-Cohesion: 0.11
-Nodes (11): Controller, Illuminate\Foundation\Auth\EmailVerificationRequest, ConfirmablePasswordController, EmailVerificationNotificationController, EmailVerificationPromptController, PasswordController, PasswordResetLinkController, VerifyEmailController (+3 more)
+### Community 9 - "Illuminate\Http\RedirectResponse"
+Cohesion: 0.07
+Nodes (23): Controller, HomeController, Illuminate\Auth\Events\PasswordReset, Illuminate\Http\RedirectResponse, Illuminate\Http\Request, Illuminate\Pagination\LengthAwarePaginator, Illuminate\Support\Facades\Password, Illuminate\Validation\ValidationException (+15 more)
 
 ### Community 10 - "Illuminate\Database\Eloquent\Factories\Factory"
-Cohesion: 0.23
-Nodes (5): LimitTypeFactory, ModulePriceFactory, PlanFactory, SubscriptionFactory, Illuminate\Database\Eloquent\Factories\Factory
+Cohesion: 0.08
+Nodes (13): CentralUserFactory, FeatureFactory, LimitTypeFactory, ModuleFactory, static, ModulePriceFactory, PlanFactory, PlanPriceFactory (+5 more)
 
 ### Community 11 - "AGENTS.md"
 Cohesion: 0.06
-Nodes (31): APIs & Eloquent Resources, Application Structure & Architecture, Artisan, Conventions, Deployment, Do Things the Laravel Way, Documentation Files, Enums (+23 more)
+Nodes (33): APIs & Eloquent Resources, Application Structure & Architecture, Artisan, Conventions, Deployment, Do Things the Laravel Way, Documentation Files, Enums (+25 more)
 
-### Community 12 - "Tenants/Index.vue"
-Cohesion: 0.14
-Nodes (13): BadgeTone, subscriptionStatusTone(), props, { search, toggleSort, sortIndicator, reload }, status, TenantRow, Entitlements, isActive (+5 more)
+### Community 12 - "Tenants/Show.vue"
+Cohesion: 0.13
+Nodes (16): { can }, props, tabs, TenantHeaderData, usePermissions(), can(), BadgeTone, subscriptionStatusTone() (+8 more)
 
 ### Community 13 - "bootstrap/app.php"
 Cohesion: 0.14
-Nodes (10): HandleInertiaRequests, Illuminate\Foundation\Application, Illuminate\Foundation\Configuration\Exceptions, Illuminate\Foundation\Configuration\Middleware, Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets, Inertia\Middleware, Spatie\Permission\Middleware\PermissionMiddleware, Spatie\Permission\Middleware\RoleMiddleware (+2 more)
+Nodes (10): HandleAppearance, Illuminate\Foundation\Application, Illuminate\Foundation\Configuration\Exceptions, Illuminate\Foundation\Configuration\Middleware, Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets, Illuminate\Support\Facades\View, Spatie\Permission\Middleware\PermissionMiddleware, Spatie\Permission\Middleware\RoleMiddleware (+2 more)
 
 ### Community 14 - "dependencies"
-Cohesion: 0.08
-Nodes (25): clsx, concurrently, @inertiajs/vite, @inertiajs/vue3, dependencies, clsx, concurrently, @inertiajs/vite (+17 more)
+Cohesion: 0.07
+Nodes (27): clsx, concurrently, date-fns, @inertiajs/vite, @inertiajs/vue3, dependencies, clsx, concurrently (+19 more)
 
-### Community 15 - "Illuminate\Database\Seeder"
-Cohesion: 0.18
-Nodes (7): DatabaseSeeder, GeneralModuleSeeder, TenantDatabaseSeeder, Illuminate\Database\Console\Seeds\WithoutModelEvents, Illuminate\Database\Seeder, CentralDatabaseSeeder, GeneralDatabaseSeeder
+### Community 15 - "Module"
+Cohesion: 0.09
+Nodes (12): Module, DatabaseSeeder, GeneralModuleSeeder, TenantDatabaseSeeder, Illuminate\Database\Console\Seeds\WithoutModelEvents, Illuminate\Database\Seeder, ModuleController, CentralDatabaseSeeder (+4 more)
 
-### Community 16 - "Role"
-Cohesion: 0.11
-Nodes (8): Role, RegisteredUserController, RoleController, StaffController, RegisterCentralUserRequest, StoreRoleRequest, UpdateRoleRequest, Spatie\Permission\Models\Role
+### Community 16 - "Illuminate\Contracts\Queue\ShouldQueue"
+Cohesion: 0.06
+Nodes (24): InvitationSent, MailMessage, PaymentLinkSent, MailMessage, PaymentReviewed, MailMessage, AppointmentBooked, MailMessage (+16 more)
 
-### Community 17 - "Plan"
-Cohesion: 0.18
-Nodes (7): BillingPeriod, Plan, TenantPlanSubscriber, PlanPriceFactory, CatalogSeeder, Illuminate\Database\QueryException, Symfony\Component\HttpKernel\Exception\HttpException
+### Community 17 - "BillingPeriod"
+Cohesion: 0.17
+Nodes (6): BillingPeriod, ModuleSource, SubscriptionChangeType, CatalogSeeder, Illuminate\Database\QueryException, Symfony\Component\HttpKernel\Exception\HttpException
 
-### Community 18 - "Card.vue"
-Cohesion: 0.12
-Nodes (10): paths, props, props, props, props, props, PermissionGroup, PermissionGroup (+2 more)
+### Community 18 - "Icon.vue"
+Cohesion: 0.06
+Nodes (31): attrs, paths, props, sections, CentralSignatureProduct, props, props, props (+23 more)
 
 ### Community 19 - "Inertia v3 Features"
 Cohesion: 0.07
 Nodes (27): Basic Link Component, Basic Usage, Client-Side Navigation, Common Pitfalls, Deferred Props, Documentation, Form Component (Recommended), Form Component Reset Props (+19 more)
 
 ### Community 21 - "User"
-Cohesion: 0.24
-Nodes (6): User, Illuminate\Foundation\Auth\User, createRoleTestOwner(), createRoleTestTenant(), createUserTestOwner(), createUserTestTenant()
+Cohesion: 0.12
+Nodes (11): User, AttachmentPolicy, SupportTicketPolicy, Illuminate\Auth\Access\Response, Illuminate\Foundation\Auth\User, DashboardController, UserController, createRoleTestOwner() (+3 more)
 
 ### Community 22 - "Central/composer.json"
 Cohesion: 0.12
@@ -282,43 +341,43 @@ Nodes (15): authors, autoload, autoload-dev, psr-4, psr-4, description, extra, l
 
 ### Community 24 - "CLAUDE.md"
 Cohesion: 0.07
-Nodes (27): APIs & Eloquent Resources, Application Structure & Architecture, Artisan, Conventions, Deployment, Do Things the Laravel Way, Documentation Files, Enums (+19 more)
+Nodes (29): APIs & Eloquent Resources, Application Structure & Architecture, Artisan, Conventions, Deployment, Do Things the Laravel Way, Documentation Files, Enums (+21 more)
+
+### Community 26 - "Central/Support/Tickets/Show.vue"
+Cohesion: 0.06
+Nodes (44): { date, time }, props, RequesterTicket, { dateTime }, appointmentStatusTone(), BadgeTone, formatBytes(), formatMinutes() (+36 more)
 
 ### Community 27 - "SubscriptionModuleChanged"
-Cohesion: 0.13
-Nodes (9): SubscriptionModuleChanged, SyncTenantModulePermissionsOnActivation, TenantModulePermissionSyncer, Illuminate\Contracts\Events\ShouldDispatchAfterCommit, Illuminate\Contracts\Queue\ShouldQueue, Illuminate\Foundation\Events\Dispatchable, Illuminate\Queue\SerializesModels, Illuminate\Support\Collection (+1 more)
+Cohesion: 0.21
+Nodes (6): ModuleActivationAction, SubscriptionModuleChanged, SyncTenantModulePermissionsOnActivation, Illuminate\Contracts\Events\ShouldDispatchAfterCommit, Illuminate\Foundation\Events\Dispatchable, Illuminate\Queue\SerializesModels
 
 ### Community 28 - "Tenant"
-Cohesion: 0.12
-Nodes (11): TenantStatus, Tenant, TenantProvisioner, Illuminate\Database\Eloquent\Builder, Illuminate\Database\Eloquent\Relations\HasOne, TenantController, Stancl\Tenancy\Contracts\TenantWithDatabase, Stancl\Tenancy\Database\Concerns\HasDatabase (+3 more)
+Cohesion: 0.14
+Nodes (10): Tenant, Illuminate\Support\Facades\File, Illuminate\Support\Facades\Vite, Stancl\Tenancy\Contracts\TenantWithDatabase, Stancl\Tenancy\Database\Concerns\HasDatabase, Stancl\Tenancy\Database\Concerns\HasDomains, Stancl\Tenancy\Database\Models\Tenant, signedPath() (+2 more)
 
 ### Community 29 - "TenantEntitlements"
-Cohesion: 0.21
-Nodes (4): EnsureTenantHasFeature, EnsureTenantHasModule, InvalidateTenantEntitlementsCache, TenantEntitlements
+Cohesion: 0.11
+Nodes (6): SeoController, InvalidateTenantEntitlementsCache, SupportSla, TenantEntitlements, TenantLimitGuard, Illuminate\Http\Response
 
 ### Community 30 - "Action"
-Cohesion: 0.13
-Nodes (6): Action, ModulePermissionFactory, StoreModuleRequest, UpdateModuleRequest, CentralPermissions, GeneralPermissions
-
-### Community 31 - "Illuminate\Database\Eloquent\Attributes\Fillable"
-Cohesion: 0.15
-Nodes (4): ModuleFactory, static, Illuminate\Database\Eloquent\Attributes\Fillable, Illuminate\Database\Eloquent\Relations\BelongsToMany
-
-### Community 32 - "General/app/Http/Controllers/RoleController.php"
 Cohesion: 0.17
-Nodes (3): RoleController, StoreRoleRequest, UpdateRoleRequest
+Nodes (5): Action, ModulePermissionFactory, CentralPermissions, SignaturesPermissions, SupportPermissions
 
-### Community 34 - "AppearanceToggle.vue"
-Cohesion: 0.31
-Nodes (11): { appearance, updateAppearance }, options, Appearance, getStoredAppearance(), handleSystemThemeChange(), initializeTheme(), mediaQuery(), setCookie() (+3 more)
+### Community 31 - "Plan"
+Cohesion: 0.16
+Nodes (3): Plan, Illuminate\Database\Eloquent\Relations\BelongsToMany, PlanController
 
-### Community 35 - "GeneralLayout.vue"
-Cohesion: 0.15
-Nodes (9): authUser, canManageRoles, canManageUsers, page, permissions, PermissionGroup, PermissionGroup, props (+1 more)
+### Community 34 - "useAppearance.ts"
+Cohesion: 0.42
+Nodes (9): Appearance, getStoredAppearance(), handleSystemThemeChange(), initializeTheme(), mediaQuery(), setCookie(), updateTheme(), useAppearance() (+1 more)
 
-### Community 36 - "SyncTenantPermissions.php"
-Cohesion: 0.26
-Nodes (6): ApplyScheduledSubscriptionChanges, SyncCentralPermissions, SyncTenantPermissions, Illuminate\Console\Attributes\Description, Illuminate\Console\Attributes\Signature, Illuminate\Console\Command
+### Community 35 - "AppShell.vue"
+Cohesion: 0.08
+Nodes (26): activeItem, activeSection, authUser, breadcrumbs, closeMenus(), collapseLabel, currentPath, handleKeydown() (+18 more)
+
+### Community 36 - "SubscriptionChangeStatus"
+Cohesion: 0.12
+Nodes (11): ApplyScheduledSubscriptionChanges, CloseResolvedSupportTickets, ExpireLapsedSubscriptions, ReplaySignatureWebhooks, SyncCentralPermissions, SyncTenantPermissions, SubscriptionChangeStatus, SubscriptionChangeFactory (+3 more)
 
 ### Community 37 - "require-dev"
 Cohesion: 0.17
@@ -332,69 +391,81 @@ Nodes (27): Basic Link Component, Basic Usage, Client-Side Navigation, Common Pi
 Cohesion: 0.20
 Nodes (9): Auth, User, ComponentCustomProperties, ImportMeta, ImportMetaEnv, InertiaConfig, @inertiajs/core, vite/client (+1 more)
 
-### Community 40 - "Closure"
-Cohesion: 0.27
-Nodes (5): EnsureTenantIsActive, HandleAppearance, Closure, Illuminate\Support\Facades\View, Symfony\Component\HttpFoundation\Response
+### Community 40 - "Symfony\Component\HttpFoundation\Response"
+Cohesion: 0.19
+Nodes (4): EnsureTenantHasFeature, EnsureTenantHasModule, PreventAccessFromTenantDomains, Symfony\Component\HttpFoundation\Response
 
-### Community 41 - "CacheTenancyBootstrapper"
-Cohesion: 0.24
-Nodes (8): CacheTenancyBootstrapper, CacheManager, Illuminate\Cache\CacheManager, Illuminate\Contracts\Foundation\Application, Illuminate\Support\Facades\Cache, Spatie\Permission\PermissionRegistrar, Stancl\Tenancy\Contracts\TenancyBootstrapper, Stancl\Tenancy\Contracts\Tenant
+### Community 41 - "tenancy.php"
+Cohesion: 0.14
+Nodes (14): CacheTenancyBootstrapper, CacheManager, Illuminate\Cache\CacheManager, Illuminate\Contracts\Foundation\Application, Spatie\Permission\PermissionRegistrar, Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper, Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper, Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper (+6 more)
 
 ### Community 42 - "require"
 Cohesion: 0.18
 Nodes (11): require, inertiajs/inertia-laravel, laravel/framework, laravel/tinker, laravel/wayfinder, nwidart/laravel-modules, php, spatie/laravel-enum (+3 more)
 
 ### Community 43 - "composer.json"
-Cohesion: 0.20
-Nodes (9): autoload-dev, psr-4, description, license, minimum-stability, name, Tests\\, $schema (+1 more)
+Cohesion: 0.15
+Nodes (12): autoload-dev, psr-4, description, keywords, license, minimum-stability, name, Tests\\ (+4 more)
+
+### Community 44 - "CentralLoginRequest"
+Cohesion: 0.18
+Nodes (5): Illuminate\Auth\Events\Lockout, Illuminate\Support\Facades\Auth, Illuminate\Support\Facades\RateLimiter, CentralLoginRequest, LoginRequest
 
 ### Community 45 - "devDependencies"
 Cohesion: 0.12
 Nodes (16): devDependencies, axios, laravel-vite-plugin, postcss, sass, vite, axios, laravel-vite-plugin (+8 more)
 
-### Community 46 - "Inertia\Response"
-Cohesion: 0.17
-Nodes (5): LimitType, Inertia\Response, FeatureController, LimitTypeController, PlanController
-
 ### Community 47 - "Illuminate\Database\Migrations\Migration"
-Cohesion: 0.28
+Cohesion: 0.20
 Nodes (3): CreateTenantsTable, CreateDomainsTable, Illuminate\Database\Migrations\Migration
+
+### Community 48 - "Central/Dashboard.vue"
+Cohesion: 0.07
+Nodes (28): appName, { appearance, updateAppearance }, options, markSizes, wordSizes, dismiss(), iconClasses, icons (+20 more)
 
 ### Community 49 - "devDependencies"
 Cohesion: 0.12
 Nodes (16): devDependencies, axios, laravel-vite-plugin, postcss, sass, vite, axios, laravel-vite-plugin (+8 more)
 
-### Community 50 - "Permission"
-Cohesion: 0.21
-Nodes (4): Permission, CentralPermissionSyncer, Spatie\Permission\DefaultTeamResolver, Spatie\Permission\Models\Permission
+### Community 50 - "Role"
+Cohesion: 0.10
+Nodes (10): ModulePermission, Permission, Role, CentralPermissionSyncer, TenantModulePermissionSyncer, RoleController, RoleController, Spatie\Permission\DefaultTeamResolver (+2 more)
 
 ### Community 51 - "config"
 Cohesion: 0.25
 Nodes (8): pestphp/pest-plugin, php-http/discovery, wikimedia/composer-merge-plugin, config, allow-plugins, optimize-autoloader, preferred-install, sort-packages
 
-### Community 54 - "EventServiceProvider"
-Cohesion: 0.29
-Nodes (3): Illuminate\Foundation\Support\Providers\EventServiceProvider, EventServiceProvider, EventServiceProvider
+### Community 53 - "signatures.ts"
+Cohesion: 0.06
+Nodes (37): prepaidProducts, props, usedPercent, BadgeTone, BankAccount, ledgerEntryTone(), money(), paymentReviewTone() (+29 more)
+
+### Community 54 - "Illuminate\Foundation\Support\Providers\EventServiceProvider"
+Cohesion: 0.15
+Nodes (5): Illuminate\Foundation\Support\Providers\EventServiceProvider, EventServiceProvider, EventServiceProvider, EventServiceProvider, EventServiceProvider
 
 ### Community 55 - "UsesUuidPrimaryKey"
-Cohesion: 0.28
-Nodes (4): UsesUuidPrimaryKey, Domain, Illuminate\Database\Eloquent\Concerns\HasUuids, Stancl\Tenancy\Database\Models\Domain
-
-### Community 56 - "AppServiceProvider.php"
 Cohesion: 0.15
-Nodes (11): Illuminate\Auth\Events\Registered, Illuminate\Auth\Events\Verified, Illuminate\Auth\Listeners\SendEmailVerificationNotification, Illuminate\Auth\Notifications\ResetPassword, Illuminate\Auth\Notifications\VerifyEmail, Illuminate\Contracts\Auth\CanResetPassword, Illuminate\Contracts\Auth\MustVerifyEmail, Illuminate\Support\Facades\Date (+3 more)
+Nodes (11): UsesUuidPrimaryKey, Domain, ModulePrice, Illuminate\Database\Eloquent\Attributes\Fillable, Illuminate\Database\Eloquent\Attributes\Hidden, Illuminate\Database\Eloquent\Concerns\HasUuids, Illuminate\Database\Eloquent\Factories\HasFactory, Illuminate\Notifications\Notifiable (+3 more)
+
+### Community 56 - "SupportTicketManager.php"
+Cohesion: 0.17
+Nodes (7): Illuminate\Database\ClassMorphViolationException, Illuminate\Http\UploadedFile, Illuminate\Support\Facades\Notification, Illuminate\Support\Facades\Storage, Illuminate\Support\Facades\URL, ticketWithFiles(), bannerPhoto()
 
 ### Community 57 - "extra"
 Cohesion: 0.33
 Nodes (6): extra, laravel, merge-plugin, dont-discover, include, Modules/*/composer.json
 
 ### Community 58 - "Nwidart\Modules\Support\ModuleServiceProvider"
-Cohesion: 0.47
-Nodes (4): Illuminate\Console\Scheduling\Schedule, CentralServiceProvider, GeneralServiceProvider, Nwidart\Modules\Support\ModuleServiceProvider
+Cohesion: 0.33
+Nodes (6): Illuminate\Console\Scheduling\Schedule, CentralServiceProvider, GeneralServiceProvider, SignaturesServiceProvider, SupportServiceProvider, Nwidart\Modules\Support\ModuleServiceProvider
 
 ### Community 59 - "Pest.php"
-Cohesion: 0.33
-Nodes (3): Illuminate\Foundation\Testing\RefreshDatabase, Illuminate\Foundation\Testing\TestCase, TestCase
+Cohesion: 0.08
+Nodes (18): SignatureAffiliationMode, SignatureRequestSource, Illuminate\Foundation\Testing\RefreshDatabase, Illuminate\Foundation\Testing\TestCase, ConfigureSignatureAccountRequest, applyOnStorefront(), receiptUpload(), UploadedFile (+10 more)
+
+### Community 60 - "SignatureRequest"
+Cohesion: 0.09
+Nodes (13): SignatureRequestStatus, SignatureRequest, ProviderStatusUpdate, CarbonImmutable, self, SignatureIssuance, SignatureRequestManager, Illuminate\Http\Client\Request (+5 more)
 
 ### Community 61 - "Gestión de planes, módulos y permisos (multi-tenant)"
 Cohesion: 0.07
@@ -412,9 +483,9 @@ Nodes (5): autoload, psr-4, App\\, Database\\Factories\\, Database\\Seeders\\
 Cohesion: 0.40
 Nodes (4): Monolog\Handler\NullHandler, Monolog\Handler\StreamHandler, Monolog\Handler\SyslogUdpHandler, Monolog\Processor\PsrLogMessageProcessor
 
-### Community 65 - "Illuminate\Http\RedirectResponse"
-Cohesion: 0.20
-Nodes (3): Illuminate\Http\RedirectResponse, AuthenticatedSessionController, AuthenticatedSessionController
+### Community 65 - "SupportTicket"
+Cohesion: 0.15
+Nodes (6): TicketEventType, TicketStatus, SupportTicket, SupportActor, SupportTicketManager, TicketActionController
 
 ### Community 66 - "Quick Reference"
 Cohesion: 0.08
@@ -424,33 +495,77 @@ Nodes (23): 10. Routing & Controllers → `rules/routing.md`, 11. HTTP Client �
 Cohesion: 0.11
 Nodes (17): Architecture Testing, Assertions, Basic Test Structure, Basic Usage, Browser Test Example, Common Pitfalls, Creating Tests, Datasets (+9 more)
 
+### Community 68 - "SignatureAccount"
+Cohesion: 0.11
+Nodes (9): SignatureLedgerEntryType, self, SignatureQuotaExceeded, SignatureAccount, SignatureBalance, SignatureLedgerEntry, SignaturePackage, SignatureWallet (+1 more)
+
 ### Community 69 - "Pest Testing 4"
 Cohesion: 0.11
 Nodes (17): Architecture Testing, Assertions, Basic Test Structure, Basic Usage, Browser Test Example, Common Pitfalls, Creating Tests, Datasets (+9 more)
 
-### Community 70 - "Plans/Index.vue"
-Cohesion: 0.20
-Nodes (7): NavigationItem, quickLinks, PlanPrice, PlanRow, props, { search, toggleSort, sortIndicator }, IconName
+### Community 70 - "DocumentCapture.vue"
+Cohesion: 0.07
+Nodes (35): cameraIndex, cameras, close(), confirm(), emit, error, onKeydown(), props (+27 more)
 
-### Community 71 - "Badge.vue"
+### Community 71 - "cn"
+Cohesion: 0.40
+Nodes (4): classes, classes, open, cn()
+
+### Community 72 - "Carbon\CarbonImmutable"
+Cohesion: 0.11
+Nodes (12): SupportAttendanceType, SupportBlackout, SupportBusinessHour, self, SupportSetting, CarbonImmutable, SupportAvailability, SupportLimits (+4 more)
+
+### Community 73 - "Illuminate\Support\Facades\DB"
+Cohesion: 0.31
+Nodes (6): down(), rename(), up(), Illuminate\Support\Facades\DB, Spatie\QueryBuilder\AllowedFilter, Spatie\QueryBuilder\QueryBuilder
+
+### Community 75 - "Schedule/Index.vue"
+Cohesion: 0.06
+Nodes (29): activeTypes, AttendanceType, blackoutDatesError, blackoutForm, { dateTime, time, dayKey }, durationPresets, editing, editTechnician() (+21 more)
+
+### Community 76 - "TicketPriority"
+Cohesion: 0.14
+Nodes (10): TicketCategory, TicketChannel, TicketPriority, OpenTicketData, static, SupportTicketFactory, TicketController, StoreSupportTicketRequest (+2 more)
+
+### Community 77 - "CatalogSeeder.php"
 Cohesion: 0.28
-Nodes (6): BadgeTone, classes, props, toneClasses, cn(), PlanDetail
+Nodes (4): PlanLimitPivot, PlanPrice, SubscriptionLimitPivot, Illuminate\Database\Eloquent\Relations\Pivot
 
-### Community 72 - "Illuminate\Support\Carbon"
-Cohesion: 0.39
-Nodes (5): CentralUserFactory, Illuminate\Database\Eloquent\Attributes\Hidden, Illuminate\Notifications\Notifiable, Illuminate\Support\Carbon, Spatie\Permission\Traits\HasRoles
+### Community 78 - "SignatureApplicationForm.vue"
+Cohesion: 0.07
+Nodes (29): ApplicationFields, currentStepIsValid(), defaults, documentSlots, fields, form, goTo(), isCedula (+21 more)
 
-### Community 73 - "FeatureController.php"
-Cohesion: 0.20
-Nodes (5): Illuminate\Support\Facades\DB, UserController, UpdateUserRolesRequest, Spatie\QueryBuilder\AllowedFilter, Spatie\QueryBuilder\QueryBuilder
+### Community 86 - "SupportAppointment"
+Cohesion: 0.14
+Nodes (5): AppointmentStatus, SupportAppointment, SupportBookingManager, DomainException, AppointmentController
 
-### Community 78 - "keywords"
-Cohesion: 0.67
-Nodes (3): keywords, framework, laravel
+### Community 89 - "SignaturePaymentStatus"
+Cohesion: 0.13
+Nodes (5): SignaturePaymentReview, SignaturePaymentStatus, SignaturePayment, SignaturePaymentManager, SignaturePaymentController
 
 ### Community 92 - "console.php"
 Cohesion: 0.50
 Nodes (3): Illuminate\Foundation\Inspiring, Illuminate\Support\Facades\Artisan, Illuminate\Support\Facades\Schedule
+
+### Community 96 - "SignatureProduct"
+Cohesion: 0.11
+Nodes (4): SignatureProduct, SignaturePresenter, ProductController, SaveSignatureProductRequest
+
+### Community 97 - "StoreTenantRequest.php"
+Cohesion: 0.17
+Nodes (4): Illuminate\Validation\Rules\Password, Illuminate\Validation\Validator, NewPasswordRequest, UpdatePasswordRequest
+
+### Community 98 - "SignatureProviderRequest"
+Cohesion: 0.13
+Nodes (6): SignatureProviderRequest, CarbonImmutable, SignatureSalesReport, Illuminate\Support\Collection, SalesController, SignatureSalesReportRequest
+
+### Community 100 - "Illuminate\Database\Eloquent\Model"
+Cohesion: 0.13
+Nodes (7): SignatureWebhookEvent, SupportTechnicianShift, SupportTicketEvent, SupportTimeEntry, Illuminate\Database\Eloquent\Builder, Illuminate\Database\Eloquent\Model, Stancl\Tenancy\Database\Concerns\CentralConnection
+
+### Community 103 - "ScheduleController"
+Cohesion: 0.09
+Nodes (5): ScheduleController, SaveAttendanceTypeRequest, SaveTechnicianRequest, UpdateBusinessHoursRequest, UpdateSupportSettingsRequest
 
 ### Community 105 - "Tailwind CSS Development"
 Cohesion: 0.14
@@ -468,9 +583,21 @@ Nodes (11): Architecture Best Practices, Code to Interfaces, Convention Over Con
 Cohesion: 0.17
 Nodes (11): Audit Dependencies, Authorize Every Action, CSRF Protection, Encrypt Sensitive Database Fields, Escape Output to Prevent XSS, Keep Secrets Out of Code, Mass Assignment Protection, Prevent SQL Injection (+3 more)
 
-### Community 115 - "TenancyServiceProvider.php"
-Cohesion: 0.18
-Nodes (8): TenancyServiceProvider, Illuminate\Contracts\Http\Kernel, Illuminate\Support\ServiceProvider, Stancl\JobPipeline\JobPipeline, Stancl\Tenancy\Events, Stancl\Tenancy\Jobs, Stancl\Tenancy\Listeners, Stancl\Tenancy\Middleware
+### Community 115 - "AppServiceProvider.php"
+Cohesion: 0.08
+Nodes (19): AppServiceProvider, TenancyServiceProvider, Illuminate\Auth\Events\Registered, Illuminate\Auth\Events\Verified, Illuminate\Auth\Listeners\SendEmailVerificationNotification, Illuminate\Auth\Notifications\ResetPassword, Illuminate\Auth\Notifications\VerifyEmail, Illuminate\Contracts\Auth\CanResetPassword (+11 more)
+
+### Community 131 - "Attachment"
+Cohesion: 0.13
+Nodes (7): Attachment, HasAttachments, Attachable, SupportTicketMessage, Illuminate\Database\Eloquent\Relations\MorphMany, Illuminate\Database\Eloquent\Relations\MorphTo, Illuminate\Support\Facades\Gate
+
+### Community 132 - "AccountController"
+Cohesion: 0.14
+Nodes (5): TenantPresenter, AccountController, AdjustSignatureUnitsRequest, RecordSignaturePaymentRequest, SellSignaturePackageRequest
+
+### Community 133 - "SignatureInvitation"
+Cohesion: 0.14
+Nodes (5): SignatureInvitation, SignatureInvitationManager, SignatureLinks, SignatureInvitationController, StoreStorefrontSignatureRequest
 
 ### Community 138 - "Architecture Best Practices"
 Cohesion: 0.17
@@ -508,9 +635,13 @@ Nodes (9): Always Queue Notifications, Events & Notifications Best Practices, Im
 Cohesion: 0.20
 Nodes (9): Common Methods, Common Pitfalls, Documentation, Generate Routes, Import Patterns, Quick Reference, Verification, Wayfinder Development (+1 more)
 
-### Community 147 - "TenantLimitGuard"
-Cohesion: 0.24
-Nodes (3): TenantLimitExceeded, TenantLimitGuard, RuntimeException
+### Community 147 - "SignatureProvider"
+Cohesion: 0.11
+Nodes (8): TenantLimitExceeded, SignatureProvider, SignatureProviderException, SignatureStatusSynchronizer, Illuminate\Http\Client\ConnectionException, Illuminate\Support\Arr, RuntimeException, Throwable
+
+### Community 148 - "AttachmentStore"
+Cohesion: 0.12
+Nodes (6): AttachmentStore, AttachmentController, ReplySupportTicketRequest, ReplyAsRequesterRequest, StorePublicTicketRequest, Symfony\Component\HttpFoundation\StreamedResponse
 
 ### Community 149 - "Advanced Query Patterns"
 Cohesion: 0.20
@@ -612,6 +743,10 @@ Nodes (6): Conventions & Style, Follow Laravel Naming Conventions, No Inline JS/
 Cohesion: 0.29
 Nodes (6): Always Use `validated()`, Array vs. String Notation for Rules, Use Form Request Classes, Use `Rule::when()` for Conditional Validation, Use the `after()` Method for Custom Validation, Validation & Forms Best Practices
 
+### Community 174 - "Spatie\Enum\Laravel\Enum"
+Cohesion: 0.11
+Nodes (3): CarbonImmutable, SalesPeriod, Spatie\Enum\Laravel\Enum
+
 ### Community 175 - "Collection Best Practices"
 Cohesion: 0.29
 Nodes (6): Choose `cursor()` vs. `lazy()` Correctly, Collection Best Practices, Use `#[CollectedBy]` for Custom Collection Classes, Use Higher-Order Messages for Simple Operations, Use `lazyById()` When Updating Records While Iterating, Use `toQuery()` for Bulk Operations on Collections
@@ -636,9 +771,9 @@ Nodes (6): Conventions & Style, Follow Laravel Naming Conventions, No Inline JS/
 Cohesion: 0.29
 Nodes (6): Always Use `validated()`, Array vs. String Notation for Rules, Use Form Request Classes, Use `Rule::when()` for Conditional Validation, Use the `after()` Method for Custom Validation, Validation & Forms Best Practices
 
-### Community 181 - "Tenants/Create.vue"
-Cohesion: 0.22
-Nodes (7): availableBillingPeriods, PlanOption, props, selectedBillingPeriod, selectedPlan, selectedPlanId, tenantId
+### Community 181 - "SignatureApplicantType"
+Cohesion: 0.19
+Nodes (4): Gender, IdentityDocumentType, SignatureApplicantType, SignatureApplication
 
 ### Community 182 - "Configuration Best Practices"
 Cohesion: 0.33
@@ -648,41 +783,157 @@ Nodes (5): Configuration Best Practices, `env()` Only in Config Files, Use `App:
 Cohesion: 0.33
 Nodes (5): Configuration Best Practices, `env()` Only in Config Files, Use `App::environment()` for Environment Checks, Use Constants and Language Files, Use Encrypted Env or External Secrets
 
+### Community 184 - "TicketBillingMode"
+Cohesion: 0.17
+Nodes (7): TicketBillingMode, TicketBillingStatus, CarbonImmutable, SupportUsage, Illuminate\Notifications\AnonymousNotifiable, UpdateTicketBillingRequest, openTicketFor()
+
+### Community 185 - "SignatureStorefront"
+Cohesion: 0.20
+Nodes (3): self, SignatureStorefront, StorefrontController
+
 ### Community 186 - "Q: Determinar debilidades para gestionar tenants empresariales y comercializar productos de software como firma electronica, ISO, privacidad y ensenanza"
 Cohesion: 0.40
 Nodes (4): Answer, Outcome, Q: Determinar debilidades para gestionar tenants empresariales y comercializar productos de software como firma electronica, ISO, privacidad y ensenanza, Source Nodes
 
-### Community 189 - "Illuminate\Foundation\Http\FormRequest"
+### Community 187 - "SignatureValidity"
 Cohesion: 0.18
-Nodes (4): Illuminate\Foundation\Http\FormRequest, Illuminate\Validation\Rule, Illuminate\Validation\Rules\Password, Illuminate\Validation\Validator
+Nodes (5): SignatureContainer, SignatureValidity, static, SignatureProductFactory, SignaturesModuleSeeder
 
-### Community 199 - "Illuminate\Http\Request"
+### Community 189 - "Illuminate\Foundation\Http\FormRequest"
+Cohesion: 0.03
+Nodes (21): Illuminate\Foundation\Http\FormRequest, Illuminate\Validation\Rule, ProfileUpdateRequest, StoreSignaturePackageRequest, StoreFeatureRequest, StoreLimitTypeRequest, StoreModuleRequest, StorePlanRequest (+13 more)
+
+### Community 190 - "RetailPriceFloor"
+Cohesion: 0.14
+Nodes (6): RetailPriceFloor, Illuminate\Contracts\Validation\ValidationRule, Illuminate\Translation\PotentiallyTranslatedString, StoreSignatureRequestRequest, UpdateSignatureRequestRequest, UpdateStorefrontRequest
+
+### Community 192 - "StorefrontMedia"
+Cohesion: 0.16
+Nodes (3): StorefrontMedia, StorefrontSettingsController, UploadStorefrontImageRequest
+
+### Community 194 - "devDependencies"
 Cohesion: 0.12
-Nodes (13): Illuminate\Auth\Events\Lockout, Illuminate\Auth\Events\PasswordReset, Illuminate\Http\Request, Illuminate\Support\Facades\Auth, Illuminate\Support\Facades\Hash, Illuminate\Support\Facades\Password, Illuminate\Support\Facades\RateLimiter, Illuminate\Support\Str (+5 more)
+Nodes (16): devDependencies, axios, laravel-vite-plugin, postcss, sass, vite, axios, laravel-vite-plugin (+8 more)
+
+### Community 195 - "devDependencies"
+Cohesion: 0.12
+Nodes (16): devDependencies, axios, laravel-vite-plugin, postcss, sass, vite, axios, laravel-vite-plugin (+8 more)
+
+### Community 196 - "SignaturePaymentMethod"
+Cohesion: 0.15
+Nodes (3): SignaturePaymentMethod, ReportPaymentReceiptRequest, StoreSignatureInvitationRequest
+
+### Community 197 - "Signatures/composer.json"
+Cohesion: 0.12
+Nodes (15): authors, autoload, autoload-dev, psr-4, psr-4, description, extra, laravel (+7 more)
+
+### Community 198 - "Support/composer.json"
+Cohesion: 0.12
+Nodes (15): authors, autoload, autoload-dev, psr-4, psr-4, description, extra, laravel (+7 more)
+
+### Community 199 - "BannerPhotosCard.vue"
+Cohesion: 0.14
+Nodes (10): fileInput, localError, onPicked(), preparing, preview, props, Slide, slides (+2 more)
 
 ### Community 201 - "Illuminate\Support\Facades\Route"
+Cohesion: 0.24
+Nodes (4): InitializeTenancyOnTenantDomains, Illuminate\Support\Facades\Route, Stancl\Tenancy\Middleware\InitializeTenancyByDomain, Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains
+
+### Community 202 - "WeeklyHoursEditor.vue"
+Cohesion: 0.22
+Nodes (8): addRange(), copyToOpenDays(), isOpen(), model, rangesOf(), templates, toggleDay(), weekdays
+
+### Community 203 - "Sales/Index.vue"
+Cohesion: 0.18
+Nodes (11): alertsToShow, apply(), exportUrl, Filters, form, hovered, idleAlerts, maxUnits (+3 more)
+
+### Community 205 - "SignatureSettlementRequest"
+Cohesion: 0.23
+Nodes (3): SignatureSettlementController, CarbonImmutable, SignatureSettlementRequest
+
+### Community 210 - "UanatacaSignatureProvider"
+Cohesion: 0.27
+Nodes (3): CarbonImmutable, UanatacaSignatureProvider, Illuminate\Http\Client\PendingRequest
+
+### Community 212 - "TicketRatingForm.vue"
+Cohesion: 0.20
+Nodes (8): hovered, labels, stars, wasResolved, form, justRated, page, props
+
+### Community 216 - "TimeField.vue"
+Cohesion: 0.25
+Nodes (7): attrs, isMounted, groupedSlots, model, pad(), time, blackoutRange()
+
+### Community 217 - ".disabled"
+Cohesion: 0.32
+Nodes (3): TenantAccessBlockReason, EnsureTenantIsActive, Response
+
+### Community 219 - "ci:check"
+Cohesion: 0.25
+Nodes (8): ci:check, dev, Composer\\Config::disableProcessTimeout, npm run format:check, npm run lint:check, npm run types:check, npx concurrently -c \"#93c5fd,#c4b5fd,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names='server,queue,vite, @test
+
+### Community 220 - "setup"
+Cohesion: 0.25
+Nodes (8): post-root-package-install, setup, composer install, npm install, npm run build, @php artisan key:generate, @php artisan migrate --force, @php -r \"file_exists('.env') || copy('.env.example', '.env');\
+
+### Community 221 - "EditableListCard.vue"
+Cohesion: 0.25
+Nodes (3): props, Row, rows
+
+### Community 223 - "SeoCard.vue"
 Cohesion: 0.29
-Nodes (3): Illuminate\Support\Facades\Route, Stancl\Tenancy\Middleware\InitializeTenancyByDomain, Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains
+Nodes (6): description, displayUrl, previewDescription, previewTitle, props, title
+
+### Community 224 - "useSidebar.ts"
+Cohesion: 0.33
+Nodes (5): isCollapsed, isRestored, readStoredValue(), useSidebar(), restore()
+
+### Community 226 - "test"
+Cohesion: 0.40
+Nodes (5): test, @lint:check, @php artisan config:clear --ansi, @php artisan test, @types:check
+
+### Community 227 - "2026_09_27_173253_add_margins_to_signature_sales.php"
+Cohesion: 0.60
+Nodes (3): averagePackagePrice(), backfillUnitPrices(), up()
+
+### Community 231 - "HeroSlider.vue"
+Cohesion: 0.40
+Nodes (3): current, paused, props
+
+### Community 232 - "createTechnician"
+Cohesion: 0.40
+Nodes (5): createTechnician(), hoursChanged, saveTechnician(), toHoursModel(), toShifts()
+
+### Community 233 - "migrations/2026_09_26_214346_use_morph_aliases_for_permission_models.php"
+Cohesion: 0.83
+Nodes (3): down(), rename(), up()
+
+### Community 236 - "format"
+Cohesion: 0.50
+Nodes (4): format(), goToWeek(), onWeekPicked(), submitBlackout()
+
+### Community 237 - "days"
+Cohesion: 0.50
+Nodes (4): addDays(), days, formatDay(), weekTitle
 
 ## Knowledge Gaps
-- **743 isolated node(s):** `php`, `name`, `description`, `authors`, `providers` (+738 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1040 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **29 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **1022 isolated node(s):** `php`, `name`, `description`, `authors`, `providers` (+1017 more)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 1596 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **35 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Module` connect `Module` to `Subscription`, `SyncTenantPermissions.php`, `Illuminate\Database\Eloquent\Factories\HasFactory`, `CentralUser`, `Controller`, `Subscription.php`, `Illuminate\Database\Eloquent\Factories\Factory`, `FeatureController.php`, `Inertia\Response`, `Illuminate\Database\Seeder`, `Plan`, `Permission`, `UsesUuidPrimaryKey`, `SubscriptionModuleChanged`, `Action`, `Illuminate\Database\Eloquent\Attributes\Fillable`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
-- **Why does `Plan` connect `Plan` to `Illuminate\Http\RedirectResponse`, `Subscription`, `Illuminate\Database\Eloquent\Factories\HasFactory`, `CentralUser`, `Controller`, `Subscription.php`, `Illuminate\Database\Eloquent\Factories\Factory`, `Inertia\Response`, `UsesUuidPrimaryKey`, `StoreTenantRequest`, `SubscriptionModuleChanged`, `Tenant`, `Illuminate\Foundation\Http\FormRequest`, `Illuminate\Database\Eloquent\Attributes\Fillable`?**
-  _High betweenness centrality (0.016) - this node is a cross-community bridge._
-- **Why does `Tenant` connect `Tenant` to `Subscription`, `SyncTenantPermissions.php`, `CentralUser`, `Closure`, `Controller`, `bootstrap/app.php`, `Plan`, `Permission`, `TenantLimitGuard`, `User`, `UsesUuidPrimaryKey`, `SubscriptionModuleChanged`, `TenantEntitlements`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Are the 2 inferred relationships involving `Tenant` (e.g. with `.share()` and `.index()`) actually correct?**
-  _`Tenant` has 2 INFERRED edges - model-reasoned connections that need verification._
+- **Why does `Tenant` connect `Tenant` to `TenantPlanSubscriber`, `AccountController`, `CentralUser`, `Illuminate\Http\RedirectResponse`, `Illuminate\Database\Eloquent\Factories\Factory`, `BillingPeriod`, `SignatureProvider`, `User`, `SubscriptionModuleChanged`, `TenantEntitlements`, `SubscriptionChangeStatus`, `Symfony\Component\HttpFoundation\Response`, `tenancy.php`, `Role`, `SupportTicketManager.php`, `TicketBillingMode`, `Pest.php`, `SignatureRequest`, `SignatureDocumentKind`, `SupportTicket`, `SignatureAccount`, `Money`, `TicketPriority`, `SignatureRequestController`, `SignatureSettlementRequest`, `TenantStatus`, `TicketController`, `Illuminate\Database\Eloquent\Relations\HasOne`, `SignaturePaymentStatus`, `.disabled`, `HandleInertiaRequests.php`, `SignatureProviderRequest`, `Illuminate\Database\Eloquent\Model`?**
+  _High betweenness centrality (0.032) - this node is a cross-community bridge._
+- **Why does `UsesUuidPrimaryKey` connect `UsesUuidPrimaryKey` to `TenantPlanSubscriber`, `Attachment`, `Illuminate\Database\Eloquent\Relations\BelongsTo`, `CentralUser`, `SignatureInvitation`, `Module`, `Feature`, `User`, `Plan`, `LimitType`, `Role`, `SignatureRequest`, `SupportTicket`, `SignatureAccount`, `Carbon\CarbonImmutable`, `Illuminate\Database\Eloquent\Relations\HasMany`, `CatalogSeeder.php`, `Illuminate\Database\Eloquent\Relations\HasOne`, `SupportAppointment`, `SignaturePaymentStatus`, `SignatureProduct`, `SignatureProviderRequest`, `Illuminate\Database\Eloquent\Model`?**
+  _High betweenness centrality (0.023) - this node is a cross-community bridge._
+- **Why does `CentralUser` connect `CentralUser` to `Attachment`, `AccountController`, `Illuminate\Http\RedirectResponse`, `Illuminate\Database\Eloquent\Factories\Factory`, `User`, `Role`, `UsesUuidPrimaryKey`, `SupportTicketManager.php`, `Pest.php`, `SupportTicket`, `SignatureAccount`, `Carbon\CarbonImmutable`, `Illuminate\Support\Facades\DB`, `TicketPriority`, `TicketAuthorType`, `Illuminate\Database\Eloquent\Relations\HasOne`, `SupportAppointment`, `HandleInertiaRequests.php`, `ScheduleController`, `migrations/2026_09_26_214346_use_morph_aliases_for_permission_models.php`, `AppServiceProvider.php`?**
+  _High betweenness centrality (0.021) - this node is a cross-community bridge._
 - **What connects `php`, `name`, `description` to the rest of the system?**
-  _743 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1022 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `devDependencies` be split into smaller, more focused modules?**
-  _Cohesion score 0.08 - nodes in this community are weakly interconnected._
-- **Should `Subscription` be split into smaller, more focused modules?**
-  _Cohesion score 0.11290322580645161 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07407407407407407 - nodes in this community are weakly interconnected._
+- **Should `scripts` be split into smaller, more focused modules?**
+  _Cohesion score 0.1111111111111111 - nodes in this community are weakly interconnected._
+- **Should `Illuminate\Database\Eloquent\Relations\BelongsTo` be split into smaller, more focused modules?**
+  _Cohesion score 0.08275862068965517 - nodes in this community are weakly interconnected._
