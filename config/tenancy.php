@@ -4,10 +4,19 @@ declare(strict_types=1);
 
 use App\Models\Domain;
 use App\Models\Tenant;
+use App\Tenancy\Bootstrappers\CacheTenancyBootstrapper;
+use Database\Seeders\TenantDatabaseSeeder;
+use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
+use Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper;
+use Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper;
+use Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager;
+use Stancl\Tenancy\TenantDatabaseManagers\PostgreSQLDatabaseManager;
+use Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager;
+use Stancl\Tenancy\UUIDGenerator;
 
 return [
     'tenant_model' => Tenant::class,
-    'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
+    'id_generator' => UUIDGenerator::class,
 
     'domain_model' => Domain::class,
 
@@ -16,11 +25,13 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
+    'central_domains' => array_values(array_unique(array_filter([
+        parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST),
         'saas-boilerplate.local.com',
         '127.0.0.1',
         'localhost',
-    ],
+        'express.com.ec',
+    ]))),
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
@@ -29,7 +40,7 @@ return [
      * To configure their behavior, see the config keys below.
      */
     'bootstrappers' => [
-        Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
+        DatabaseTenancyBootstrapper::class,
         // Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper is
         // intentionally NOT used: it always wraps Cache calls in
         // Cache::tags(...), which the "database" cache store
@@ -38,9 +49,9 @@ return [
         // tag-free replacement: it rebuilds the CacheManager on every
         // tenancy switch so the "database" cache store can't keep a stale
         // connection memoized from before the switch (see its docblock).
-        App\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
-        Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
-        Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
+        CacheTenancyBootstrapper::class,
+        FilesystemTenancyBootstrapper::class,
+        QueueTenancyBootstrapper::class,
         // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
     ],
 
@@ -67,10 +78,10 @@ return [
          * TenantDatabaseManagers are classes that handle the creation & deletion of tenant databases.
          */
         'managers' => [
-            'sqlite' => Stancl\Tenancy\TenantDatabaseManagers\SQLiteDatabaseManager::class,
-            'mysql' => Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
-            'mariadb' => Stancl\Tenancy\TenantDatabaseManagers\MySQLDatabaseManager::class,
-            'pgsql' => Stancl\Tenancy\TenantDatabaseManagers\PostgreSQLDatabaseManager::class,
+            'sqlite' => SQLiteDatabaseManager::class,
+            'mysql' => MySQLDatabaseManager::class,
+            'mariadb' => MySQLDatabaseManager::class,
+            'pgsql' => PostgreSQLDatabaseManager::class,
 
         /**
          * Use this database manager for MySQL to have a DB user created for each tenant database.
@@ -144,8 +155,12 @@ return [
          * packages that use asset() calls inside the tenant app. To avoid such issues, you can
          * disable asset() helper tenancy and explicitly use tenant_asset() calls in places
          * where you want to use tenant-specific assets (product images, avatars, etc).
+         *
+         * Disabled here: @vite builds its URLs with asset(), so the compiled frontend
+         * (public/build) would be requested from /tenancy/assets on tenant domains and
+         * 404. Tenant files use tenant_asset() explicitly (see StorefrontMedia).
          */
-        'asset_helper_tenancy' => true,
+        'asset_helper_tenancy' => false,
     ],
 
     /**
@@ -205,7 +220,7 @@ return [
     'seeder_parameters' => [
         // Not DatabaseSeeder — that one seeds the central catalog/ACL, which
         // don't belong in a tenant's database.
-        '--class' => \Database\Seeders\TenantDatabaseSeeder::class,
+        '--class' => TenantDatabaseSeeder::class,
         // '--force' => true, // This needs to be true to seed tenant databases in production
     ],
 ];

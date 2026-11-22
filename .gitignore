@@ -26,3 +26,8 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Per-tenant SQLite databases (tests, local dev) and per-tenant storage,
+# which holds customer KYC documents: never commit them.
+/database/tenant*
+/storage/tenant*/

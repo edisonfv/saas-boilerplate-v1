@@ -17,12 +17,18 @@ class EnsureTenantHasModule
      *
      * @param  Closure(Request): (Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $moduleSlug): Response
+    public function handle(Request $request, Closure $next, string $moduleSlug, ?string $option = null): Response
     {
         $tenant = tenant();
 
+        // "allow-lapsed": public surfaces that keep working while the tenant
+        // renews (see TenantEntitlements::contractedModules()).
+        $modules = $tenant instanceof Tenant
+            ? ($option === 'allow-lapsed' ? $this->entitlements->contractedModules($tenant) : $this->entitlements->activeModules($tenant))
+            : collect();
+
         abort_unless(
-            $tenant instanceof Tenant && $this->entitlements->activeModules($tenant)->contains($moduleSlug),
+            $modules->contains($moduleSlug),
             403,
             "This tenant does not have the [{$moduleSlug}] module enabled."
         );

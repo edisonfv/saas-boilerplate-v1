@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(GeneralModuleSeeder::class);
         $this->call(SupportModuleSeeder::class);
+        $this->call(SignaturesModuleSeeder::class);
         $this->call(CatalogSeeder::class);
         $this->call(CentralAclSeeder::class);
     }

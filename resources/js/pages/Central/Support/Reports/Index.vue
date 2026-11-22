@@ -1,28 +1,41 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import Card from '@/components/Card.vue';
+import Pagination from '@/components/Pagination.vue';
+import type { PaginationLink } from '@/components/Pagination.vue';
 import StatCard from '@/components/StatCard.vue';
 import CentralLayout from '@/layouts/CentralLayout.vue';
 import { formatMinutes, formatMoney } from '@/lib/support';
 import { ui } from '@/lib/ui';
 import central from '@/routes/central';
 
-const props = defineProps<{
-    billing: {
-        tenant_id: string;
-        tenant_name: string;
-        period_start: string;
-        period_end: string;
-        included_minutes: number;
-        used_minutes: number;
-        excess_minutes: number;
-        hourly_minutes: number;
-        fixed_amount: number;
-        amount_due: number;
-        currency: string;
-    }[];
-    pendingTickets: {
+interface Paginated<T> {
+    data: T[];
+    links: PaginationLink[];
+    from: number | null;
+    to: number | null;
+    total: number;
+}
+
+interface BillingRow {
+    tenant_id: string;
+    tenant_name: string;
+    period_start: string;
+    period_end: string;
+    included_minutes: number;
+    used_minutes: number;
+    excess_minutes: number;
+    hourly_minutes: number;
+    fixed_amount: number;
+    amount_due: number;
+    currency: string;
+}
+
+defineProps<{
+    billing: Paginated<BillingRow>;
+    totalDue: number;
+    pendingTickets: Paginated<{
         id: string;
         code: string;
         subject: string;
@@ -30,15 +43,15 @@ const props = defineProps<{
         billing_mode_label: string;
         fixed_amount: string | null;
         billable_minutes: number;
-    }[];
-    agents: {
+    }>;
+    agents: Paginated<{
         id: string;
         name: string;
         resolved: number;
         ratings: number;
         average_stars: number;
         satisfied_percent: number;
-    }[];
+    }>;
     overall: {
         ratings: number;
         average_stars: number;
@@ -49,11 +62,8 @@ const props = defineProps<{
 
 const selected = ref<string[]>([]);
 const invoiceReference = ref('');
-const totalDue = computed(() =>
-    props.billing.reduce((sum, row) => sum + row.amount_due, 0),
-);
 
-function usagePercent(row: (typeof props.billing)[number]): number {
+function usagePercent(row: BillingRow): number {
     return row.included_minutes === 0
         ? 0
         : Math.min(
@@ -112,7 +122,7 @@ function markInvoiced(): void {
                 />
                 <StatCard
                     label="Tickets por facturar"
-                    :value="pendingTickets.length"
+                    :value="pendingTickets.total"
                     icon="tag"
                     helper="Por horas o monto fijo"
                 />
@@ -149,7 +159,10 @@ function markInvoiced(): void {
                         <tbody
                             class="divide-y divide-ink-100 dark:divide-ink-800"
                         >
-                            <tr v-for="row in billing" :key="row.tenant_id">
+                            <tr
+                                v-for="row in billing.data"
+                                :key="row.tenant_id"
+                            >
                                 <td
                                     class="px-4 py-3 font-semibold text-ink-900 dark:text-white"
                                 >
@@ -209,7 +222,7 @@ function markInvoiced(): void {
                                     }}
                                 </td>
                             </tr>
-                            <tr v-if="billing.length === 0">
+                            <tr v-if="billing.data.length === 0">
                                 <td
                                     colspan="7"
                                     class="px-4 py-10 text-center text-ink-500"
@@ -220,11 +233,18 @@ function markInvoiced(): void {
                         </tbody>
                     </table>
                 </div>
+                <Pagination
+                    class="mt-4"
+                    :links="billing.links"
+                    :from="billing.from"
+                    :to="billing.to"
+                    :total="billing.total"
+                />
             </Card>
 
             <Card title="Tickets pendientes de facturar">
                 <p
-                    v-if="pendingTickets.length === 0"
+                    v-if="pendingTickets.total === 0"
                     class="text-sm text-ink-500"
                 >
                     No hay cobros pendientes por ticket.
@@ -232,7 +252,7 @@ function markInvoiced(): void {
                 <template v-else>
                     <ul class="divide-y divide-ink-100 dark:divide-ink-800">
                         <li
-                            v-for="ticket in pendingTickets"
+                            v-for="ticket in pendingTickets.data"
                             :key="ticket.id"
                             class="flex items-center gap-3 py-3"
                         >
@@ -268,6 +288,13 @@ function markInvoiced(): void {
                             </p>
                         </li>
                     </ul>
+                    <Pagination
+                        class="mt-4"
+                        :links="pendingTickets.links"
+                        :from="pendingTickets.from"
+                        :to="pendingTickets.to"
+                        :total="pendingTickets.total"
+                    />
                     <div
                         v-if="can.billing"
                         class="mt-4 flex flex-col gap-2 border-t border-ink-100 pt-4 sm:flex-row dark:border-ink-800"
@@ -311,7 +338,7 @@ function markInvoiced(): void {
                         <tbody
                             class="divide-y divide-ink-100 dark:divide-ink-800"
                         >
-                            <tr v-for="agent in agents" :key="agent.id">
+                            <tr v-for="agent in agents.data" :key="agent.id">
                                 <td
                                     class="px-4 py-3 font-semibold text-ink-900 dark:text-white"
                                 >
@@ -340,7 +367,7 @@ function markInvoiced(): void {
                                     }}
                                 </td>
                             </tr>
-                            <tr v-if="agents.length === 0">
+                            <tr v-if="agents.data.length === 0">
                                 <td
                                     colspan="5"
                                     class="px-4 py-10 text-center text-ink-500"
@@ -351,6 +378,13 @@ function markInvoiced(): void {
                         </tbody>
                     </table>
                 </div>
+                <Pagination
+                    class="mt-4"
+                    :links="agents.links"
+                    :from="agents.from"
+                    :to="agents.to"
+                    :total="agents.total"
+                />
             </Card>
         </div>
     </CentralLayout>

@@ -28,6 +28,19 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Electronic-signature provider (App\Services\Signatures\Uanataca).
+    // API v4 authenticates with a Bearer token; the legacy apikey/uid pair
+    // is sent in the body only when no token is configured.
+    'uanataca' => [
+        'base_url' => env('UANATACA_BASE_URL', 'https://api.uanataca.ec'),
+        'token' => env('UANATACA_TOKEN'),
+        'api_key' => env('UANATACA_API_KEY'),
+        'uid' => env('UANATACA_UID'),
+        'timeout' => (int) env('UANATACA_TIMEOUT', 90),
+        // Bearer token Uanataca must send when calling our webhook.
+        'webhook_token' => env('UANATACA_WEBHOOK_TOKEN'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

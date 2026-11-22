@@ -7,6 +7,7 @@ import StatCard from '@/components/StatCard.vue';
 import { usePermissions } from '@/composables/usePermissions';
 import CentralLayout from '@/layouts/CentralLayout.vue';
 import { brand } from '@/lib/brand';
+import { money } from '@/lib/signatures';
 import central from '@/routes/central';
 import type { IconName } from '@/types/icon';
 
@@ -17,6 +18,16 @@ defineProps<{
         tenants: number;
         centralRoles: number;
     };
+    signatures: {
+        month: {
+            units: number;
+            revenue: string;
+            central_profit: string;
+            central_margin: number | null;
+            retail: string;
+        };
+        alerts: number;
+    } | null;
 }>();
 
 const page = usePage();
@@ -148,6 +159,52 @@ const quickLinks = computed(() =>
                     helper="Acceso del staff"
                 />
             </div>
+
+            <section v-if="signatures" class="space-y-3">
+                <div class="flex items-center justify-between gap-4">
+                    <h3 class="eyebrow text-ink-500 dark:text-ink-400">
+                        Firmas electrónicas · este mes
+                    </h3>
+                    <Link
+                        :href="central.signatures.sales.index().url"
+                        class="inline-flex items-center gap-1 text-sm font-semibold text-primary-700 hover:text-primary-800 dark:text-primary-300"
+                    >
+                        Ver ventas <Icon name="arrow-right" class="size-4" />
+                    </Link>
+                </div>
+                <div
+                    class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+                >
+                    <StatCard
+                        label="Firmas vendidas"
+                        :value="signatures.month.units"
+                        icon="key"
+                        :helper="`Venta al público ${money(signatures.month.retail)}`"
+                    />
+                    <StatCard
+                        label="Ingresos de central"
+                        :value="money(signatures.month.revenue)"
+                        icon="currency"
+                        helper="Lo que pagan los distribuidores"
+                    />
+                    <StatCard
+                        label="Utilidad de central"
+                        :value="money(signatures.month.central_profit)"
+                        icon="chart"
+                        :helper="
+                            signatures.month.central_margin === null
+                                ? 'Registra el costo Uanataca'
+                                : `Margen ${signatures.month.central_margin}%`
+                        "
+                    />
+                    <StatCard
+                        label="Distribuidores por atender"
+                        :value="signatures.alerts"
+                        icon="exclamation-triangle"
+                        helper="Crédito, saldo o bloqueo"
+                    />
+                </div>
+            </section>
 
             <section v-if="quickLinks.length" class="space-y-3">
                 <h3 class="eyebrow text-ink-500 dark:text-ink-400">

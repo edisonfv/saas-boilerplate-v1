@@ -3,12 +3,17 @@
 namespace Modules\Central\Http\Controllers;
 
 use App\Enums\BillingPeriod;
+use App\Enums\SignatureAffiliationMode;
 use App\Enums\SubscriptionStatus;
 use App\Enums\TenantStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Plan;
+use App\Models\SignatureAccount;
+use App\Models\SignatureProviderRequest;
 use App\Models\Tenant;
 use App\Services\TenantEntitlements;
+use App\Services\TenantPlanSubscriber;
+use App\Services\TenantPresenter;
 use App\Services\TenantProvisioner;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -25,6 +30,8 @@ class TenantController extends Controller
 {
     public function index(Request $request): Response
     {
+        $canSeeSignatures = $request->user()->can('central.signature-accounts.view');
+
         $tenants = QueryBuilder::for(Tenant::class)
             ->allowedFilters(
                 AllowedFilter::callback('search', fn (Builder $query, string $value) => $query
@@ -39,34 +46,54 @@ class TenantController extends Controller
                         fn (Builder $subscription) => $subscription->where('status', $value)
                     )
                 ),
+                AllowedFilter::callback('affiliation', fn (Builder $query, string $value) => $value === 'None'
+                    ? $query->doesntHave('signatureAccount')
+                    : $query->whereHas('signatureAccount', fn (Builder $account) => $account->where('affiliation_mode', $value))),
             )
             ->allowedSorts('id', 'created_at')
             ->defaultSort('-created_at')
-            ->with(['domains', 'subscription.plan'])
+            ->with(['domains', 'subscription.plan', 'signatureAccount.balances'])
             ->paginate(15)
-            ->withQueryString()
-            ->through(fn (Tenant $tenant) => [
-                'id' => $tenant->getTenantKey(),
-                'company_name' => $tenant->company_name,
-                'domain' => $tenant->domains->first()?->domain,
-                'tenant_status' => $tenant->operationalStatusValue(),
-                'tenant_status_label' => $tenant->operationalStatusLabel(),
-                'plan_name' => $tenant->subscription?->plan?->name,
-                'status' => $tenant->subscription?->status?->value,
-                'status_label' => $tenant->subscription?->status?->label,
-                'trial_ends_at' => $tenant->subscription?->trial_ends_at,
-                'created_at' => $tenant->created_at,
-            ]);
+            ->withQueryString();
+
+        $soldThisMonth = SignatureProviderRequest::query()
+            ->counted()
+            ->whereIn('tenant_id', $tenants->getCollection()->modelKeys())
+            ->where('created_at', '>=', now()->startOfMonth())
+            ->toBase()
+            ->selectRaw('tenant_id, count(*) as total')
+            ->groupBy('tenant_id')
+            ->pluck('total', 'tenant_id');
+
+        $tenants = $tenants->through(fn (Tenant $tenant) => [
+            'id' => $tenant->getTenantKey(),
+            'company_name' => $tenant->company_name,
+            'domain' => $tenant->domains->first()?->domain,
+            'tenant_status' => $tenant->operationalStatusValue(),
+            'tenant_status_label' => $tenant->operationalStatusLabel(),
+            'plan_name' => $tenant->subscription?->plan?->name,
+            'status' => $tenant->subscription?->status?->value,
+            'status_label' => $tenant->subscription?->status?->label,
+            'trial_ends_at' => $tenant->subscription?->trial_ends_at,
+            'created_at' => $tenant->created_at,
+            'signatures' => $canSeeSignatures ? $this->signatureSnapshot($tenant, (int) ($soldThisMonth[$tenant->getTenantKey()] ?? 0)) : null,
+        ]);
 
         return Inertia::render('Central/Tenants/Index', [
             'tenants' => $tenants,
             'statuses' => SubscriptionStatus::toArray(),
+            'affiliationModes' => SignatureAffiliationMode::toArray(),
             'stats' => [
                 'total' => Tenant::count(),
                 'withSubscription' => Tenant::has('subscription')->count(),
                 'withoutSubscription' => Tenant::doesntHave('subscription')->count(),
+                'distributors' => $canSeeSignatures ? SignatureAccount::query()->count() : null,
+                'signaturesThisMonth' => $canSeeSignatures
+                    ? SignatureProviderRequest::query()->counted()->where('created_at', '>=', now()->startOfMonth())->count()
+                    : null,
             ],
             'can' => [
+                'signatures' => $canSeeSignatures,
                 'create' => $request->user()->can('central.tenants.create'),
                 'impersonate' => $request->user()->can('central.tenants.impersonate'),
                 'manage' => $request->user()->can('central.tenants.update'),
@@ -74,13 +101,14 @@ class TenantController extends Controller
         ]);
     }
 
-    public function show(Request $request, Tenant $tenant, TenantEntitlements $entitlements): Response
+    public function show(Request $request, Tenant $tenant, TenantEntitlements $entitlements, TenantPresenter $presenter): Response
     {
         $tenant->load(['domains', 'subscription.plan']);
 
         $subscription = $tenant->subscription;
 
         return Inertia::render('Central/Tenants/Show', [
+            'header' => $presenter->header($tenant),
             'can' => [
                 'impersonate' => $request->user()->can('central.tenants.impersonate'),
                 'manage' => $request->user()->can('central.tenants.update'),
@@ -109,6 +137,7 @@ class TenantController extends Controller
                 'trial_ends_at' => $subscription->trial_ends_at,
                 'current_period_start' => $subscription->current_period_start,
                 'current_period_end' => $subscription->current_period_end,
+                'grants_access' => $subscription->grantsAccessAt(),
             ] : null,
             'entitlements' => $subscription ? [
                 'modules' => $entitlements->activeModules($tenant)->values(),
@@ -162,6 +191,30 @@ class TenantController extends Controller
         return redirect()->route('central.tenants.show', $tenant)->with('status', 'tenant-created');
     }
 
+    /**
+     * The tenant's standing as a signature distributor, for the directory.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function signatureSnapshot(Tenant $tenant, int $soldThisMonth): ?array
+    {
+        $account = $tenant->signatureAccount;
+
+        if ($account === null) {
+            return null;
+        }
+
+        return [
+            'affiliation_mode' => $account->affiliation_mode->value,
+            'affiliation_mode_label' => $account->affiliation_mode->label,
+            'is_active' => $account->is_active,
+            'credit_limit' => $account->credit_limit,
+            'credit_used' => $account->credit_used,
+            'available_units' => (int) $account->balances->sum('available_units'),
+            'sold_this_month' => $soldThisMonth,
+        ];
+    }
+
     public function toggleStatus(Tenant $tenant, TenantEntitlements $entitlements): RedirectResponse
     {
         $tenant->update([
@@ -174,5 +227,17 @@ class TenantController extends Controller
         return back()->with('status', $tenant->operationalStatus()->equals(TenantStatus::Active())
             ? 'tenant-activated'
             : 'tenant-suspended');
+    }
+
+    /**
+     * Starts the tenant's next billing period, unlocking a lapsed workspace.
+     */
+    public function renewSubscription(Tenant $tenant, TenantPlanSubscriber $subscriber): RedirectResponse
+    {
+        $subscription = $tenant->subscription()->firstOrFail();
+
+        $subscriber->renew($subscription);
+
+        return back()->with('status', 'subscription-renewed');
     }
 }

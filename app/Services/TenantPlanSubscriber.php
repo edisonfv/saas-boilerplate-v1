@@ -211,6 +211,60 @@ class TenantPlanSubscriber
     }
 
     /**
+     * Starts the next billing period (e.g. after the tenant paid). A lapsed
+     * subscription restarts today; one still running is extended from its
+     * current period end, so early renewals never lose paid days. Clears any
+     * trial and reactivates the subscription, unlocking the workspace.
+     */
+    public function renew(Subscription $subscription): Subscription
+    {
+        $now = CarbonImmutable::now();
+        $periodEnd = $subscription->current_period_end?->toImmutable();
+        $isRunning = $subscription->grantsAccessAt($now) && $periodEnd !== null && $periodEnd->gt($now);
+        $start = $isRunning ? $subscription->current_period_start->toImmutable() : $now;
+        $from = $isRunning ? $periodEnd : $now;
+
+        $subscription->update([
+            'status' => SubscriptionStatus::Active(),
+            'trial_ends_at' => null,
+            'current_period_start' => $start,
+            'current_period_end' => $this->periodEnd($from, $subscription->billing_period),
+            'cancel_at_period_end' => false,
+        ]);
+
+        $this->entitlements->forget(Tenant::query()->findOrFail($subscription->tenant_id));
+
+        return $subscription->refresh();
+    }
+
+    /**
+     * Marks subscriptions whose period (or trial) is over as Expired, so
+     * central listings show the real state. Access is already denied by
+     * Subscription::grantsAccessAt() the moment the period ends; this only
+     * makes it visible. Returns how many were expired.
+     */
+    public function expireLapsed(): int
+    {
+        $now = CarbonImmutable::now();
+        $expired = 0;
+
+        Subscription::query()
+            ->whereIn('status', [SubscriptionStatus::Active()->value, SubscriptionStatus::Trialing()->value, SubscriptionStatus::PastDue()->value])
+            ->where(fn ($query) => $query
+                ->where('current_period_end', '<=', $now)
+                ->orWhere(fn ($trial) => $trial
+                    ->where('status', SubscriptionStatus::Trialing()->value)
+                    ->where('trial_ends_at', '<=', $now)))
+            ->each(function (Subscription $subscription) use (&$expired): void {
+                $subscription->update(['status' => SubscriptionStatus::Expired()]);
+                $this->entitlements->forget(Tenant::query()->findOrFail($subscription->tenant_id));
+                $expired++;
+            });
+
+        return $expired;
+    }
+
+    /**
      * The plan's active price for the billing period — what the tenant
      * contracts. A plan without one can't be subscribed or changed to.
      */

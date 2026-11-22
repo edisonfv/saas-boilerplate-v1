@@ -18,6 +18,9 @@ use Modules\Central\Http\Controllers\ModuleController;
 use Modules\Central\Http\Controllers\PlanController;
 use Modules\Central\Http\Controllers\ProfileController;
 use Modules\Central\Http\Controllers\RoleController;
+use Modules\Central\Http\Controllers\Signatures\AccountController as SignatureAccountController;
+use Modules\Central\Http\Controllers\Signatures\ProductController as SignatureProductController;
+use Modules\Central\Http\Controllers\Signatures\SalesController as SignatureSalesController;
 use Modules\Central\Http\Controllers\StaffController;
 use Modules\Central\Http\Controllers\Support\AppointmentController as SupportAppointmentController;
 use Modules\Central\Http\Controllers\Support\ReportController as SupportReportController;
@@ -184,8 +187,55 @@ Route::prefix('central')->name('central.')->group(function () {
                 Route::get('/tenants/{tenant}', [TenantController::class, 'show'])->name('tenants.show');
             });
 
+            // A tenant's signature distributor account is a tab of the tenant.
+            Route::get('/tenants/{tenant}/signatures', [SignatureAccountController::class, 'show'])
+                ->middleware('permission:central.signature-accounts.view')
+                ->name('tenants.signatures');
+
             Route::middleware('permission:central.tenants.update')->group(function () {
                 Route::patch('/tenants/{tenant}/toggle-status', [TenantController::class, 'toggleStatus'])->name('tenants.toggle-status');
+                Route::patch('/tenants/{tenant}/renew', [TenantController::class, 'renewSubscription'])->name('tenants.renew');
+            });
+
+            // Electronic signatures -----------------------------------------
+            Route::prefix('signatures')->name('signatures.')->group(function () {
+                Route::middleware('permission:central.signature-products.create')->group(function () {
+                    Route::get('/products/create', [SignatureProductController::class, 'create'])->name('products.create');
+                    Route::post('/products', [SignatureProductController::class, 'store'])->name('products.store');
+                });
+
+                Route::middleware('permission:central.signature-products.view')->group(function () {
+                    Route::get('/products', [SignatureProductController::class, 'index'])->name('products.index');
+                });
+
+                Route::middleware('permission:central.signature-products.update')->group(function () {
+                    Route::get('/products/{product}/edit', [SignatureProductController::class, 'edit'])->name('products.edit');
+                    Route::patch('/products/{product}', [SignatureProductController::class, 'update'])->name('products.update');
+                    Route::patch('/products/{product}/toggle-active', [SignatureProductController::class, 'toggleActive'])->name('products.toggle-active');
+                    Route::post('/products/{product}/packages', [SignatureProductController::class, 'storePackage'])->name('products.packages.store');
+                    Route::patch('/products/{product}/packages/{package}/toggle-active', [SignatureProductController::class, 'togglePackage'])
+                        ->scopeBindings()
+                        ->name('products.packages.toggle-active');
+                });
+
+                // Accounts are managed from each tenant (see "tenants.signatures").
+                Route::redirect('/accounts', '/central/tenants');
+
+                Route::middleware('permission:central.signature-sales.view')->group(function () {
+                    Route::get('/sales', [SignatureSalesController::class, 'index'])->name('sales.index');
+                    Route::get('/sales/export', [SignatureSalesController::class, 'export'])->name('sales.export');
+                });
+
+                Route::put('/accounts/{tenant}', [SignatureAccountController::class, 'configure'])
+                    ->middleware('permission:central.signature-accounts.update')
+                    ->name('accounts.configure');
+
+                Route::middleware('permission:central.signature-accounts.transactions')->group(function () {
+                    Route::post('/accounts/{tenant}/packages', [SignatureAccountController::class, 'sellPackage'])->name('accounts.packages.store');
+                    Route::post('/accounts/{tenant}/payments', [SignatureAccountController::class, 'recordPayment'])->name('accounts.payments.store');
+                    Route::post('/accounts/{tenant}/adjustments', [SignatureAccountController::class, 'adjustUnits'])->name('accounts.adjustments.store');
+                    Route::post('/accounts/{tenant}/ledger/{entry}/refund', [SignatureAccountController::class, 'refund'])->name('accounts.ledger.refund');
+                });
             });
 
             // Support desk ---------------------------------------------------

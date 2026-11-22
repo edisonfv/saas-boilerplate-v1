@@ -24,10 +24,28 @@ const sections: NavigationSection[] = [
         label: 'Plataforma',
         items: [
             {
+                // Also each tenant's signature distributor account (a tab).
                 name: 'Tenants',
                 href: central.tenants.index().url,
                 icon: 'building',
                 permission: 'central.tenants.view',
+            },
+        ],
+    },
+    {
+        label: 'Firmas electrónicas',
+        items: [
+            {
+                name: 'Ventas y utilidad',
+                href: central.signatures.sales.index().url,
+                icon: 'chart',
+                permission: 'central.signature-sales.view',
+            },
+            {
+                name: 'Productos y paquetes',
+                href: central.signatures.products.index().url,
+                icon: 'key',
+                permission: 'central.signature-products.view',
             },
         ],
     },
@@ -106,6 +124,7 @@ const sections: NavigationSection[] = [
 <template>
     <AppShell
         :title="title"
+        variant="central"
         :sections="sections"
         :home-href="central.dashboard().url"
         :logout-href="destroy().url"

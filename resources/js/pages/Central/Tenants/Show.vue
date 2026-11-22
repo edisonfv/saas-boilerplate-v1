@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { Form, Head, Link } from '@inertiajs/vue3';
+import { Form, Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import { toggleStatus } from '@/actions/Modules/Central/Http/Controllers/TenantController';
+import {
+    renewSubscription,
+    toggleStatus,
+} from '@/actions/Modules/Central/Http/Controllers/TenantController';
 import Badge from '@/components/Badge.vue';
 import Card from '@/components/Card.vue';
+import TenantHeader from '@/components/central/TenantHeader.vue';
+import type { TenantHeaderData } from '@/components/central/TenantHeader.vue';
 import Icon from '@/components/Icon.vue';
 import StatCard from '@/components/StatCard.vue';
 import CentralLayout from '@/layouts/CentralLayout.vue';
 import { subscriptionStatusTone } from '@/lib/status';
-import central from '@/routes/central';
 
 interface Tenant {
     id: string;
@@ -35,6 +39,7 @@ interface Subscription {
     trial_ends_at: string | null;
     current_period_start: string | null;
     current_period_end: string | null;
+    grants_access: boolean;
 }
 
 interface Entitlements {
@@ -44,6 +49,7 @@ interface Entitlements {
 }
 
 const props = defineProps<{
+    header: TenantHeaderData;
     can: {
         impersonate: boolean;
         manage: boolean;
@@ -61,75 +67,35 @@ const isActive = computed(() => props.tenant.status === 'Active');
 
     <CentralLayout :title="`Tenant: ${tenant.id}`">
         <div class="space-y-6">
-            <Link
-                :href="central.tenants.index().url"
-                class="inline-flex items-center gap-2 text-sm font-medium text-ink-500 hover:text-ink-950 dark:text-ink-400 dark:hover:text-white"
-            >
-                <Icon name="arrow-left" />
-                Volver a tenants
-            </Link>
-
-            <section
-                class="rounded-lg border border-ink-200 bg-white p-5 shadow-sm dark:border-ink-800 dark:bg-ink-900"
-            >
-                <div
-                    class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
-                >
-                    <div>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <h2
-                                class="text-xl font-semibold text-ink-950 dark:text-white"
-                            >
-                                {{ tenant.company_name ?? tenant.id }}
-                            </h2>
-                            <Badge :tone="isActive ? 'green' : 'red'">
-                                {{ tenant.status_label }}
-                            </Badge>
-                            <Badge
-                                v-if="subscription"
-                                :tone="
-                                    subscriptionStatusTone(subscription.status)
-                                "
-                            >
-                                {{ subscription.status_label }}
-                            </Badge>
-                            <Badge v-else>Sin suscripción</Badge>
-                        </div>
-                        <p class="mt-2 text-sm text-ink-500">
-                            {{ tenant.domain ?? 'Sin dominio registrado' }}
+            <TenantHeader :tenant="header" active="summary">
+                <template #actions>
+                    <Form
+                        autocomplete="off"
+                        v-if="can.manage"
+                        v-bind="toggleStatus.form(tenant.id)"
+                        #default="{ processing }"
+                    >
+                        <button
+                            type="submit"
+                            :disabled="processing"
+                            class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-ink-300 px-3.5 text-sm font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-50 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
+                        >
+                            <Icon name="power" class="size-4.5" />
+                            {{ isActive ? 'Suspender' : 'Reactivar' }}
+                        </button>
+                    </Form>
+                    <div
+                        class="rounded-lg border border-ink-200 px-4 py-2 text-sm dark:border-ink-800"
+                    >
+                        <p class="text-xs text-ink-500 dark:text-ink-400">
+                            Creado
+                        </p>
+                        <p class="font-semibold text-ink-950 dark:text-white">
+                            {{ tenant.created_at }}
                         </p>
                     </div>
-
-                    <div class="flex flex-wrap items-center gap-2">
-                        <Form
-                            autocomplete="off"
-                            v-if="can.manage"
-                            v-bind="toggleStatus.form(tenant.id)"
-                            #default="{ processing }"
-                        >
-                            <button
-                                type="submit"
-                                :disabled="processing"
-                                class="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-ink-300 px-3.5 text-sm font-medium text-ink-700 transition hover:bg-ink-50 disabled:opacity-50 dark:border-ink-700 dark:text-ink-200 dark:hover:bg-ink-800"
-                            >
-                                <Icon name="power" class="size-4.5" />
-                                {{ isActive ? 'Suspender' : 'Reactivar' }}
-                            </button>
-                        </Form>
-
-                        <div
-                            class="rounded-lg border border-ink-200 px-4 py-3 text-sm dark:border-ink-800"
-                        >
-                            <p class="text-ink-500 dark:text-ink-400">Creado</p>
-                            <p
-                                class="mt-1 font-semibold text-ink-950 dark:text-white"
-                            >
-                                {{ tenant.created_at }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+                </template>
+            </TenantHeader>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <StatCard
@@ -329,6 +295,29 @@ const isActive = computed(() => props.tenant.status === 'Active');
                                 </dd>
                             </div>
                         </dl>
+
+                        <div
+                            v-if="!subscription.grants_access"
+                            class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
+                        >
+                            La suscripción está vencida: el espacio del tenant
+                            está inhabilitado hasta que se renueve.
+                        </div>
+
+                        <Form
+                            v-if="can.manage"
+                            v-bind="renewSubscription.form(tenant.id)"
+                            #default="{ processing }"
+                            class="mt-4"
+                        >
+                            <button
+                                type="submit"
+                                :disabled="processing"
+                                class="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 disabled:opacity-50"
+                            >
+                                Renovar periodo
+                            </button>
+                        </Form>
                     </template>
                     <p v-else class="text-sm text-ink-400">
                         Este tenant no tiene ninguna suscripción todavia.

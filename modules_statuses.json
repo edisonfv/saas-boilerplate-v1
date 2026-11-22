@@ -2,5 +2,6 @@
     "Central": true,
     "TestModule": true,
     "General": true,
-    "Support": true
+    "Support": true,
+    "Signatures": true
 }

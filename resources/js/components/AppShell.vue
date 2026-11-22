@@ -28,7 +28,38 @@ const props = defineProps<{
     caption: string;
     /** User menu subtitle when the user has no email. */
     userFallback: string;
+    /**
+     * Which panel this is. Central and tenant chrome use different blues and
+     * a context tag so staff who work in both always know where they are.
+     */
+    variant: 'central' | 'tenant';
 }>();
+
+const theme = computed(() =>
+    props.variant === 'tenant'
+        ? {
+              sidebar: 'bg-brand-ocean',
+              marker: 'bg-cyan-400',
+              activeIcon: 'text-cyan-300',
+              avatar: 'bg-cyan-600',
+              tag: 'bg-cyan-400/15 text-cyan-200 ring-cyan-300/30',
+              tagLabel: 'Tenant',
+              headerTag:
+                  'bg-cyan-50 text-cyan-800 ring-cyan-600/20 dark:bg-cyan-400/10 dark:text-cyan-200 dark:ring-cyan-400/30',
+              headerBar: 'bg-cyan-500',
+          }
+        : {
+              sidebar: 'bg-brand-night',
+              marker: 'bg-accent-500',
+              activeIcon: 'text-primary-300',
+              avatar: 'bg-primary-600',
+              tag: 'bg-accent-400/15 text-accent-200 ring-accent-300/30',
+              tagLabel: 'Central',
+              headerTag:
+                  'bg-primary-50 text-primary-800 ring-primary-600/20 dark:bg-primary-400/10 dark:text-primary-200 dark:ring-primary-400/30',
+              headerBar: 'bg-primary-600',
+          },
+);
 
 const page = usePage();
 const {
@@ -213,7 +244,8 @@ onBeforeUnmount(() => {
         <!-- Desktop sidebar -->
         <aside
             :class="[
-                'fixed inset-y-0 left-0 z-30 hidden flex-col overflow-hidden bg-brand-night text-ink-200 lg:flex dark:border-r dark:border-white/5',
+                'fixed inset-y-0 left-0 z-30 hidden flex-col overflow-hidden text-ink-200 lg:flex dark:border-r dark:border-white/5',
+                theme.sidebar,
                 isRestored && 'transition-[width] duration-200',
                 isSidebarCollapsed ? 'w-[4.75rem]' : 'w-72',
             ]"
@@ -269,6 +301,17 @@ onBeforeUnmount(() => {
                     </button>
                 </div>
 
+                <span
+                    v-if="!isSidebarCollapsed"
+                    :class="[
+                        'mt-4 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-bold tracking-wider uppercase ring-1 ring-inset',
+                        theme.tag,
+                    ]"
+                >
+                    <span :class="['size-1.5 rounded-full', theme.marker]" />
+                    {{ theme.tagLabel }}
+                </span>
+
                 <button
                     v-if="isSidebarCollapsed"
                     type="button"
@@ -319,14 +362,17 @@ onBeforeUnmount(() => {
                         >
                             <span
                                 v-if="isActive(item)"
-                                class="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent-500"
+                                :class="[
+                                    'absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full',
+                                    theme.marker,
+                                ]"
                             />
                             <Icon
                                 :name="item.icon"
                                 :class="[
                                     'size-[1.125rem] shrink-0',
                                     isActive(item)
-                                        ? 'text-primary-300'
+                                        ? theme.activeIcon
                                         : 'text-ink-400 group-hover:text-ink-200',
                                 ]"
                             />
@@ -406,7 +452,10 @@ onBeforeUnmount(() => {
                         @click="isUserMenuOpen = !isUserMenuOpen"
                     >
                         <span
-                            class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-xs font-bold text-white"
+                            :class="[
+                                'flex size-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white',
+                                theme.avatar,
+                            ]"
                         >
                             {{ userInitials }}
                         </span>
@@ -446,7 +495,8 @@ onBeforeUnmount(() => {
 
         <aside
             :class="[
-                'fixed inset-y-0 left-0 z-50 flex w-80 max-w-[calc(100vw-3rem)] flex-col bg-brand-night text-ink-200 shadow-2xl transition-transform duration-200 lg:hidden',
+                'fixed inset-y-0 left-0 z-50 flex w-80 max-w-[calc(100vw-3rem)] flex-col text-ink-200 shadow-2xl transition-transform duration-200 lg:hidden',
+                theme.sidebar,
                 isMobileNavigationOpen ? 'translate-x-0' : '-translate-x-full',
             ]"
             :aria-hidden="!isMobileNavigationOpen"
@@ -468,7 +518,17 @@ onBeforeUnmount(() => {
                     </button>
                 </div>
 
-                <nav class="mt-8 flex-1 space-y-6 overflow-y-auto">
+                <span
+                    :class="[
+                        'mt-4 inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.6875rem] font-bold tracking-wider uppercase ring-1 ring-inset',
+                        theme.tag,
+                    ]"
+                >
+                    <span :class="['size-1.5 rounded-full', theme.marker]" />
+                    {{ theme.tagLabel }}
+                </span>
+
+                <nav class="mt-6 flex-1 space-y-6 overflow-y-auto">
                     <section
                         v-for="section in visibleSections"
                         :key="section.label"
@@ -491,14 +551,17 @@ onBeforeUnmount(() => {
                         >
                             <span
                                 v-if="isActive(item)"
-                                class="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-accent-500"
+                                :class="[
+                                    'absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full',
+                                    theme.marker,
+                                ]"
                             />
                             <Icon
                                 :name="item.icon"
                                 :class="[
                                     'size-[1.125rem] shrink-0',
                                     isActive(item)
-                                        ? 'text-primary-300'
+                                        ? theme.activeIcon
                                         : 'text-ink-400',
                                 ]"
                             />
@@ -513,7 +576,10 @@ onBeforeUnmount(() => {
                 >
                     <div class="flex items-center gap-3 px-1">
                         <span
-                            class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-xs font-bold text-white"
+                            :class="[
+                                'flex size-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white',
+                                theme.avatar,
+                            ]"
                         >
                             {{ userInitials }}
                         </span>
@@ -562,8 +628,12 @@ onBeforeUnmount(() => {
                 isSidebarCollapsed ? 'lg:pl-[4.75rem]' : 'lg:pl-72',
             ]"
         >
+            <div
+                :class="['sticky top-0 z-20 h-1 w-full', theme.headerBar]"
+                aria-hidden="true"
+            />
             <header
-                class="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-ink-200/80 bg-white/90 px-4 backdrop-blur-md md:px-6 xl:px-8 dark:border-ink-800 dark:bg-ink-950/85"
+                class="sticky top-1 z-20 flex h-16 items-center justify-between gap-3 border-b border-ink-200/80 bg-white/90 px-4 backdrop-blur-md md:px-6 xl:px-8 dark:border-ink-800 dark:bg-ink-950/85"
             >
                 <div class="flex min-w-0 items-center gap-3">
                     <button
@@ -622,6 +692,18 @@ onBeforeUnmount(() => {
                 </div>
 
                 <div class="flex shrink-0 items-center gap-2">
+                    <span
+                        :class="[
+                            'hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset sm:inline-flex',
+                            theme.headerTag,
+                        ]"
+                        :title="caption"
+                    >
+                        <span
+                            :class="['size-1.5 rounded-full', theme.marker]"
+                        />
+                        <span class="max-w-40 truncate">{{ caption }}</span>
+                    </span>
                     <slot name="header-actions" />
                     <AppearanceToggle />
                 </div>

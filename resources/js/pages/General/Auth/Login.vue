@@ -21,6 +21,7 @@ const context = computed(
         title="Iniciar sesión"
         description="Accede al espacio de trabajo de tu organización."
         :context="context"
+        variant="tenant"
     >
         <Form
             :action="store().url"

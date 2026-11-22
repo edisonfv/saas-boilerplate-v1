@@ -1,0 +1,11 @@
+{
+    "name": "Signatures",
+    "alias": "signatures",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Signatures\\Providers\\SignaturesServiceProvider"
+    ],
+    "files": []
+}

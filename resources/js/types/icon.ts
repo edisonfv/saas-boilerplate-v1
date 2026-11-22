@@ -34,4 +34,5 @@ export type IconName =
     | 'paperclip'
     | 'calendar'
     | 'star'
-    | 'chat';
+    | 'chat'
+    | 'camera';
